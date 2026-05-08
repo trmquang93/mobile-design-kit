@@ -1,0 +1,22 @@
+{
+  "name": "mobile-design-kit-marketplace",
+  "owner": {
+    "name": "quang",
+    "email": "trmquang3103@gmail.com"
+  },
+  "metadata": {
+    "description": "Marketplace for mobile-design-kit — HTML mobile mockups + iOS icon export.",
+    "version": "0.1.0"
+  },
+  "plugins": [
+    {
+      "name": "mobile-design-kit",
+      "source": "./",
+      "description": "Design mobile app screens as HTML mockups and export icons as Xcode asset catalogs. Bundles make-mobile-design with ios-icon-gen.",
+      "version": "0.1.0",
+      "category": "design",
+      "keywords": ["mobile", "design", "ios", "mockup", "icons", "iconify", "sf-symbols", "html", "xcode"],
+      "strict": false
+    }
+  ]
+}
