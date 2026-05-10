@@ -222,16 +222,27 @@
         }
 
         /* === Bottom contextual toolbar (component 27 — Liquid Glass split) === */
-        .toolbar--bottom {
+        .toolbar-wrap {
             position: absolute;
             left: 0; right: 0;
             bottom: 46px;
+            pointer-events: none;
+            transition: opacity 280ms ease, transform 320ms cubic-bezier(0.32, 0.72, 0, 1);
+        }
+        .toolbar-wrap--leaving {
+            opacity: 0;
+            transform: translateY(24px);
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .toolbar-wrap { transition: none; }
+        }
+        .toolbar--bottom {
+            position: relative;
             height: 60px;
             padding: 0 16px;
             padding-bottom: env(safe-area-inset-bottom, 0px);
             display: flex; align-items: center; justify-content: space-between;
             gap: var(--space-3);
-            pointer-events: none;
         }
         .toolbar--bottom > * { pointer-events: auto; }
 
@@ -520,6 +531,8 @@
         </main>
 
         <!-- Bottom toolbar (component 27 — Liquid Glass split: primary pill + destructive circle) -->
+        <!-- Wrapper takes the layer promotion for transitions; glass pills inside stay in parent compositor so feDisplacementMap warps correctly. -->
+        <div class="toolbar-wrap" id="toolbarWrap">
         <div class="toolbar toolbar--bottom" id="toolbar" role="toolbar" aria-label="Message actions">
             <span class="toolbar__count" id="toolbarCount">3 messages</span>
             <div class="toolbar__group">
@@ -538,6 +551,7 @@
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
                 </button>
             </div>
+        </div>
         </div>
 
         <div class="home-indicator-area"><div class="home-indicator"></div></div>
@@ -568,34 +582,38 @@
             syncCount();
         });
 
-        // Cancel toggles the toolbar's exit / re-entry so the animation is reviewable.
+        // Cancel toggles the toolbar's exit / re-entry so the transition is reviewable.
+        // Animation lives on the non-glass wrapper; .toolbar--bottom must not be promoted
+        // to its own compositor layer or feDisplacementMap stops sampling the backdrop.
         const cancelBtn = document.getElementById('cancelBtn');
+        const wrap = document.getElementById('toolbarWrap');
         let animating = false;
         cancelBtn.addEventListener('click', () => {
             if (animating) return;
             animating = true;
-            const hidden = toolbar.hasAttribute('hidden');
-            if (hidden) {
-                toolbar.removeAttribute('hidden');
-                toolbar.classList.remove('toolbar--leaving');
-                // Replay mount keyframes by clearing the animation, forcing reflow, then restoring.
-                const targets = [toolbar, ...toolbar.querySelectorAll('.toolbar__btn, .toolbar__spacer')];
-                targets.forEach(el => { el.style.animation = 'none'; });
-                void toolbar.offsetWidth;
-                targets.forEach(el => { el.style.animation = ''; });
+            const isHidden = wrap.hasAttribute('hidden');
+            if (isHidden) {
+                wrap.removeAttribute('hidden');
+                wrap.classList.add('toolbar-wrap--leaving');
+                void wrap.offsetWidth;
+                wrap.classList.remove('toolbar-wrap--leaving');
                 cancelBtn.textContent = 'Cancel';
-                const done = () => { animating = false; toolbar.removeEventListener('animationend', done); };
-                toolbar.addEventListener('animationend', done, { once: true });
-            } else {
-                toolbar.classList.add('toolbar--leaving');
                 const done = (e) => {
-                    if (e.target !== toolbar) return;
-                    toolbar.setAttribute('hidden', '');
+                    if (e.target !== wrap) return;
+                    animating = false;
+                    wrap.removeEventListener('transitionend', done);
+                };
+                wrap.addEventListener('transitionend', done);
+            } else {
+                wrap.classList.add('toolbar-wrap--leaving');
+                const done = (e) => {
+                    if (e.target !== wrap) return;
+                    wrap.setAttribute('hidden', '');
                     cancelBtn.textContent = 'Edit';
                     animating = false;
-                    toolbar.removeEventListener('animationend', done);
+                    wrap.removeEventListener('transitionend', done);
                 };
-                toolbar.addEventListener('animationend', done);
+                wrap.addEventListener('transitionend', done);
             }
         });
 
