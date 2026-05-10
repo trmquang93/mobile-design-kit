@@ -31,22 +31,6 @@ mobile-design-kit/
 /plugin install mobile-design-kit@mobile-design-kit-marketplace
 ```
 
-## Install (local)
-
-Add this folder as a plugin source in `~/.claude/settings.json`:
-
-```json
-{
-  "plugins": {
-    "sources": [
-      "~/Library/Mobile Documents/com~apple~CloudDocs/Documents/ai-tools-kit/plugins/mobile-design-kit"
-    ]
-  }
-}
-```
-
-Or use the marketplace / `/plugin` command if you publish it.
-
 ## Skills
 
 ### `/make-mobile-design [screen-name or description]`
