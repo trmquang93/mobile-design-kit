@@ -19,6 +19,7 @@ Load the relevant file(s) before generating a screen. **Always load base tokens 
 | [09-cards-banners.md](components/09-cards-banners.md) | 20. Stats Carousel, 21. Promo Banner, 22. Paywall | When screen has promotional content |
 | [10-media-states.md](components/10-media-states.md) | 23. Audio Player, 24. Empty State | When screen has media playback or empty states |
 | [11-icons.md](components/11-icons.md) | 25. Common SVG Icons, 26. Iconify API | When you need icon references |
+| [12-toolbars.md](components/12-toolbars.md) | 27. Bottom Toolbar (Icon Only), 28. Bottom Toolbar (Icon+Label), 29. Bottom Toolbar with Overflow Menu, 30. Header Toolbar | When screen has a contextual action bar (edit/share/delete), an overflow menu, or multiple header trailing actions |
 
 Also available: [iconify-icons.md](iconify-icons.md) -- full Iconify API guide with 275k+ icons.
 

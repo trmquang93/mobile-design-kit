@@ -7,12 +7,12 @@ A Claude Code plugin for designing mobile app screens end-to-end:
 
 ## Showcase
 
-Four screens, four brand aesthetics — generated with `/make-mobile-design`, each grounded in a real brand entry from [VoltAgent/awesome-design-md](https://github.com/VoltAgent/awesome-design-md).
+Five screens, five brand aesthetics — generated with `/make-mobile-design`, each grounded in a real brand entry from [VoltAgent/awesome-design-md](https://github.com/VoltAgent/awesome-design-md).
 
-| Productivity | Music | Food | Wellness |
-| :---: | :---: | :---: | :---: |
-| [<img src="examples/screenshots/productivity-today.png" width="180" alt="Today task list">](examples/productivity-today.html) | [<img src="examples/screenshots/music-now-playing.png" width="180" alt="Now Playing">](examples/music-now-playing.html) | [<img src="examples/screenshots/food-recipe.png" width="180" alt="Recipe detail">](examples/food-recipe.html) | [<img src="examples/screenshots/wellness-breathe.png" width="180" alt="Breathe timer">](examples/wellness-breathe.html) |
-| Linear-style cycle view, near-black canvas, mono accents | Spotify-style now-playing with glass tab bar | Editorial recipe detail with serif display & cream surface | Soft-warm breathing timer with serif italic display |
+| Productivity | Music | Food | Wellness | Mail (Edit Mode) |
+| :---: | :---: | :---: | :---: | :---: |
+| [<img src="examples/screenshots/productivity-today.png" width="160" alt="Today task list">](examples/productivity-today.html) | [<img src="examples/screenshots/music-now-playing.png" width="160" alt="Now Playing">](examples/music-now-playing.html) | [<img src="examples/screenshots/food-recipe.png" width="160" alt="Recipe detail">](examples/food-recipe.html) | [<img src="examples/screenshots/wellness-breathe.png" width="160" alt="Breathe timer">](examples/wellness-breathe.html) | [<img src="examples/screenshots/mail-edit-mode.png" width="160" alt="Mail multi-select with bottom toolbar">](examples/mail-edit-mode.html) |
+| Linear-style cycle view, near-black canvas, mono accents | Spotify-style now-playing with glass tab bar | Editorial recipe detail with serif display & cream surface | Soft-warm breathing timer with serif italic display | iOS Mail multi-select with the new contextual bottom toolbar (component 27) |
 
 Open the HTML files directly to feel the scroll/hover behavior. To regenerate the PNGs:
 

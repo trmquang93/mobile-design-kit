@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Mail — Edit Mode</title>
+    <style>
+        :root {
+            --color-bg: #FFFFFF;
+            --color-surface: #F2F2F7;
+            --color-text: #000000;
+            --color-text-secondary: #6B6B70;
+            --color-text-tertiary: #8E8E93;
+            --color-separator: rgba(60, 60, 67, 0.18);
+            --color-separator-soft: rgba(60, 60, 67, 0.08);
+            --color-island: #000000;
+            --color-primary: #007AFF;
+            --color-error: #FF3B30;
+            --color-warning: #FF9500;
+            --color-row-selected: rgba(0, 122, 255, 0.06);
+
+            --font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+
+            --text-caption2:    11px;
+            --text-caption1:    12px;
+            --text-footnote:    13px;
+            --text-subheadline: 15px;
+            --text-callout:     16px;
+            --text-body:        17px;
+            --text-title3:      20px;
+            --text-title2:      22px;
+            --text-title1:      28px;
+            --text-largetitle:  34px;
+
+            --space-1: 4px;
+            --space-2: 8px;
+            --space-3: 12px;
+            --space-4: 16px;
+            --space-5: 20px;
+            --space-6: 24px;
+
+            --radius-xs: 8px;
+            --radius-sm: 12px;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        html, body {
+            background: #1a1a1a;
+            font-family: var(--font-family);
+            font-size: var(--text-body);
+            line-height: 1.29;
+            letter-spacing: -0.022em;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            color: var(--color-text);
+            min-height: 100vh;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px 0;
+        }
+
+        /* === Device chrome (matches create_device_template.py) === */
+        .device {
+            position: relative;
+            width: 430px; height: 932px;
+            min-width: 430px; min-height: 932px;
+            flex-shrink: 0;
+            background: var(--color-bg);
+            border-radius: 48px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+        }
+        .dynamic-island {
+            position: absolute; top: 11px; left: 50%;
+            transform: translateX(-50%);
+            width: 126px; height: 37px;
+            background: var(--color-island);
+            border-radius: 19px;
+            z-index: 100; pointer-events: none;
+        }
+        .status-bar {
+            position: absolute; top: 0; left: 0; right: 0;
+            height: 59px;
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 14px 24px 8px;
+            z-index: 50; pointer-events: none;
+            color: var(--color-text);
+        }
+        .status-bar-time { font-size: var(--text-body); font-weight: 600; }
+        .status-bar-icons { display: flex; gap: 6px; align-items: center; }
+        .device-content {
+            position: absolute; inset: 0;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            padding-top: 59px;
+            padding-bottom: 34px;
+        }
+        .device-content::-webkit-scrollbar { display: none; }
+        .device-content { scrollbar-width: none; }
+        .home-indicator-area {
+            position: absolute; bottom: 0; left: 0; right: 0;
+            height: 34px;
+            display: flex; justify-content: center; align-items: flex-end;
+            padding-bottom: 8px;
+            pointer-events: none; z-index: 50;
+        }
+        .home-indicator {
+            width: 134px; height: 5px;
+            background: var(--color-text);
+            border-radius: 3px; opacity: 0.6;
+        }
+
+        /* === Nav header (Mail in edit mode) === */
+        .nav-header {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: var(--space-2) var(--space-4) var(--space-3);
+            min-height: 44px;
+        }
+        .nav-btn {
+            background: none; border: 0;
+            font-family: var(--font-family);
+            font-size: var(--text-body);
+            color: var(--color-primary);
+            cursor: pointer;
+            padding: var(--space-2);
+            min-height: 44px;
+            transition: opacity 0.15s ease;
+        }
+        .nav-btn:active { opacity: 0.5; }
+        .nav-title-stack { text-align: center; line-height: 1.15; }
+        .nav-title { font-size: var(--text-body); font-weight: 600; }
+        .nav-meta { font-size: var(--text-caption1); color: var(--color-text-secondary); margin-top: 2px; }
+
+        /* === Mail list === */
+        .list {
+            margin-top: var(--space-2);
+            padding-bottom: 120px;     /* clearance for the bottom toolbar */
+        }
+        .row {
+            display: grid;
+            grid-template-columns: 32px 1fr;
+            column-gap: var(--space-3);
+            align-items: flex-start;
+            padding: var(--space-3) var(--space-4) var(--space-3) var(--space-4);
+            border-bottom: 0.33px solid var(--color-separator);
+            transition: background 0.15s ease;
+        }
+        .row.selected { background: var(--color-row-selected); }
+        .row:active { background: var(--color-separator-soft); }
+
+        .check {
+            width: 22px; height: 22px;
+            border-radius: 50%;
+            border: 1.5px solid var(--color-text-tertiary);
+            display: inline-flex; align-items: center; justify-content: center;
+            margin-top: 4px;
+            transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+        }
+        .row.selected .check {
+            background: var(--color-primary);
+            border-color: var(--color-primary);
+        }
+        .row.selected .check svg {
+            opacity: 1; transform: scale(1);
+        }
+        .check svg {
+            width: 14px; height: 14px;
+            color: white;
+            opacity: 0; transform: scale(0.6);
+            transition: opacity 0.15s ease, transform 0.15s ease;
+        }
+
+        .row__body { min-width: 0; }
+        .row__top {
+            display: flex; align-items: baseline; justify-content: space-between;
+            gap: var(--space-2); margin-bottom: 2px;
+        }
+        .row__sender { font-size: var(--text-body); font-weight: 600; }
+        .row__sender--unread::before {
+            content: '';
+            display: inline-block;
+            width: 8px; height: 8px;
+            background: var(--color-primary);
+            border-radius: 50%;
+            margin-right: 6px;
+            transform: translateY(-2px);
+        }
+        .row__time {
+            font-size: var(--text-subheadline);
+            color: var(--color-text-secondary);
+            white-space: nowrap;
+            display: flex; align-items: center; gap: 4px;
+        }
+        .row__chevron { color: var(--color-text-tertiary); }
+        .row__subject {
+            font-size: var(--text-subheadline);
+            font-weight: 500;
+            margin-bottom: 2px;
+            overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+        }
+        .row__preview {
+            font-size: var(--text-subheadline);
+            color: var(--color-text-secondary);
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .row__flag {
+            display: inline-block; width: 8px; height: 8px;
+            background: var(--color-warning);
+            border-radius: 50%;
+            margin-right: 6px;
+            transform: translateY(-2px);
+        }
+
+        /* === Bottom contextual toolbar (component 27 — Liquid Glass split) === */
+        .toolbar--bottom {
+            position: absolute;
+            left: 0; right: 0;
+            bottom: 46px;
+            height: 60px;
+            padding: 0 16px;
+            padding-bottom: env(safe-area-inset-bottom, 0px);
+            display: flex; align-items: center; justify-content: space-between;
+            gap: var(--space-3);
+            z-index: 50;
+            pointer-events: none;
+        }
+        .toolbar--bottom > * { pointer-events: auto; }
+
+        .toolbar__group {
+            display: inline-flex; align-items: center;
+            gap: var(--space-1);
+            height: 60px;
+            padding: 0 6px;
+            border-radius: 30px;
+            background: color-mix(in srgb, #FFFFFF 78%, transparent);
+            backdrop-filter: saturate(180%) blur(24px);
+            -webkit-backdrop-filter: saturate(180%) blur(24px);
+            border: 0.5px solid color-mix(in srgb, #000000 6%, transparent);
+            box-shadow:
+                0 14px 36px rgba(0, 0, 0, 0.18),
+                0 2px 6px rgba(0, 0, 0, 0.06),
+                0 1px 0 rgba(255, 255, 255, 0.6) inset;
+        }
+        .toolbar__group--trailing {
+            width: 60px; padding: 0;
+            justify-content: center;
+            border-radius: 50%;
+        }
+
+        .toolbar__btn {
+            min-width: 52px; height: 52px;
+            padding: 0;
+            display: inline-flex; align-items: center; justify-content: center;
+            background: transparent; border: 0;
+            color: var(--color-primary);
+            cursor: pointer;
+            border-radius: 50%;
+            transition: transform 80ms ease-out, background 0.15s ease, color 0.15s ease;
+            font-family: var(--font-family);
+        }
+        .toolbar__btn svg { width: 22px; height: 22px; }
+        .toolbar__group--trailing .toolbar__btn { width: 60px; height: 60px; }
+        .toolbar__btn:active {
+            transform: scale(0.94);
+            background: color-mix(in srgb, currentColor 12%, transparent);
+        }
+        .toolbar__btn--destructive { color: var(--color-error); }
+        .toolbar__btn[disabled] { opacity: 0.35; pointer-events: none; }
+
+        .toolbar__count {
+            position: absolute;
+            left: 50%; bottom: calc(100% + 8px);
+            transform: translateX(-50%);
+            font-size: var(--text-caption1);
+            color: var(--color-text-secondary);
+            background: color-mix(in srgb, #FFFFFF 60%, transparent);
+            backdrop-filter: saturate(180%) blur(16px);
+            -webkit-backdrop-filter: saturate(180%) blur(16px);
+            padding: 4px 12px;
+            border-radius: 9999px;
+            border: 0.5px solid color-mix(in srgb, #FFFFFF 35%, transparent);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            white-space: nowrap;
+            pointer-events: none;
+        }
+
+        @media (prefers-reduced-motion: no-preference) {
+            .toolbar--bottom {
+                animation: toolbar-bar-in 320ms cubic-bezier(0.2, 0.9, 0.3, 1) both;
+            }
+            .toolbar--bottom .toolbar__btn {
+                animation: toolbar-btn-in 220ms ease-out both;
+            }
+            .toolbar__group > .toolbar__btn:nth-child(1) { animation-delay:  40ms; }
+            .toolbar__group > .toolbar__btn:nth-child(2) { animation-delay:  80ms; }
+            .toolbar__group > .toolbar__btn:nth-child(3) { animation-delay: 120ms; }
+
+            .toolbar--leaving               { animation: toolbar-bar-out 240ms cubic-bezier(0.4, 0, 1, 1) both; }
+            .toolbar--leaving .toolbar__btn { animation: toolbar-btn-out 180ms ease-in both; }
+        }
+        @keyframes toolbar-bar-in {
+            from { transform: translateY(120%); opacity: 0; }
+            to   { transform: translateY(0);    opacity: 1; }
+        }
+        @keyframes toolbar-btn-in {
+            from { transform: scale(0.9); opacity: 0; }
+            to   { transform: scale(1);   opacity: 1; }
+        }
+        @keyframes toolbar-bar-out {
+            from { transform: translateY(0);    opacity: 1; }
+            to   { transform: translateY(120%); opacity: 0; }
+        }
+        @keyframes toolbar-btn-out {
+            from { transform: scale(1);   opacity: 1; }
+            to   { transform: scale(0.9); opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="device">
+        <div class="dynamic-island"></div>
+
+        <div class="status-bar">
+            <div class="status-bar-time">9:41</div>
+            <div class="status-bar-icons">
+                <svg width="18" height="12" viewBox="0 0 18 12" fill="currentColor"><rect x="0" y="7" width="3" height="5" rx="0.5"/><rect x="5" y="4" width="3" height="8" rx="0.5"/><rect x="10" y="2" width="3" height="10" rx="0.5"/><rect x="15" y="0" width="3" height="12" rx="0.5"/></svg>
+                <svg width="16" height="12" viewBox="0 0 16 12" fill="currentColor"><path d="M8 2.5C5.4 2.5 3 3.4 1.2 5L0 3.7C2.2 1.6 5 .5 8 .5s5.8 1.1 8 3.2L14.8 5C13 3.4 10.6 2.5 8 2.5zm0 3c-1.7 0-3.3.6-4.5 1.7L2.3 5.9C3.8 4.4 5.8 3.5 8 3.5s4.2.9 5.7 2.4l-1.2 1.3C11.3 6.1 9.7 5.5 8 5.5zm0 3c-.8 0-1.6.3-2.2.9L8 12l2.2-2.6c-.6-.6-1.4-.9-2.2-.9z"/></svg>
+                <svg width="26" height="12" viewBox="0 0 26 12" fill="none"><rect x="1" y="2" width="20" height="8" rx="2.5" stroke="currentColor" stroke-width="1" opacity="0.4"/><rect x="2.5" y="3.5" width="17" height="5" rx="1.5" fill="currentColor"/><rect x="22" y="4.5" width="1.5" height="3" rx="0.5" fill="currentColor" opacity="0.4"/></svg>
+            </div>
+        </div>
+
+        <main class="device-content">
+            <div class="nav-header">
+                <button class="nav-btn" type="button" id="cancelBtn">Cancel</button>
+                <div class="nav-title-stack">
+                    <div class="nav-title">Inbox</div>
+                    <div class="nav-meta" id="selectionMeta">3 Selected</div>
+                </div>
+                <button class="nav-btn" type="button" style="font-weight:600">Select All</button>
+            </div>
+
+            <ul class="list" id="list">
+                <li class="row selected" data-selected="true">
+                    <span class="check" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    </span>
+                    <div class="row__body">
+                        <div class="row__top">
+                            <div class="row__sender row__sender--unread">Anh Nguyen</div>
+                            <div class="row__time">9:34 AM <svg class="row__chevron" width="7" height="11" viewBox="0 0 7 11" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="1 1 6 5.5 1 10"/></svg></div>
+                        </div>
+                        <div class="row__subject">Q3 launch — final timeline</div>
+                        <div class="row__preview">Hi team, attaching the cleaned-up Gantt with the dependencies we discussed yesterday. The shipping window is tighter than I thought, so let me know if any of the…</div>
+                    </div>
+                </li>
+
+                <li class="row selected" data-selected="true">
+                    <span class="check" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    </span>
+                    <div class="row__body">
+                        <div class="row__top">
+                            <div class="row__sender">Stripe</div>
+                            <div class="row__time">8:12 AM <svg class="row__chevron" width="7" height="11" viewBox="0 0 7 11" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="1 1 6 5.5 1 10"/></svg></div>
+                        </div>
+                        <div class="row__subject"><span class="row__flag" aria-hidden="true"></span>Your invoice for July is ready</div>
+                        <div class="row__preview">A new invoice has been generated for your account. View it in your dashboard or download the PDF below…</div>
+                    </div>
+                </li>
+
+                <li class="row selected" data-selected="true">
+                    <span class="check" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    </span>
+                    <div class="row__body">
+                        <div class="row__top">
+                            <div class="row__sender row__sender--unread">Linear</div>
+                            <div class="row__time">Yesterday <svg class="row__chevron" width="7" height="11" viewBox="0 0 7 11" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="1 1 6 5.5 1 10"/></svg></div>
+                        </div>
+                        <div class="row__subject">Cycle 28 — your assigned issues</div>
+                        <div class="row__preview">You have 4 issues assigned for the upcoming cycle. The triage list closes on Thursday at 5pm PT. Review the queue here…</div>
+                    </div>
+                </li>
+
+                <li class="row" data-selected="false">
+                    <span class="check" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    </span>
+                    <div class="row__body">
+                        <div class="row__top">
+                            <div class="row__sender">GitHub</div>
+                            <div class="row__time">Yesterday <svg class="row__chevron" width="7" height="11" viewBox="0 0 7 11" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="1 1 6 5.5 1 10"/></svg></div>
+                        </div>
+                        <div class="row__subject">[expo/expo] Toolbar component lands in v55</div>
+                        <div class="row__preview">A unified Stack.Toolbar component has been merged. It supersedes the standalone Toolbar prototype from the v7 beta…</div>
+                    </div>
+                </li>
+
+                <li class="row" data-selected="false">
+                    <span class="check" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    </span>
+                    <div class="row__body">
+                        <div class="row__top">
+                            <div class="row__sender">Mom</div>
+                            <div class="row__time">Mon <svg class="row__chevron" width="7" height="11" viewBox="0 0 7 11" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="1 1 6 5.5 1 10"/></svg></div>
+                        </div>
+                        <div class="row__subject">Recipe for the cake you liked</div>
+                        <div class="row__preview">I finally wrote it down. Bake at 175°C for about 45 minutes, then let it cool completely before icing…</div>
+                    </div>
+                </li>
+
+                <li class="row" data-selected="false">
+                    <span class="check" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    </span>
+                    <div class="row__body">
+                        <div class="row__top">
+                            <div class="row__sender">Apple Developer</div>
+                            <div class="row__time">Sun <svg class="row__chevron" width="7" height="11" viewBox="0 0 7 11" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="1 1 6 5.5 1 10"/></svg></div>
+                        </div>
+                        <div class="row__subject">App Store Connect: build processing complete</div>
+                        <div class="row__preview">Your build 1.4.2 (218) has finished processing and is ready to test in TestFlight…</div>
+                    </div>
+                </li>
+
+                <li class="row" data-selected="false">
+                    <span class="check" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    </span>
+                    <div class="row__body">
+                        <div class="row__top">
+                            <div class="row__sender">Notion</div>
+                            <div class="row__time">Sat <svg class="row__chevron" width="7" height="11" viewBox="0 0 7 11" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="1 1 6 5.5 1 10"/></svg></div>
+                        </div>
+                        <div class="row__subject">Weekly digest — 12 pages updated</div>
+                        <div class="row__preview">Here's what changed in your workspace this week. Most edits happened in "Roadmap 2026" and "Hiring loop"…</div>
+                    </div>
+                </li>
+            </ul>
+        </main>
+
+        <!-- Bottom toolbar (component 27 — Liquid Glass split: primary pill + destructive circle) -->
+        <div class="toolbar toolbar--bottom" id="toolbar" role="toolbar" aria-label="Message actions">
+            <span class="toolbar__count" id="toolbarCount">3 messages</span>
+            <div class="toolbar__group">
+                <button class="toolbar__btn" type="button" aria-label="Archive">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8v13H3V8"/><path d="M1 3h22v5H1z"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
+                </button>
+                <button class="toolbar__btn" type="button" aria-label="Flag">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
+                </button>
+                <button class="toolbar__btn" type="button" aria-label="Move to folder">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+                </button>
+            </div>
+            <div class="toolbar__group toolbar__group--trailing">
+                <button class="toolbar__btn toolbar__btn--destructive" type="button" aria-label="Delete">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                </button>
+            </div>
+        </div>
+
+        <div class="home-indicator-area"><div class="home-indicator"></div></div>
+    </div>
+
+    <script>
+        // Tap a row to toggle selection; toolbar stays in sync.
+        const list = document.getElementById('list');
+        const meta = document.getElementById('selectionMeta');
+        const count = document.getElementById('toolbarCount');
+        const toolbar = document.getElementById('toolbar');
+
+        function syncCount() {
+            const n = list.querySelectorAll('.row.selected').length;
+            meta.textContent = n === 0 ? 'Edit' : `${n} Selected`;
+            count.textContent = n === 1 ? '1 message' : `${n} messages`;
+            toolbar.querySelectorAll('.toolbar__btn').forEach(b => {
+                if (n === 0) b.setAttribute('disabled', '');
+                else b.removeAttribute('disabled');
+            });
+        }
+
+        list.addEventListener('click', (e) => {
+            const row = e.target.closest('.row');
+            if (!row) return;
+            row.classList.toggle('selected');
+            row.dataset.selected = row.classList.contains('selected');
+            syncCount();
+        });
+
+        // Cancel toggles the toolbar's exit / re-entry so the animation is reviewable.
+        const cancelBtn = document.getElementById('cancelBtn');
+        let animating = false;
+        cancelBtn.addEventListener('click', () => {
+            if (animating) return;
+            animating = true;
+            const hidden = toolbar.hasAttribute('hidden');
+            if (hidden) {
+                toolbar.removeAttribute('hidden');
+                toolbar.classList.remove('toolbar--leaving');
+                // Replay mount keyframes by clearing the animation, forcing reflow, then restoring.
+                const targets = [toolbar, ...toolbar.querySelectorAll('.toolbar__btn, .toolbar__spacer')];
+                targets.forEach(el => { el.style.animation = 'none'; });
+                void toolbar.offsetWidth;
+                targets.forEach(el => { el.style.animation = ''; });
+                cancelBtn.textContent = 'Cancel';
+                const done = () => { animating = false; toolbar.removeEventListener('animationend', done); };
+                toolbar.addEventListener('animationend', done, { once: true });
+            } else {
+                toolbar.classList.add('toolbar--leaving');
+                const done = (e) => {
+                    if (e.target !== toolbar) return;
+                    toolbar.setAttribute('hidden', '');
+                    cancelBtn.textContent = 'Edit';
+                    animating = false;
+                    toolbar.removeEventListener('animationend', done);
+                };
+                toolbar.addEventListener('animationend', done);
+            }
+        });
+
+        syncCount();
+    </script>
+</body>
+</html>
