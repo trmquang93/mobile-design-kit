@@ -49,8 +49,9 @@
 
 .nav-title {
     flex: 1;
-    font-size: var(--text-lg);
+    font-size: var(--text-body);
     font-weight: 600;
+    text-align: center;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -98,18 +99,19 @@
 ```css
 /* CSS */
 .page-header {
-    padding: var(--space-4) var(--space-5) 0;
+    padding: var(--space-2) var(--space-4) var(--space-3);
 }
 
 .page-title {
-    font-size: var(--text-3xl);
+    font-size: var(--text-largetitle);
     font-weight: 700;
-    line-height: 1.2;
+    line-height: 1.05;
+    letter-spacing: -0.022em;
     color: var(--gray-900);
 }
 
 .page-subtitle {
-    font-size: var(--text-base);
+    font-size: var(--text-subheadline);
     color: var(--gray-500);
     margin-top: var(--space-1);
 }
@@ -175,7 +177,7 @@
 }
 
 .tab-item span {
-    font-size: var(--text-xs);
+    font-size: var(--text-caption2);
     font-weight: 500;
 }
 

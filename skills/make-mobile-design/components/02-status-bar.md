@@ -2,6 +2,8 @@
 
 Always include at the top of every screen.
 
+**Rule:** The status bar is provided by the device-frame scaffold (`scripts/create_device_template.py`) and is pinned with `position:absolute; top:0; z-index:50`. Do not redefine these properties, do not rewrite the status bar HTML/CSS by hand, and never place the status bar inside a scrolling container (e.g. `.device-content`, body-level scroll, or any nested overflow region). The status bar must never scroll with content.
+
 ```html
 <!-- HTML -->
 <div class="status-bar">
@@ -15,12 +17,19 @@ Always include at the top of every screen.
 ```
 
 ```css
-/* CSS */
+/* CSS — canonical pinned form (provided by create_device_template.py) */
 .status-bar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 59px;
     display: flex;
     justify-content: space-between;
     align-items: center;
     padding: 14px 24px 8px;
+    z-index: 50;
+    pointer-events: none;
 }
 
 .status-bar-time {

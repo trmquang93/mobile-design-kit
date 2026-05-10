@@ -18,16 +18,15 @@
 }
 
 .section-label {
-    font-size: var(--text-sm);
-    font-weight: 600;
-    color: var(--gray-400);
-    text-transform: uppercase;
-    letter-spacing: 0.8px;
+    font-size: var(--text-footnote);
+    font-weight: 400;
+    color: var(--gray-500);
+    /* iOS grouped-list section headers are sentence-case, not uppercase. */
 }
 
 .section-link {
-    font-size: var(--text-base);
-    font-weight: 600;
+    font-size: var(--text-body);
+    font-weight: 400;
     color: var(--color-primary);
     cursor: pointer;
     background: none;
@@ -67,8 +66,9 @@
 }
 
 .card-title {
-    font-size: var(--text-lg);
-    font-weight: 600;
+    font-size: var(--text-title3);
+    font-weight: 700;
+    line-height: 1.2;
 }
 
 .card-body {
@@ -76,9 +76,9 @@
 }
 
 .card-text {
-    font-size: var(--text-base);
-    line-height: 1.6;
-    color: var(--gray-600);
+    font-size: var(--text-body);
+    line-height: 1.4;
+    color: var(--gray-700);
 }
 ```
 
@@ -113,7 +113,8 @@
     display: flex;
     align-items: center;
     gap: var(--space-3);
-    padding: var(--space-3) var(--space-5);
+    padding: var(--space-3) var(--space-4);
+    min-height: 44px;
     cursor: pointer;
     transition: background 0.15s;
 }
@@ -163,18 +164,18 @@
 }
 
 .list-item-title {
-    font-size: var(--text-base);
-    font-weight: 600;
-    color: var(--gray-800);
+    font-size: var(--text-body);
+    font-weight: 400;
+    color: var(--gray-900);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
 
 .list-item-meta {
-    font-size: var(--text-sm);
+    font-size: var(--text-footnote);
     color: var(--gray-500);
-    margin-top: 3px;
+    margin-top: 2px;
     display: flex;
     align-items: center;
     gap: var(--space-2);

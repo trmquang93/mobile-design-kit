@@ -23,8 +23,20 @@ TEMPLATE = Template("""<!DOCTYPE html>
             --color-text: #000000;
             --color-text-secondary: #6B7280;
             --color-island: #000000;
-            --font-system: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            --text-md: 17px;
+            --font-system: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+
+            /* iOS HIG type ramp — keep in sync with components/01-base-tokens.md */
+            --text-caption2:    11px;
+            --text-caption1:    12px;
+            --text-footnote:    13px;
+            --text-subheadline: 15px;
+            --text-callout:     16px;
+            --text-body:        17px;
+            --text-title3:      20px;
+            --text-title2:      22px;
+            --text-title1:      28px;
+            --text-largetitle:  34px;
+            --text-md:          var(--text-body);
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -32,6 +44,9 @@ TEMPLATE = Template("""<!DOCTYPE html>
         html, body {
             background: #1a1a1a;
             font-family: var(--font-system);
+            font-size: var(--text-body);
+            line-height: 1.29;
+            letter-spacing: -0.022em;
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
             color: var(--color-text);
@@ -49,9 +64,9 @@ TEMPLATE = Template("""<!DOCTYPE html>
             position: relative;
             width: 430px;
             height: 932px;
+            min-width: 430px;
+            min-height: 932px;
             flex-shrink: 0;
-            display: flex;
-            flex-direction: column;
             background: var(--color-bg);
             border-radius: 48px;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
@@ -72,14 +87,19 @@ TEMPLATE = Template("""<!DOCTYPE html>
             pointer-events: none;
         }
 
-        /* Status Bar (matches components/02-status-bar.md) */
+        /* Status Bar (matches components/02-status-bar.md) — overlays content, stays fixed during scroll */
         .status-bar {
-            position: relative;
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 59px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             padding: 14px 24px 8px;
             z-index: 50;
+            pointer-events: none;
         }
 
         .status-bar-time {
@@ -93,19 +113,27 @@ TEMPLATE = Template("""<!DOCTYPE html>
             align-items: center;
         }
 
-        /* Content slot */
+        /* Scrollable content — scrolls behind status bar and home indicator.
+           Any floating overlay placed over .device-content (custom tab bar, FAB,
+           banner, sheet handle) MUST set `pointer-events: none` on its wrapper
+           and `pointer-events: auto` on its interactive children, otherwise the
+           overlay swallows wheel/touch and the screen stops scrolling under it. */
         .device-content {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
+            position: absolute;
+            inset: 0;
             overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            padding-top: 59px;    /* space for status bar */
             padding-bottom: 34px; /* space for home indicator */
         }
+        /* Block layout, NOT flex — flex-direction:column with overflow:auto
+           lets browsers shrink children below their content size and the
+           container then reports scrollHeight == clientHeight (no scroll). */
 
         .device-content::-webkit-scrollbar { display: none; }
         .device-content { scrollbar-width: none; }
 
-        /* Home Indicator */
+        /* Home Indicator — overlays content, stays fixed during scroll */
         .home-indicator-area {
             position: absolute;
             bottom: 0;
