@@ -71,14 +71,16 @@
         .status-bar { position: absolute; top: 0; left: 0; right: 0; height: 59px; display: flex; justify-content: space-between; align-items: center; padding: 14px 24px 8px; z-index: 50; pointer-events: none; color: var(--ink); }
         .status-bar-time { font-size: var(--text-md); font-weight: 600; }
         .status-bar-icons { display: flex; gap: 6px; align-items: center; }
-        .device-content { position: absolute; inset: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; padding-top: 59px; padding-bottom: 34px; }
+        .device-content { position: absolute; inset: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; padding-top: 0; padding-bottom: 34px; }
         .device-content::-webkit-scrollbar { display: none; } .device-content { scrollbar-width: none; }
         .home-indicator-area { position: absolute; bottom: 0; left: 0; right: 0; height: 34px; display: flex; justify-content: center; align-items: flex-end; padding-bottom: 8px; pointer-events: none; z-index: 50; }
         .home-indicator { width: 134px; height: 5px; background: var(--ink); border-radius: 3px; opacity: 0.6; }
 
         /* === Screen === */
         .header {
-            padding: 16px 20px 18px;
+            position: sticky; top: 0; z-index: 10;
+            background: var(--canvas);
+            padding: calc(59px + 16px) 20px 18px;
             display: flex; align-items: center; justify-content: space-between;
         }
         .workspace {

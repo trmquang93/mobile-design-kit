@@ -22,11 +22,27 @@
 
 ```css
 /* CSS */
+/* The scaffold gives .device-content padding-top: 0, so the first child
+   of .device-content owns the 59px status-bar safe area. The nav absorbs
+   that offset via its own padding-top, and its background fills the full
+   area behind the status bar to the top edge of the screen. */
 .nav-header {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    padding: calc(59px + var(--space-2)) var(--space-5) var(--space-2);
+    background: var(--bg-primary, #fff);
     display: flex;
     align-items: center;
-    padding: var(--space-2) var(--space-5);
     gap: var(--space-3);
+}
+
+/* Glass variant — translucent nav over content. The backdrop-filter blurs
+   whatever scrolls under the nav, INCLUDING behind the status bar. */
+.nav-header.glass {
+    background: rgba(255, 255, 255, 0.55);
+    backdrop-filter: saturate(180%) blur(20px);
+    -webkit-backdrop-filter: saturate(180%) blur(20px);
 }
 
 .nav-back {
@@ -86,6 +102,28 @@
 }
 ```
 
+**Pinning & top-edge fill:** `.nav-header` is sticky inside `.device-content`, which has `padding-top: 0` (scaffold default). The nav's own `padding-top: calc(59px + var(--space-2))` provides the status-bar safe area, so the nav's background (or `backdrop-filter` for glass) fills behind the status bar to the top edge of the screen. Sticky `top: 0` pins the nav there as content scrolls. Do **not** add `margin-top: -59px`, half-opacity tints, or `padding-top: 59px` on `.device-content` — they all break this pattern.
+
+### 3a-i. Transparent nav (no background fill)
+
+When the screen has a hero image, photo, or media that should bleed all the way to the top of the device, **don't paint a bar at all**. Keep the nav transparent so scrolling content passes behind the buttons.
+
+```css
+/* CSS — transparent variant */
+.nav-header.transparent {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    padding: calc(59px + var(--space-2)) var(--space-5) var(--space-2);
+    background: transparent;
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+}
+```
+
+**When to use:** photo viewers, media-rich detail screens, full-bleed hero headers, map / camera screens. The buttons (`.nav-back`, `.nav-action-btn`) keep their own pill / circle backgrounds so they remain legible against the scrolling content underneath — only the **bar** is transparent. Content scrolls all the way up under the buttons, including behind the status bar. Do **not** use a half-opacity tint as a compromise; either fill (3a) or go fully transparent (3a-i).
+
 ### 3b. Large Title Header (Top-level screens)
 
 ```html
@@ -98,8 +136,11 @@
 
 ```css
 /* CSS */
+/* When .page-header is the FIRST child of .device-content, it owns the
+   59px status-bar safe area — add it to padding-top. If there's a nav-header
+   above it, drop the extra 59px (the nav already absorbed it). */
 .page-header {
-    padding: var(--space-2) var(--space-4) var(--space-3);
+    padding: calc(59px + var(--space-2)) var(--space-4) var(--space-3);
 }
 
 .page-title {

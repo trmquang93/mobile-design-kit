@@ -4,6 +4,18 @@ Always include at the top of every screen.
 
 **Rule:** The status bar is provided by the device-frame scaffold (`scripts/create_device_template.py`) and is pinned with `position:absolute; top:0; z-index:50`. Do not redefine these properties, do not rewrite the status bar HTML/CSS by hand, and never place the status bar inside a scrolling container (e.g. `.device-content`, body-level scroll, or any nested overflow region). The status bar must never scroll with content.
 
+### Status-bar safe area (59px)
+
+The scaffold's `.device-content` has `padding-top: 0`. The 59px reserved for the status bar is the **first child's** responsibility, not the container's. This is so a nav header / glass top bar / hero image can render its background behind the status bar to the very top edge — correct iOS behavior.
+
+Three legal patterns for the first child:
+
+1. **`.nav-header` (back/title/actions)** — uses `padding-top: calc(59px + var(--space-2))`, background fills behind status bar. See §3a in `03-navigation.md`.
+2. **`.page-header` (large title) or any first content section** — add `padding-top: calc(59px + <design-spacing>)` to its existing top padding. The page background continues behind the status bar naturally.
+3. **Full-bleed hero / photo / map** — let the media start at y=0 and bleed behind the status bar. Add a transparent `.nav-header.transparent` on top if you need back/action buttons. See §3a-i in `03-navigation.md`.
+
+Never set `padding-top: 59px` back on `.device-content` — it breaks the top-edge fill for nav headers and reintroduces the status-bar seam bug.
+
 ```html
 <!-- HTML -->
 <div class="status-bar">

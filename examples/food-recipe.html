@@ -54,7 +54,6 @@
                 radial-gradient(circle at 50% 90%, #6b3a1a 0%, transparent 60%),
                 linear-gradient(160deg, #c9772e 0%, #4d2810 100%);
             color: var(--white);
-            overflow: hidden;
         }
         .hero::before {
             content: ''; position: absolute; inset: 0;
@@ -67,7 +66,7 @@
             background-size: 3px 3px;
         }
         .hero-nav {
-            position: absolute; top: 59px; left: 0; right: 0; padding: 12px 20px;
+            position: sticky; top: 59px; padding: 12px 20px;
             display: flex; justify-content: space-between; align-items: center;
             z-index: 4;
         }

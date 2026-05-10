@@ -117,13 +117,20 @@ TEMPLATE = Template("""<!DOCTYPE html>
            Any floating overlay placed over .device-content (custom tab bar, FAB,
            banner, sheet handle) MUST set `pointer-events: none` on its wrapper
            and `pointer-events: auto` on its interactive children, otherwise the
-           overlay swallows wheel/touch and the screen stops scrolling under it. */
+           overlay swallows wheel/touch and the screen stops scrolling under it.
+
+           NOTE: padding-top is intentionally 0 — the 59px status-bar safe area
+           is the responsibility of the FIRST element inside .device-content,
+           NOT this container. This is so navigation bars (.nav-header, glass
+           top bars, hero images) can render their background behind the status
+           bar to the very top edge of the screen, which is the correct iOS
+           behavior. See components/03-navigation.md §3a for the pattern. */
         .device-content {
             position: absolute;
             inset: 0;
             overflow-y: auto;
             -webkit-overflow-scrolling: touch;
-            padding-top: 59px;    /* space for status bar */
+            padding-top: 0;       /* status-bar offset belongs on first child */
             padding-bottom: 34px; /* space for home indicator */
         }
         /* Block layout, NOT flex — flex-direction:column with overflow:auto

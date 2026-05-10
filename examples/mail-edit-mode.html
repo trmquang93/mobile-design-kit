@@ -97,7 +97,7 @@
             position: absolute; inset: 0;
             overflow-y: auto;
             -webkit-overflow-scrolling: touch;
-            padding-top: 59px;
+            padding-top: 0;       /* nav-header absorbs the 59px status-bar offset */
             padding-bottom: 34px;
         }
         .device-content::-webkit-scrollbar { display: none; }
@@ -117,8 +117,10 @@
 
         /* === Nav header (Mail in edit mode) === */
         .nav-header {
+            position: sticky; top: 0; z-index: 10;
+            background: var(--color-bg);
             display: flex; align-items: center; justify-content: space-between;
-            padding: var(--space-2) var(--space-4) var(--space-3);
+            padding: calc(59px + var(--space-2)) var(--space-4) var(--space-3);
             min-height: 44px;
         }
         .nav-btn {
