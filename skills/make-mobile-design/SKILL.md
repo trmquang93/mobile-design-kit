@@ -19,6 +19,143 @@ Components are split into smaller files under [components/](components/). The in
 
 You MUST use components exactly as defined to ensure visual consistency. Do not reinvent components that already exist in the library.
 
+## Design Aesthetics & Differentiation
+
+Before applying platform rules, commit to a **bold aesthetic direction**. Generic, interchangeable mockups are the failure mode -- every screen should feel intentionally designed for its context.
+
+### Aesthetic Thinking
+
+Before coding, decide:
+- **Purpose**: What problem does this screen solve? Who is the user?
+- **Tone**: Pick an extreme and commit. Examples: brutally minimal, maximalist chaos, retro-futuristic, organic/natural, luxury/refined, playful/toy-like, editorial/magazine, brutalist/raw, art deco/geometric, soft/pastel, industrial/utilitarian. Use these as inspiration, then tailor one to the product.
+- **Differentiation**: What is the one thing a user will remember about this screen?
+
+Bold maximalism and refined minimalism both work. The failure mode is the timid middle.
+
+### Avoid AI-Slop Aesthetics
+
+NEVER default to:
+- Overused font families: Inter, Roboto, Arial, generic system stacks (on non-iOS), Space Grotesk-by-default.
+- Cliched palettes: purple gradients on white, washed-out pastel-everywhere, evenly-distributed rainbow accents.
+- Predictable layouts: stacked card lists with no rhythm, identical hero patterns, cookie-cutter dashboard grids.
+- Decorative emoji as a substitute for real iconography.
+
+Vary between generations: light vs dark, serif vs grotesque vs mono display, dense vs airy. No two mockups in a session should converge on the same aesthetic unless the user is iterating on one.
+
+### Aesthetic Levers
+
+- **Typography**: Pair a distinctive display font with a refined body font. Pull from Google Fonts when on non-iOS targets (e.g. Fraunces, Instrument Serif, Bricolage Grotesque, JetBrains Mono, IBM Plex, Redaction, Migra, Söhne-feel sans). Use weight, tracking, and size contrast as design tools.
+- **Color**: Dominant colors with sharp accents beat timid balanced palettes. Use CSS variables. Commit to a temperature (warm earth, cool tech, acidic neon, etc.).
+- **Motion**: Concentrate motion at high-impact moments -- one orchestrated page-load with staggered reveals (CSS `animation-delay`) lands harder than scattered micro-interactions. Use `scroll-snap`, hover surprises, and bouncy springs sparingly but precisely.
+- **Spatial Composition**: Asymmetry, overlap, diagonal flow, grid-breaking elements. Generous negative space OR controlled density -- not lukewarm middle.
+- **Backgrounds & Texture**: Don't default to flat fills. Layer gradient meshes, noise/grain overlays, geometric patterns, dramatic shadows, decorative rules, custom cursors, soft inner-glows. Match texture to the chosen tone.
+
+### Reconciliation with Platform Rules
+
+When the target is iOS, the iOS Design Rules below **constrain** the aesthetic levers:
+- The system font stack stays mandatory; aesthetic differentiation comes from weight, scale, color, and layout instead of webfont swaps.
+- The no-purple rule is absolute -- pick a different bold accent.
+- Glass goes on the navigation layer only; for content drama use texture, gradient, or photography.
+
+For Android or platform-agnostic mockups, the levers above are unconstrained -- push them harder. Implementation complexity should match the aesthetic vision: maximalism needs elaborate code; minimalism needs precision.
+
+## iOS Design Rules
+
+When the target platform is iOS (or unspecified, since this skill is mobile-first), apply Apple Human Interface Guidelines. These rules override stylistic preferences -- treat them as non-negotiable for iOS mockups.
+
+### Core Principles (Apple HIG)
+
+1. **Clarity**: Every element is easily understood. Minimalist layout, straightforward navigation.
+2. **Deference**: UI minimizes distractions. Content takes center stage, chrome recedes.
+3. **Depth**: Visual layers communicate hierarchy through translucency, blur, and motion.
+4. **Consistency**: Familiar patterns -- don't reinvent native controls.
+
+### Typography
+
+Default to the San Francisco family on iOS mockups:
+- Use `font-family: -apple-system, "SF Pro Text", "SF Pro Display", system-ui, sans-serif;`
+- Body and labels at 13--19px use SF Pro Text proportions; titles at 20px+ use SF Pro Display proportions (the system font handles this automatically via `-apple-system`).
+- Avoid custom webfonts unless brand-critical. If a custom font is required, pair it with `-apple-system` as fallback.
+- Respect Dynamic Type spirit: do not lock font sizes in absolute `px` for body text where `rem`/`em` can scale.
+
+### Color Palette
+
+**CRITICAL: Never use purple as a primary, accent, or gradient color. No purple gradients. No purple tints on glass.**
+
+Preferred accent colors:
+- **Blue** -- trust, productivity, communication (default iOS accent)
+- **Green** -- health, success, nature
+- **Orange** -- energy, creativity, warmth
+- **Red** -- alerts, importance (use sparingly)
+- **Teal / Cyan** -- modern, fresh, technical
+- **Indigo** -- depth without purple (use carefully, never drift toward violet)
+
+Use semantic tokens that adapt to light/dark mode (`--color-text-primary`, `--color-bg-secondary`, etc. from `01-base-tokens.md`). Avoid hardcoded greys.
+
+### Liquid Glass (iOS 26)
+
+Liquid Glass is Apple's translucent material for the navigation layer floating above content. In HTML mockups, simulate it with `backdrop-filter`:
+
+```css
+.glass {
+    background: rgba(255, 255, 255, 0.55);
+    backdrop-filter: saturate(180%) blur(20px);
+    -webkit-backdrop-filter: saturate(180%) blur(20px);
+    border: 0.5px solid rgba(255, 255, 255, 0.18);
+    border-radius: 9999px; /* capsule */
+}
+
+@media (prefers-color-scheme: dark) {
+    .glass {
+        background: rgba(28, 28, 30, 0.55);
+        border-color: rgba(255, 255, 255, 0.08);
+    }
+}
+```
+
+Glass rules:
+- Apply glass to **navigation layer only** (tab bars, nav headers, floating toolbars, FABs). Never on content cards, list rows, or media tiles.
+- Glass elements **float above** content; never stack glass on glass.
+- Capsule (`border-radius: 9999px`) or fully rounded (16--24px) shapes only.
+- Tint subtly using accent color at low opacity (e.g. `rgba(0, 122, 255, 0.18)`). Never purple.
+- For media-rich backgrounds, drop the white fill and rely on `backdrop-filter` alone (the "clear" variant).
+
+### Motion
+
+- Spring-feel transitions: 0.3--0.45s with `cubic-bezier(0.34, 1.56, 0.64, 1)` for bouncy, or `cubic-bezier(0.25, 0.1, 0.25, 1)` for smooth.
+- Micro-interactions (hover, tap, toggle) under 0.2s.
+- Respect reduced motion: wrap non-essential animations in `@media (prefers-reduced-motion: no-preference)`.
+
+### Forbidden Patterns
+
+NEVER produce iOS mockups with:
+- Purple as primary, accent, gradient, or glass tint.
+- Custom navigation bars that replace the native large-title pattern when a native pattern fits.
+- Skeuomorphic textures, heavy drop shadows, or beveled edges.
+- Cluttered layouts that violate content-first hierarchy.
+- Glass effects on content surfaces (lists, cards, media tiles, modals body).
+- Animations longer than 0.5s for micro-interactions.
+- Touch targets smaller than 44x44px.
+
+### Accessibility
+
+- Body text contrast ratio >= 4.5:1; large text >= 3:1.
+- Every interactive element gets a visible focus / pressed state.
+- Use `aria-label` on icon-only buttons.
+- Honor `prefers-color-scheme` and `prefers-reduced-motion`.
+
+### Compliance Check
+
+Before delivering an iOS mockup, verify:
+- [ ] No purple anywhere (text, accent, gradient, glass tint, illustration).
+- [ ] System font stack used for typography.
+- [ ] Glass only on nav layer, not on content.
+- [ ] All touch targets >= 44x44px.
+- [ ] Light/dark mode tokens, not hardcoded colors.
+- [ ] Animations respect `prefers-reduced-motion`.
+
+For Android mockups or platform-agnostic prototypes, these rules are advisory rather than mandatory -- but the no-purple guideline still applies unless the user explicitly requests purple.
+
 ## Workflow
 
 ### Step 1: Load Components & Design System
@@ -45,7 +182,25 @@ Ask the user (if not already clear from arguments or context):
 
 If the user provides a screenshot, analyze it and reproduce the layout faithfully.
 
-### Step 3: Generate the HTML Mockup
+### Step 3: Scaffold the Device Frame (Recommended)
+
+For new screens, start by generating a realistic iPhone frame (Dynamic Island + status bar + home indicator) using the bundled script:
+
+```bash
+python3 "${CLAUDE_PLUGIN_ROOT}/skills/make-mobile-design/scripts/create_device_template.py" my-screen.html --title "My Screen"
+```
+
+This produces a self-contained HTML file with:
+- Centered Dynamic Island pill at the top
+- Status bar (9:41, signal/wifi/battery icons) — same as components Section 2
+- Empty `<main class="device-content">` slot for your screen content
+- Home indicator bar at the bottom
+
+After scaffolding, fill `.device-content` with components from [components.md](components.md). Do not redesign the device chrome — leave the island, status bar, and home indicator as-is.
+
+### Step 4: Generate the HTML Mockup
+
+For iOS-targeted screens, re-read the **iOS Design Rules** section above and apply every item in the Compliance Check before writing the file.
 
 Create a single self-contained HTML file following these rules:
 
@@ -93,7 +248,7 @@ Create a single self-contained HTML file following these rules:
 - If the app is Vietnamese-localized, use Vietnamese content
 - Include enough items to show scroll behavior (not just 1-2 items)
 
-### Step 4: Review
+### Step 5: Review
 
 After generating, suggest:
 - Opening the file in a browser to preview
