@@ -115,9 +115,15 @@ Add this once per HTML page, immediately inside `<body>`. The filter id
   it if the warp eats text on a particular surface; raise it for hero
   glass over photography.
 - `feGaussianBlur stdDeviation="2"` on the map only — this softens the
-  gradient steps so the refraction reads as curved, not banded. Do not
-  blur `SourceGraphic`; the displacement itself is the effect, and a
-  blur on top washes it back to flat glass.
+  gradient steps so the refraction reads as curved, not banded. The
+  default recipe does not blur `SourceGraphic`; the displacement alone
+  is the effect, and a heavy blur on top washes it back to flat glass.
+  If you specifically want a *frosted* glass surface (blur on top of
+  the refraction), use the `glass-distortion-frosted` variant below —
+  do NOT chain `blur()` in CSS `backdrop-filter` next to `url(...)`,
+  because the order across SVG and CSS filters is implementation-
+  dependent and the blur typically ends up being warped by the
+  displacement instead of layered on top of it.
 - The diagonal `linear-gradient` sheen + bright top-rim inset highlight
   is what reads as "glass body" when the fill is mostly transparent.
 
@@ -165,6 +171,52 @@ promotion and the glass element stays in the parent compositor.
   active item.
 - **Clear glass** (over photography): drop the white fill, keep only
   the filter and border.
+- **Frosted glass** (refraction + soft blur): use when the surface sits
+  over busy/text-heavy content and the rim-only displacement isn't
+  enough to keep foreground elements legible — e.g. a contextual
+  toolbar over a scrolling list. See recipe below.
+
+### Frosted glass recipe
+
+The blur MUST run *inside* the SVG filter chain, taking
+`feDisplacementMap`'s output as input. That guarantees the pipeline
+order: backdrop → displace → blur → composite. Chaining
+`blur()` in the CSS `backdrop-filter` next to `url(#glass-distortion)`
+does NOT do this reliably — the displacement ends up warping the
+already-blurred image (or the blur smears the displacement waves), and
+the result varies by engine.
+
+Add a second filter id alongside the default one (do not modify
+`glass-distortion` — keep the rim-only look as the codebase default):
+
+```html
+<filter id="glass-distortion-frosted" x="0%" y="0%" width="100%" height="100%">
+  <!-- Same gradient map as glass-distortion: -->
+  <feImage preserveAspectRatio="none" result="map" href='...same data URL...'/>
+  <feGaussianBlur in="map" stdDeviation="2" result="smoothed"/>
+  <feDisplacementMap in="SourceGraphic" in2="smoothed"
+                     scale="40" xChannelSelector="R" yChannelSelector="G"
+                     result="displaced"/>
+  <!-- Post-displacement blur. Tune stdDeviation per surface (1.5–3
+       reads as frosted; >4 starts to look like flat blur and loses
+       the refraction). -->
+  <feGaussianBlur in="displaced" stdDeviation="1.5"/>
+</filter>
+```
+
+Then on the surface:
+
+```css
+.glass--frosted {
+    /* same as .glass, but: */
+    backdrop-filter: url(#glass-distortion-frosted) saturate(140%);
+}
+```
+
+Do NOT add a CSS `blur()` on top — the SVG filter already produced
+the final blurred-displaced image. Stacking another blur on top of
+that wastes a layer and risks promoting the element to a separate
+compositor (which kills the displacement, see next section).
 
 ## Browser support
 

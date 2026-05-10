@@ -258,7 +258,7 @@
                     color-mix(in srgb, #FFFFFF 6%, transparent) 28%,
                     color-mix(in srgb, #FFFFFF 4%, transparent) 72%,
                     color-mix(in srgb, #FFFFFF 28%, transparent) 100%);
-            backdrop-filter: url(#glass-distortion);
+            backdrop-filter: url(#glass-distortion-frosted);
             -webkit-backdrop-filter: blur(12px) saturate(160%);
             border: 1px solid color-mix(in srgb, #FFFFFF 40%, transparent);
             box-shadow:
@@ -348,9 +348,29 @@
             </linearGradient>
         </defs><rect width="100" height="100" fill="url(%23x)"/><rect width="100" height="100" fill="url(%23y)" style="mix-blend-mode:screen"/></svg>'/>
         <feGaussianBlur in="map" stdDeviation="2" result="smoothed"/>
+        <feDisplacementMap in="SourceGraphic" in2="smoothed" scale="40" xChannelSelector="R" yChannelSelector="G"/>
+      </filter>
+      <!-- Frosted variant: refraction + post-displacement blur. See
+           components/00-liquid-glass.md for when to use this vs the
+           default rim-only displacement. -->
+      <filter id="glass-distortion-frosted" x="0%" y="0%" width="100%" height="100%">
+        <feImage preserveAspectRatio="none" result="map"
+          href='data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" preserveAspectRatio="none"><defs>
+            <linearGradient id="x" x1="0" y1="0.5" x2="1" y2="0.5">
+                <stop offset="0" stop-color="rgb(255,0,0)"/>
+                <stop offset="0.15" stop-color="rgb(128,0,0)"/>
+                <stop offset="0.85" stop-color="rgb(128,0,0)"/>
+                <stop offset="1" stop-color="rgb(255,0,0)"/>
+            </linearGradient>
+            <linearGradient id="y" x1="0.5" y1="0" x2="0.5" y2="1">
+                <stop offset="0" stop-color="rgb(0,255,0)"/>
+                <stop offset="0.15" stop-color="rgb(0,128,0)"/>
+                <stop offset="0.85" stop-color="rgb(0,128,0)"/>
+                <stop offset="1" stop-color="rgb(0,255,0)"/>
+            </linearGradient>
+        </defs><rect width="100" height="100" fill="url(%23x)"/><rect width="100" height="100" fill="url(%23y)" style="mix-blend-mode:screen"/></svg>'/>
+        <feGaussianBlur in="map" stdDeviation="2" result="smoothed"/>
         <feDisplacementMap in="SourceGraphic" in2="smoothed" scale="40" xChannelSelector="R" yChannelSelector="G" result="displaced"/>
-        <!-- Blur applied AFTER displacement so the displaced backdrop
-             gets softened, instead of the blur itself being warped. -->
         <feGaussianBlur in="displaced" stdDeviation="1.5"/>
       </filter>
     </svg>
