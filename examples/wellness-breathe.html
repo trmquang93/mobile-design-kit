@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Breathe — Airbnb-inspired</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --rausch: #ff385c;
+            --rausch-warm: #ff7a5c;
+            --teal: #4a9d8e;
+            --canvas: #fbf8f3;
+            --surface: #ffffff;
+            --warm-soft: #f5ede1;
+            --hairline: #ebebeb;
+            --ink: #222222;
+            --ink-2: #3f3f3f;
+            --ink-3: #6a6a6a;
+            --ink-4: #929292;
+            --color-bg: var(--canvas);
+            --color-text: var(--ink);
+            --color-island: #000000;
+            --serif: 'Instrument Serif', 'Iowan Old Style', Georgia, serif;
+            --sans: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            --text-md: 17px;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html, body { background: #1a1a1a; font-family: var(--sans); font-size: 17px; line-height: 1.4; letter-spacing: -0.01em; -webkit-font-smoothing: antialiased; color: var(--color-text); min-height: 100vh; }
+        body { display: flex; justify-content: center; align-items: center; padding: 20px 0; }
+        .device {
+            position: relative; width: 430px; height: 932px;
+            min-width: 430px; min-height: 932px; flex-shrink: 0;
+            background: var(--color-bg); border-radius: 48px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+            overflow: hidden;
+        }
+        .dynamic-island { position: absolute; top: 11px; left: 50%; transform: translateX(-50%); width: 126px; height: 37px; background: var(--color-island); border-radius: 19px; z-index: 100; pointer-events: none; }
+        .status-bar { position: absolute; top: 0; left: 0; right: 0; height: 59px; display: flex; justify-content: space-between; align-items: center; padding: 14px 24px 8px; z-index: 50; pointer-events: none; color: var(--ink); }
+        .status-bar-time { font-size: var(--text-md); font-weight: 600; }
+        .status-bar-icons { display: flex; gap: 6px; align-items: center; }
+        .device-content { position: absolute; inset: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; padding-top: 59px; padding-bottom: 34px; }
+        .device-content::-webkit-scrollbar { display: none; } .device-content { scrollbar-width: none; }
+        .home-indicator-area { position: absolute; bottom: 0; left: 0; right: 0; height: 34px; display: flex; justify-content: center; align-items: flex-end; padding-bottom: 8px; pointer-events: none; z-index: 50; }
+        .home-indicator { width: 134px; height: 5px; background: var(--ink); border-radius: 3px; opacity: 0.7; }
+
+        /* Backdrop gradient */
+        .backdrop {
+            position: absolute; inset: 0; z-index: 0; pointer-events: none;
+            background:
+                radial-gradient(70% 45% at 80% 8%, #ffd9c4 0%, transparent 60%),
+                radial-gradient(60% 40% at 0% 100%, #d6e9e2 0%, transparent 65%),
+                linear-gradient(180deg, #fbf8f3 0%, #f5ede1 100%);
+        }
+
+        /* Top */
+        .top {
+            position: relative; z-index: 2;
+            padding: 12px 24px 8px;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .top-icon {
+            width: 40px; height: 40px; border-radius: 50%;
+            background: var(--surface);
+            display: grid; place-items: center;
+            color: var(--ink-2);
+            box-shadow: 0 1px 2px rgba(0,0,0,0.04), 0 4px 14px rgba(0,0,0,0.04);
+        }
+        .top-pill {
+            padding: 8px 16px; border-radius: 9999px;
+            background: var(--surface);
+            font-size: 12px; font-weight: 600; color: var(--ink-2);
+            letter-spacing: 0.2px;
+            display: flex; align-items: center; gap: 8px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.04), 0 4px 14px rgba(0,0,0,0.04);
+        }
+        .top-pill .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--rausch); }
+
+        /* Hero text */
+        .greeting {
+            position: relative; z-index: 2;
+            padding: 24px 28px 12px;
+        }
+        .greeting .eyebrow {
+            font-size: 12px; font-weight: 600;
+            color: var(--rausch);
+            text-transform: uppercase; letter-spacing: 1.4px;
+        }
+        .greeting h1 {
+            margin-top: 8px;
+            font-family: var(--serif);
+            font-size: 52px; font-weight: 400;
+            line-height: 1.0; letter-spacing: -1.5px;
+            color: var(--ink);
+        }
+        .greeting h1 em { font-style: italic; color: var(--rausch); }
+        .greeting p {
+            margin-top: 14px;
+            font-size: 14px; color: var(--ink-3);
+            line-height: 1.55; max-width: 320px;
+        }
+
+        /* Breathe orb */
+        .orb-wrap {
+            position: relative; z-index: 2;
+            margin: 28px auto 16px;
+            width: 320px; height: 320px;
+            display: grid; place-items: center;
+        }
+        .orb-ring {
+            position: absolute; inset: 0; border-radius: 50%;
+            border: 1px solid rgba(255,56,92,0.18);
+        }
+        .orb-ring.r2 { inset: 32px; border-color: rgba(255,56,92,0.12); }
+        .orb-ring.r3 { inset: 64px; border-color: rgba(255,56,92,0.08); }
+        .orb {
+            width: 200px; height: 200px; border-radius: 50%;
+            background:
+                radial-gradient(circle at 30% 25%, #ffd0bf 0%, transparent 55%),
+                radial-gradient(circle at 70% 70%, #ff9a82 0%, transparent 55%),
+                linear-gradient(135deg, #ff7a5c 0%, #ff385c 100%);
+            box-shadow:
+                0 24px 48px rgba(255,56,92,0.28),
+                inset 0 -12px 24px rgba(0,0,0,0.08),
+                inset 0 12px 24px rgba(255,255,255,0.25);
+            display: grid; place-items: center;
+            color: white;
+            text-align: center;
+        }
+        .orb-state {
+            font-family: var(--serif); font-style: italic;
+            font-size: 36px; line-height: 1; font-weight: 400;
+            letter-spacing: -0.8px;
+        }
+        .orb-count {
+            margin-top: 10px;
+            font-size: 11px; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 2.5px;
+            color: rgba(255,255,255,0.85);
+        }
+        .orb-trace {
+            position: absolute; top: 8px; right: 8px;
+            font-family: 'DM Sans'; font-variant-numeric: tabular-nums;
+            font-size: 11px; font-weight: 700;
+            color: var(--rausch);
+            letter-spacing: 0.4px;
+            background: var(--surface);
+            padding: 6px 10px; border-radius: 9999px;
+            box-shadow: 0 4px 14px rgba(255,56,92,0.18);
+            display: flex; align-items: center; gap: 6px;
+        }
+        .orb-trace .pulse {
+            width: 6px; height: 6px; border-radius: 50%;
+            background: var(--rausch);
+            box-shadow: 0 0 0 4px rgba(255,56,92,0.18);
+        }
+
+        /* Pattern row */
+        .pattern {
+            position: relative; z-index: 2;
+            margin: 8px 24px 0;
+            background: var(--surface);
+            border-radius: 24px;
+            padding: 18px 20px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.04);
+        }
+        .pattern-head {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 14px;
+        }
+        .pattern-name {
+            font-family: var(--serif); font-size: 22px; font-weight: 400;
+            color: var(--ink); letter-spacing: -0.3px;
+        }
+        .pattern-tag {
+            font-size: 10px; font-weight: 700; letter-spacing: 1.4px;
+            color: var(--teal); text-transform: uppercase;
+            background: rgba(74,157,142,0.1);
+            padding: 4px 10px; border-radius: 9999px;
+        }
+        .pattern-graph {
+            display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;
+            text-align: center;
+        }
+        .phase {
+            background: var(--warm-soft);
+            border-radius: 12px;
+            padding: 14px 0 12px;
+        }
+        .phase.active { background: var(--rausch); color: white; }
+        .phase-secs {
+            font-family: var(--serif); font-size: 22px; font-weight: 400;
+            letter-spacing: -0.3px;
+            color: var(--ink);
+        }
+        .phase.active .phase-secs { color: white; }
+        .phase-label {
+            font-size: 10px; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 1.4px;
+            margin-top: 4px;
+            color: var(--ink-3);
+        }
+        .phase.active .phase-label { color: rgba(255,255,255,0.8); }
+
+        /* Stats row */
+        .stats-grid {
+            position: relative; z-index: 2;
+            margin: 14px 24px 0;
+            display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+        }
+        .stat-card {
+            background: var(--surface);
+            border-radius: 20px;
+            padding: 18px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.04), 0 6px 18px rgba(0,0,0,0.03);
+            position: relative; overflow: hidden;
+        }
+        .stat-card .num {
+            font-family: var(--serif); font-size: 36px; font-weight: 400;
+            line-height: 1; letter-spacing: -1.2px;
+            color: var(--ink);
+        }
+        .stat-card .num em { font-style: normal; font-size: 16px; color: var(--ink-3); margin-left: 4px; }
+        .stat-card .lbl {
+            margin-top: 6px;
+            font-size: 12px; color: var(--ink-3); font-weight: 500;
+        }
+        .stat-card .delta {
+            margin-top: 10px;
+            font-size: 11px; font-weight: 700;
+            color: var(--teal);
+            display: flex; align-items: center; gap: 4px;
+        }
+        .stat-card .delta.warm { color: var(--rausch); }
+        .stat-card svg.spark { position: absolute; right: 14px; top: 18px; opacity: 0.4; }
+
+        /* Footer card */
+        .quote {
+            position: relative; z-index: 2;
+            margin: 18px 24px 110px;
+            padding: 22px 24px;
+            background: var(--ink);
+            color: white;
+            border-radius: 24px;
+            position: relative;
+            overflow: hidden;
+        }
+        .quote::before {
+            content: '"'; position: absolute; top: -10px; right: 18px;
+            font-family: var(--serif); font-size: 140px; line-height: 1;
+            color: rgba(255,56,92,0.6);
+        }
+        .quote-text {
+            font-family: var(--serif); font-style: italic; font-size: 22px;
+            font-weight: 400; line-height: 1.25; letter-spacing: -0.3px;
+            color: white;
+            position: relative; z-index: 1;
+        }
+        .quote-author {
+            margin-top: 12px;
+            font-size: 11px; font-weight: 700;
+            letter-spacing: 1.6px; text-transform: uppercase;
+            color: rgba(255,255,255,0.6);
+        }
+
+        /* Floating start button */
+        .start-wrap {
+            position: absolute; left: 0; right: 0; bottom: 50px;
+            display: flex; justify-content: center;
+            z-index: 60; pointer-events: none;
+        }
+        .start-btn {
+            pointer-events: auto;
+            display: flex; align-items: center; gap: 12px;
+            padding: 14px 26px 14px 18px;
+            border-radius: 9999px;
+            background: var(--ink);
+            color: white;
+            font-size: 15px; font-weight: 600; letter-spacing: -0.1px;
+            box-shadow: 0 12px 32px rgba(0,0,0,0.25);
+        }
+        .start-btn .play {
+            width: 32px; height: 32px; border-radius: 50%;
+            background: var(--rausch);
+            display: grid; place-items: center;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="device">
+        <div class="dynamic-island"></div>
+        <div class="status-bar">
+            <span class="status-bar-time">9:41</span>
+            <div class="status-bar-icons">
+                <svg width="16" height="12" viewBox="0 0 16 12" fill="currentColor"><rect x="0" y="3" width="3" height="9" rx="1"/><rect x="4.5" y="2" width="3" height="10" rx="1"/><rect x="9" y="0" width="3" height="12" rx="1"/><rect x="13" y="1" width="3" height="11" rx="1"/></svg>
+                <svg width="16" height="12" viewBox="0 0 16 12" fill="currentColor"><path d="M8 3C10.7 3 13.1 4.2 14.7 6.1L16 4.8C14 2.5 11.2 1 8 1S2 2.5 0 4.8L1.3 6.1C2.9 4.2 5.3 3 8 3Z"/><path d="M8 7C9.5 7 10.9 7.6 11.9 8.6L13.2 7.3C11.8 5.9 10 5 8 5S4.2 5.9 2.8 7.3L4.1 8.6C5.1 7.6 6.5 7 8 7Z"/><circle cx="8" cy="11" r="1.5"/></svg>
+                <svg width="25" height="12" viewBox="0 0 25 12" fill="currentColor"><rect x="0" y="1" width="21" height="10" rx="2" stroke="currentColor" stroke-width="1" fill="none"/><rect x="22" y="4" width="2" height="4" rx="1"/><rect x="2" y="3" width="17" height="6" rx="1"/></svg>
+            </div>
+        </div>
+
+        <main class="device-content">
+            <div class="backdrop"></div>
+            <div class="top">
+                <button class="top-icon" aria-label="Menu"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="14" y2="18"/></svg></button>
+                <div class="top-pill"><span class="dot"></span> Day 12 · Streak</div>
+                <button class="top-icon" aria-label="Profile"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg></button>
+            </div>
+
+            <div class="greeting">
+                <div class="eyebrow">Friday morning</div>
+                <h1>Soft start,<br><em>slow</em> exhale.</h1>
+                <p>Three minutes of box breathing to land in the day. We've matched it to your last sleep window — gentle on, gentle off.</p>
+            </div>
+
+            <div class="orb-wrap">
+                <div class="orb-ring"></div>
+                <div class="orb-ring r2"></div>
+                <div class="orb-ring r3"></div>
+                <div class="orb">
+                    <div>
+                        <div class="orb-state">inhale</div>
+                        <div class="orb-count">Round 3 of 8</div>
+                    </div>
+                </div>
+                <div class="orb-trace"><span class="pulse"></span> 64 bpm</div>
+            </div>
+
+            <div class="pattern">
+                <div class="pattern-head">
+                    <div class="pattern-name">Box breath, 4·4·4·4</div>
+                    <span class="pattern-tag">Calming</span>
+                </div>
+                <div class="pattern-graph">
+                    <div class="phase active">
+                        <div class="phase-secs">4s</div>
+                        <div class="phase-label">Inhale</div>
+                    </div>
+                    <div class="phase">
+                        <div class="phase-secs">4s</div>
+                        <div class="phase-label">Hold</div>
+                    </div>
+                    <div class="phase">
+                        <div class="phase-secs">4s</div>
+                        <div class="phase-label">Exhale</div>
+                    </div>
+                    <div class="phase">
+                        <div class="phase-secs">4s</div>
+                        <div class="phase-label">Hold</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <svg class="spark" width="48" height="20" viewBox="0 0 60 22" fill="none" stroke="#4a9d8e" stroke-width="2" stroke-linecap="round"><polyline points="2 18 12 12 22 16 32 7 42 11 58 4"/></svg>
+                    <div class="num">12<em>min</em></div>
+                    <div class="lbl">Mindful today</div>
+                    <div class="delta"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><polyline points="6 15 12 9 18 15"/></svg> 4m vs avg</div>
+                </div>
+                <div class="stat-card">
+                    <svg class="spark" width="48" height="20" viewBox="0 0 60 22" fill="none" stroke="#ff385c" stroke-width="2" stroke-linecap="round"><polyline points="2 4 12 9 22 6 32 14 42 11 58 18"/></svg>
+                    <div class="num">68<em>bpm</em></div>
+                    <div class="lbl">Resting heart</div>
+                    <div class="delta warm"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg> −3 vs week</div>
+                </div>
+            </div>
+
+            <div class="quote">
+                <div class="quote-text">Stillness is what creates love. Movement is what creates life. To be still and to move is what creates everything.</div>
+                <div class="quote-author">Erica Jong</div>
+            </div>
+        </main>
+
+        <div class="start-wrap">
+            <button class="start-btn">
+                <span class="play"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 4 20 12 6 20"/></svg></span>
+                Start 3-minute session
+            </button>
+        </div>
+
+        <div class="home-indicator-area">
+            <div class="home-indicator"></div>
+        </div>
+    </div>
+</body>
+</html>

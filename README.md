@@ -5,6 +5,21 @@ A Claude Code plugin for designing mobile app screens end-to-end:
 1. **make-mobile-design** — generate production-quality HTML mockups using a reusable component library and design tokens.
 2. **ios-icon-gen** — export icons (SF Symbols or 275k+ Iconify icons) as Xcode `.imageset` PNG bundles.
 
+## Showcase
+
+Four screens, four brand aesthetics — generated with `/make-mobile-design`, each grounded in a real brand entry from [VoltAgent/awesome-design-md](https://github.com/VoltAgent/awesome-design-md).
+
+| Productivity | Music | Food | Wellness |
+| :---: | :---: | :---: | :---: |
+| [<img src="examples/screenshots/productivity-today.png" width="180" alt="Today task list">](examples/productivity-today.html) | [<img src="examples/screenshots/music-now-playing.png" width="180" alt="Now Playing">](examples/music-now-playing.html) | [<img src="examples/screenshots/food-recipe.png" width="180" alt="Recipe detail">](examples/food-recipe.html) | [<img src="examples/screenshots/wellness-breathe.png" width="180" alt="Breathe timer">](examples/wellness-breathe.html) |
+| Linear-style cycle view, near-black canvas, mono accents | Spotify-style now-playing with glass tab bar | Editorial recipe detail with serif display & cream surface | Soft-warm breathing timer with serif italic display |
+
+Open the HTML files directly to feel the scroll/hover behavior. To regenerate the PNGs:
+
+```
+cd examples && npm install && node capture.mjs
+```
+
 ## Layout
 
 ```

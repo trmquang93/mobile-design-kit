@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Now Playing — Spotify-inspired</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --canvas: #050505;
+            --surface-1: #121212;
+            --surface-2: #181818;
+            --surface-3: #1f1f1f;
+            --ink: #ffffff;
+            --ink-2: #cbcbcb;
+            --ink-3: #b3b3b3;
+            --ink-4: #7c7c7c;
+            --green: #1ed760;
+            --green-deep: #1db954;
+            --color-bg: var(--canvas);
+            --color-text: var(--ink);
+            --color-text-secondary: var(--ink-3);
+            --color-island: #000000;
+            --font: 'Manrope', -apple-system, BlinkMacSystemFont, sans-serif;
+            --text-caption2: 11px; --text-caption1: 12px; --text-footnote: 13px;
+            --text-subheadline: 15px; --text-callout: 16px; --text-body: 17px;
+            --text-title3: 20px; --text-title2: 22px; --text-title1: 28px;
+            --text-largetitle: 34px; --text-md: var(--text-body);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html, body { background: #1a1a1a; font-family: var(--font); font-size: var(--text-body); line-height: 1.29; letter-spacing: -0.01em; -webkit-font-smoothing: antialiased; color: var(--color-text); min-height: 100vh; }
+        body { display: flex; justify-content: center; align-items: center; padding: 20px 0; }
+        .device { position: relative; width: 430px; height: 932px; min-width: 430px; min-height: 932px; flex-shrink: 0; background: var(--color-bg); border-radius: 48px; box-shadow: 0 20px 60px rgba(0,0,0,0.5); overflow: hidden; }
+        .dynamic-island { position: absolute; top: 11px; left: 50%; transform: translateX(-50%); width: 126px; height: 37px; background: var(--color-island); border-radius: 19px; z-index: 100; pointer-events: none; }
+        .status-bar { position: absolute; top: 0; left: 0; right: 0; height: 59px; display: flex; justify-content: space-between; align-items: center; padding: 14px 24px 8px; z-index: 50; pointer-events: none; color: var(--ink); }
+        .status-bar-time { font-size: var(--text-md); font-weight: 600; }
+        .status-bar-icons { display: flex; gap: 6px; align-items: center; }
+        .device-content { position: absolute; inset: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; padding-top: 59px; padding-bottom: 34px; }
+        .device-content::-webkit-scrollbar { display: none; } .device-content { scrollbar-width: none; }
+        .home-indicator-area { position: absolute; bottom: 0; left: 0; right: 0; height: 34px; display: flex; justify-content: center; align-items: flex-end; padding-bottom: 8px; pointer-events: none; z-index: 50; }
+        .home-indicator { width: 134px; height: 5px; background: var(--ink); border-radius: 3px; opacity: 0.7; }
+
+        .ambient { position: absolute; inset: 0; background: radial-gradient(120% 70% at 50% 0%, #2a4d3a 0%, #0c1e15 45%, var(--canvas) 80%); z-index: 0; pointer-events: none; }
+
+        .top-bar { position: relative; z-index: 2; padding: 8px 20px 4px; display: grid; grid-template-columns: 36px 1fr 36px; align-items: center; gap: 12px; }
+        .icon-btn { width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; color: var(--ink); background: rgba(0,0,0,0.3); }
+        .top-meta { text-align: center; line-height: 1.2; }
+        .top-meta .label { font-size: 11px; color: var(--ink-3); text-transform: uppercase; letter-spacing: 1.4px; font-weight: 600; }
+        .top-meta .source { font-size: 13px; color: var(--ink); font-weight: 700; margin-top: 2px; }
+
+        .art-wrap { position: relative; z-index: 2; padding: 28px 36px 0; }
+        .art {
+            aspect-ratio: 1; border-radius: 8px;
+            background:
+                radial-gradient(circle at 30% 30%, #5dba8a 0%, transparent 55%),
+                radial-gradient(circle at 75% 65%, #1db954 0%, transparent 60%),
+                radial-gradient(circle at 50% 90%, #0a3a26 0%, transparent 70%),
+                linear-gradient(135deg, #0d2a1c 0%, #061811 100%);
+            box-shadow: 0 24px 56px rgba(0,0,0,0.6), 0 8px 24px rgba(0,0,0,0.4);
+            display: grid; place-items: center; overflow: hidden; position: relative;
+        }
+        .art::after { content: ''; position: absolute; inset: 0; background: radial-gradient(circle at 50% 35%, transparent 30%, rgba(0,0,0,0.35) 100%); }
+        .art-mark { position: relative; z-index: 1; font-family: 'Manrope'; font-weight: 800; color: rgba(255,255,255,0.92); font-size: 64px; letter-spacing: -3px; line-height: 0.9; text-align: center; mix-blend-mode: overlay; }
+        .art-mark span { display: block; font-size: 18px; letter-spacing: 6px; font-weight: 600; margin-top: 12px; opacity: 0.7; }
+
+        .meta { position: relative; z-index: 2; padding: 28px 24px 0; display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
+        .track-title { font-size: 22px; font-weight: 700; color: var(--ink); letter-spacing: -0.4px; line-height: 1.2; }
+        .track-artist { font-size: 14px; color: var(--ink-3); margin-top: 4px; font-weight: 500; }
+        .meta-actions { display: flex; align-items: center; gap: 16px; padding-top: 6px; }
+        .meta-icon { color: var(--ink-3); }
+        .meta-icon.heart { color: var(--green); }
+
+        .progress { padding: 18px 24px 0; position: relative; z-index: 2; }
+        .scrubber { height: 4px; background: rgba(255,255,255,0.18); border-radius: 2px; position: relative; }
+        .scrubber-fill { position: absolute; left: 0; top: 0; bottom: 0; width: 38%; background: var(--ink); border-radius: 2px; }
+        .scrubber-thumb { position: absolute; left: 38%; top: 50%; transform: translate(-50%, -50%); width: 12px; height: 12px; border-radius: 50%; background: var(--ink); }
+        .time-row { margin-top: 8px; display: flex; justify-content: space-between; font-size: 11px; color: var(--ink-3); font-weight: 500; font-variant-numeric: tabular-nums; }
+
+        .controls { padding: 22px 24px 0; position: relative; z-index: 2; display: grid; grid-template-columns: repeat(5, 1fr); align-items: center; justify-items: center; }
+        .ctrl { color: var(--ink); display: grid; place-items: center; }
+        .ctrl.shuffle { color: var(--green); }
+        .ctrl.play { width: 72px; height: 72px; border-radius: 50%; background: var(--ink); color: #000; }
+
+        .util-row { margin: 24px 24px 0; padding: 14px 16px; position: relative; z-index: 2; display: flex; justify-content: space-between; align-items: center; font-size: 12px; background: rgba(0,0,0,0.3); border-radius: 12px; }
+        .util-left { display: flex; align-items: center; gap: 10px; color: var(--ink-3); }
+        .util-left .device-name { color: var(--green); font-weight: 600; }
+
+        .lyrics { margin: 18px 20px 24px; position: relative; z-index: 2; padding: 20px; border-radius: 16px; background: linear-gradient(135deg, #1a4d2e 0%, #0e2a1a 100%); color: var(--ink); }
+        .lyrics-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+        .lyrics-label { font-size: 11px; text-transform: uppercase; letter-spacing: 1.6px; font-weight: 700; color: rgba(255,255,255,0.7); }
+        .lyrics-line { font-size: 22px; font-weight: 700; line-height: 1.25; letter-spacing: -0.5px; }
+        .lyrics-line + .lyrics-line { margin-top: 8px; opacity: 0.6; font-weight: 600; font-size: 18px; }
+        .lyrics-line + .lyrics-line + .lyrics-line { opacity: 0.35; }
+
+        .upnext-head { position: relative; z-index: 2; padding: 8px 24px 12px; display: flex; justify-content: space-between; align-items: center; }
+        .upnext-title { font-size: 11px; color: var(--ink-3); text-transform: uppercase; letter-spacing: 1.4px; font-weight: 700; }
+        .upnext-link { font-size: 12px; color: var(--ink-3); font-weight: 600; }
+        .queue { position: relative; z-index: 2; padding: 0 16px 110px; }
+        .queue-row { display: grid; grid-template-columns: 44px 1fr 24px; align-items: center; gap: 12px; padding: 8px; border-radius: 8px; }
+        .queue-art { width: 44px; height: 44px; border-radius: 4px; background: linear-gradient(135deg, #245a3c, #0d2a1c); }
+        .queue-art.b { background: linear-gradient(135deg, #4a3a1a, #1a1208); }
+        .queue-art.c { background: linear-gradient(135deg, #1a3a4a, #08161e); }
+        .queue-art.d { background: linear-gradient(135deg, #4a1a3a, #1e0814); }
+        .queue-text { min-width: 0; }
+        .queue-track { font-size: 14px; font-weight: 600; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .queue-artist { font-size: 12px; color: var(--ink-3); margin-top: 2px; }
+
+        .tabbar-wrap { position: absolute; left: 0; right: 0; bottom: 44px; display: flex; justify-content: center; z-index: 60; pointer-events: none; }
+        .tabbar { pointer-events: auto; display: flex; gap: 4px; padding: 8px; border-radius: 9999px; background: rgba(20, 20, 20, 0.55); backdrop-filter: saturate(180%) blur(24px); -webkit-backdrop-filter: saturate(180%) blur(24px); border: 1px solid rgba(255,255,255,0.08); box-shadow: 0 12px 32px rgba(0,0,0,0.4); }
+        .tab { width: 56px; height: 44px; border-radius: 9999px; display: grid; place-items: center; color: var(--ink-3); }
+        .tab.active { color: var(--ink); background: rgba(30,215,96,0.18); }
+        .tab.active.green { color: var(--green); }
+    </style>
+</head>
+<body>
+    <div class="device">
+        <div class="dynamic-island"></div>
+        <div class="status-bar">
+            <span class="status-bar-time">9:41</span>
+            <div class="status-bar-icons">
+                <svg width="16" height="12" viewBox="0 0 16 12" fill="currentColor"><rect x="0" y="3" width="3" height="9" rx="1"/><rect x="4.5" y="2" width="3" height="10" rx="1"/><rect x="9" y="0" width="3" height="12" rx="1"/><rect x="13" y="1" width="3" height="11" rx="1"/></svg>
+                <svg width="16" height="12" viewBox="0 0 16 12" fill="currentColor"><path d="M8 3C10.7 3 13.1 4.2 14.7 6.1L16 4.8C14 2.5 11.2 1 8 1S2 2.5 0 4.8L1.3 6.1C2.9 4.2 5.3 3 8 3Z"/><path d="M8 7C9.5 7 10.9 7.6 11.9 8.6L13.2 7.3C11.8 5.9 10 5 8 5S4.2 5.9 2.8 7.3L4.1 8.6C5.1 7.6 6.5 7 8 7Z"/><circle cx="8" cy="11" r="1.5"/></svg>
+                <svg width="25" height="12" viewBox="0 0 25 12" fill="currentColor"><rect x="0" y="1" width="21" height="10" rx="2" stroke="currentColor" stroke-width="1" fill="none"/><rect x="22" y="4" width="2" height="4" rx="1"/><rect x="2" y="3" width="17" height="6" rx="1"/></svg>
+            </div>
+        </div>
+
+        <main class="device-content">
+            <div class="ambient"></div>
+            <div class="top-bar">
+                <button class="icon-btn" aria-label="Back"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 6 9 12 15 18"/></svg></button>
+                <div class="top-meta">
+                    <div class="label">Playing from album</div>
+                    <div class="source">Verdant Hours</div>
+                </div>
+                <button class="icon-btn" aria-label="More"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg></button>
+            </div>
+
+            <div class="art-wrap">
+                <div class="art">
+                    <div class="art-mark">VH<span>VERDANT HOURS</span></div>
+                </div>
+            </div>
+
+            <div class="meta">
+                <div style="min-width:0; flex:1;">
+                    <div class="track-title">Slow Light Through Pines</div>
+                    <div class="track-artist">Mira Sole · Verdant Hours</div>
+                </div>
+                <div class="meta-actions">
+                    <span class="meta-icon heart" aria-label="Saved"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M12 21s-7-4.35-9.5-9C1 8.5 3 5 6.5 5c1.7 0 3.4.9 4.4 2.3L12 8.4l1.1-1.1c1-1.4 2.7-2.3 4.4-2.3C21 5 23 8.5 21.5 12 19 16.65 12 21 12 21z"/></svg></span>
+                    <span class="meta-icon" aria-label="Add"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span>
+                </div>
+            </div>
+
+            <div class="progress">
+                <div class="scrubber"><div class="scrubber-fill"></div><div class="scrubber-thumb"></div></div>
+                <div class="time-row"><span>1:32</span><span>−2:31</span></div>
+            </div>
+
+            <div class="controls">
+                <span class="ctrl shuffle" aria-label="Shuffle"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/><line x1="4" y1="4" x2="9" y2="9"/></svg></span>
+                <span class="ctrl" aria-label="Previous"><svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zM9 12l10-6v12L9 12z"/></svg></span>
+                <span class="ctrl play" aria-label="Pause"><svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg></span>
+                <span class="ctrl" aria-label="Next"><svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M16 6h2v12h-2zM5 6l10 6-10 6V6z"/></svg></span>
+                <span class="ctrl" aria-label="Repeat"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg></span>
+            </div>
+
+            <div class="util-row">
+                <div class="util-left">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+                    <span class="device-name">Living Room HomePod</span>
+                </div>
+                <span style="color: var(--ink-3); display: flex; gap: 18px; align-items: center;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12V8a8 8 0 0 1 16 0v4M2 16h4v6H2zM18 16h4v6h-4z"/></svg>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                </span>
+            </div>
+
+            <div class="lyrics">
+                <div class="lyrics-head">
+                    <span class="lyrics-label">Lyrics</span>
+                    <span class="lyrics-label" style="opacity: 0.6;">Sync</span>
+                </div>
+                <div class="lyrics-line">Slow light through pines, all afternoon</div>
+                <div class="lyrics-line">we waited on the shape of June</div>
+                <div class="lyrics-line">a kettle hum, a passing tune</div>
+            </div>
+
+            <div class="upnext-head">
+                <span class="upnext-title">Up next</span>
+                <span class="upnext-link">Queue ›</span>
+            </div>
+            <div class="queue">
+                <div class="queue-row">
+                    <div class="queue-art b"></div>
+                    <div class="queue-text">
+                        <div class="queue-track">Cedar, in the Distance</div>
+                        <div class="queue-artist">Mira Sole</div>
+                    </div>
+                    <span style="color: var(--ink-4);"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg></span>
+                </div>
+                <div class="queue-row">
+                    <div class="queue-art c"></div>
+                    <div class="queue-text">
+                        <div class="queue-track">Reservoir Holiday</div>
+                        <div class="queue-artist">Mira Sole, Junip</div>
+                    </div>
+                    <span style="color: var(--ink-4);"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg></span>
+                </div>
+                <div class="queue-row">
+                    <div class="queue-art d"></div>
+                    <div class="queue-text">
+                        <div class="queue-track">Soft Ledger</div>
+                        <div class="queue-artist">Mira Sole</div>
+                    </div>
+                    <span style="color: var(--ink-4);"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg></span>
+                </div>
+            </div>
+        </main>
+
+        <div class="tabbar-wrap">
+            <div class="tabbar">
+                <span class="tab" aria-label="Home"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l9-8 9 8v10a2 2 0 0 1-2 2h-4v-7h-6v7H5a2 2 0 0 1-2-2z"/></svg></span>
+                <span class="tab" aria-label="Search"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg></span>
+                <span class="tab active green" aria-label="Now Playing"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg></span>
+                <span class="tab" aria-label="Library"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 4h4v16H3zM10 4h4v16h-4zM18 4l4 16-2 .5-4-16z"/></svg></span>
+            </div>
+        </div>
+
+        <div class="home-indicator-area">
+            <div class="home-indicator"></div>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,11 @@
+{
+  "name": "mobile-design-kit-examples",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "capture": "node capture.mjs"
+  },
+  "devDependencies": {
+    "puppeteer": "^23.0.0"
+  }
+}

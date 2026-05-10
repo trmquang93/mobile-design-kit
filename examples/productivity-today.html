@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Today — Linear-inspired</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --canvas: #010102;
+            --surface-1: #0f1011;
+            --surface-2: #141516;
+            --surface-3: #18191a;
+            --hairline: #23252a;
+            --hairline-strong: #34343a;
+            --ink: #f7f8f8;
+            --ink-muted: #d0d6e0;
+            --ink-subtle: #8a8f98;
+            --ink-tertiary: #62666d;
+            --accent: #1194AA;          /* teal — replaces Linear lavender (no purple) */
+            --accent-soft: rgba(17,148,170,0.15);
+            --success: #27a644;
+            --warn: #f5a524;
+
+            --color-bg: var(--canvas);
+            --color-text: var(--ink);
+            --color-text-secondary: var(--ink-subtle);
+            --color-island: #000000;
+
+            --font: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            --mono: 'JetBrains Mono', ui-monospace, monospace;
+
+            --text-caption2: 11px;
+            --text-caption1: 12px;
+            --text-footnote: 13px;
+            --text-subheadline: 15px;
+            --text-callout: 16px;
+            --text-body: 17px;
+            --text-title3: 20px;
+            --text-title2: 22px;
+            --text-title1: 28px;
+            --text-largetitle: 34px;
+            --text-md: var(--text-body);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        html, body {
+            background: #1a1a1a;
+            font-family: var(--font);
+            font-size: var(--text-body);
+            line-height: 1.29;
+            letter-spacing: -0.022em;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            color: var(--color-text);
+            min-height: 100vh;
+        }
+        body { display: flex; justify-content: center; align-items: center; padding: 20px 0; }
+
+        .device {
+            position: relative; width: 430px; height: 932px;
+            min-width: 430px; min-height: 932px; flex-shrink: 0;
+            background: var(--color-bg); border-radius: 48px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+            overflow: hidden;
+        }
+        .dynamic-island { position: absolute; top: 11px; left: 50%; transform: translateX(-50%); width: 126px; height: 37px; background: var(--color-island); border-radius: 19px; z-index: 100; pointer-events: none; }
+        .status-bar { position: absolute; top: 0; left: 0; right: 0; height: 59px; display: flex; justify-content: space-between; align-items: center; padding: 14px 24px 8px; z-index: 50; pointer-events: none; color: var(--ink); }
+        .status-bar-time { font-size: var(--text-md); font-weight: 600; }
+        .status-bar-icons { display: flex; gap: 6px; align-items: center; }
+        .device-content { position: absolute; inset: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; padding-top: 59px; padding-bottom: 34px; }
+        .device-content::-webkit-scrollbar { display: none; } .device-content { scrollbar-width: none; }
+        .home-indicator-area { position: absolute; bottom: 0; left: 0; right: 0; height: 34px; display: flex; justify-content: center; align-items: flex-end; padding-bottom: 8px; pointer-events: none; z-index: 50; }
+        .home-indicator { width: 134px; height: 5px; background: var(--ink); border-radius: 3px; opacity: 0.6; }
+
+        /* === Screen === */
+        .header {
+            padding: 16px 20px 18px;
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .workspace {
+            display: flex; align-items: center; gap: 10px;
+        }
+        .workspace-mark {
+            width: 28px; height: 28px;
+            background: linear-gradient(135deg, #1194AA, #27a644 120%);
+            border-radius: 7px;
+            display: grid; place-items: center;
+            color: #fff; font-weight: 700; font-size: 13px;
+            letter-spacing: -0.5px;
+        }
+        .workspace-name { font-size: 14px; font-weight: 500; color: var(--ink-muted); }
+        .workspace-name .sep { color: var(--ink-tertiary); margin: 0 6px; }
+        .header-actions { display: flex; gap: 6px; }
+        .icon-btn {
+            width: 32px; height: 32px; border-radius: 8px;
+            background: transparent; color: var(--ink-subtle);
+            display: grid; place-items: center;
+            border: 1px solid transparent;
+        }
+        .icon-btn:hover { background: var(--surface-2); color: var(--ink); }
+
+        .title-block { padding: 12px 20px 24px; }
+        .title-eyebrow {
+            font-size: 12px; font-weight: 500;
+            color: var(--ink-subtle); letter-spacing: 0.4px;
+            text-transform: uppercase; margin-bottom: 8px;
+        }
+        .title {
+            font-size: 34px; font-weight: 600;
+            line-height: 1.05; letter-spacing: -1.2px;
+            color: var(--ink);
+        }
+        .title em { font-style: normal; color: var(--accent); }
+        .title-meta {
+            margin-top: 14px;
+            display: flex; align-items: center; gap: 12px;
+            font-size: 13px; color: var(--ink-subtle);
+        }
+        .meta-pill {
+            padding: 4px 10px; border-radius: 6px;
+            background: var(--surface-1);
+            border: 1px solid var(--hairline);
+            color: var(--ink-muted);
+            font-family: var(--mono); font-size: 12px;
+        }
+
+        /* Progress bar */
+        .progress-card {
+            margin: 0 20px 28px;
+            padding: 18px;
+            background: var(--surface-1);
+            border: 1px solid var(--hairline);
+            border-radius: 12px;
+        }
+        .progress-row { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 12px; }
+        .progress-label { font-size: 13px; color: var(--ink-subtle); font-weight: 500; }
+        .progress-count { font-family: var(--mono); font-size: 13px; color: var(--ink-muted); }
+        .progress-bar { height: 4px; background: var(--surface-3); border-radius: 2px; overflow: hidden; }
+        .progress-fill {
+            height: 100%; width: 62%;
+            background: linear-gradient(90deg, var(--accent), #27a644);
+            border-radius: 2px;
+        }
+        .progress-stats {
+            margin-top: 14px;
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;
+        }
+        .stat { padding-top: 10px; border-top: 1px solid var(--hairline); }
+        .stat-num { font-size: 22px; font-weight: 600; color: var(--ink); letter-spacing: -0.4px; }
+        .stat-num.accent { color: var(--accent); }
+        .stat-num.success { color: var(--success); }
+        .stat-label { font-size: 11px; color: var(--ink-subtle); margin-top: 2px; letter-spacing: 0.2px; }
+
+        /* Section header */
+        .section-head {
+            padding: 0 20px;
+            display: flex; align-items: center; justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        .section-title {
+            font-size: 13px; font-weight: 500; color: var(--ink-subtle);
+            letter-spacing: 0.4px; text-transform: uppercase;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .section-title .count {
+            font-family: var(--mono); color: var(--ink-tertiary);
+            font-size: 12px;
+        }
+        .section-action { font-size: 13px; color: var(--ink-subtle); }
+
+        /* Task list */
+        .task-list {
+            margin: 0 20px 24px;
+            background: var(--surface-1);
+            border: 1px solid var(--hairline);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        .task {
+            display: grid;
+            grid-template-columns: 22px 1fr auto;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--hairline);
+            cursor: pointer;
+        }
+        .task:last-child { border-bottom: none; }
+        .task:hover { background: var(--surface-2); }
+        .checkbox {
+            width: 16px; height: 16px;
+            border: 1.5px solid var(--hairline-strong);
+            border-radius: 4px;
+            display: grid; place-items: center;
+        }
+        .task.done .checkbox {
+            background: var(--accent);
+            border-color: var(--accent);
+        }
+        .task.done .checkbox svg { display: block; }
+        .checkbox svg { display: none; width: 10px; height: 10px; color: white; }
+        .task-body { min-width: 0; }
+        .task-title {
+            font-size: 15px; font-weight: 500; color: var(--ink);
+            letter-spacing: -0.1px;
+        }
+        .task.done .task-title { color: var(--ink-tertiary); text-decoration: line-through; }
+        .task-meta {
+            display: flex; align-items: center; gap: 8px;
+            margin-top: 4px;
+            font-size: 12px; color: var(--ink-subtle);
+        }
+        .task-meta .id {
+            font-family: var(--mono); font-size: 11px; color: var(--ink-tertiary);
+        }
+        .task-meta .dot { color: var(--ink-tertiary); }
+        .priority {
+            width: 18px; height: 18px;
+            display: grid; place-items: center;
+            color: var(--ink-tertiary);
+        }
+        .priority.high { color: #f5a524; }
+        .priority.urgent { color: #ef4444; }
+
+        .label-pill {
+            display: inline-flex; align-items: center; gap: 5px;
+            padding: 2px 7px; border-radius: 4px;
+            font-size: 11px; font-weight: 500;
+            background: var(--surface-3);
+            color: var(--ink-muted);
+            border: 1px solid var(--hairline);
+        }
+        .label-pill::before {
+            content: ''; width: 6px; height: 6px; border-radius: 50%;
+            background: var(--ink-subtle);
+        }
+        .label-pill.bug::before { background: #ef4444; }
+        .label-pill.feat::before { background: var(--accent); }
+        .label-pill.design::before { background: #f5a524; }
+
+        /* Activity */
+        .activity {
+            margin: 0 20px 80px;
+            padding: 16px;
+            background: var(--surface-1);
+            border: 1px solid var(--hairline);
+            border-radius: 12px;
+        }
+        .activity-row {
+            display: flex; gap: 12px; padding: 10px 0;
+            border-bottom: 1px solid var(--hairline);
+            font-size: 13px;
+        }
+        .activity-row:last-child { border-bottom: none; padding-bottom: 0; }
+        .activity-row:first-child { padding-top: 0; }
+        .activity-time { color: var(--ink-tertiary); font-family: var(--mono); font-size: 11px; min-width: 42px; padding-top: 1px; }
+        .activity-text { color: var(--ink-muted); flex: 1; line-height: 1.4; }
+        .activity-text b { color: var(--ink); font-weight: 500; }
+        .activity-text .tag {
+            font-family: var(--mono); font-size: 12px;
+            color: var(--accent);
+        }
+    </style>
+</head>
+<body>
+    <div class="device">
+        <div class="dynamic-island"></div>
+        <div class="status-bar">
+            <span class="status-bar-time">9:41</span>
+            <div class="status-bar-icons">
+                <svg width="16" height="12" viewBox="0 0 16 12" fill="currentColor"><rect x="0" y="3" width="3" height="9" rx="1"/><rect x="4.5" y="2" width="3" height="10" rx="1"/><rect x="9" y="0" width="3" height="12" rx="1"/><rect x="13" y="1" width="3" height="11" rx="1"/></svg>
+                <svg width="16" height="12" viewBox="0 0 16 12" fill="currentColor"><path d="M8 3C10.7 3 13.1 4.2 14.7 6.1L16 4.8C14 2.5 11.2 1 8 1S2 2.5 0 4.8L1.3 6.1C2.9 4.2 5.3 3 8 3Z"/><path d="M8 7C9.5 7 10.9 7.6 11.9 8.6L13.2 7.3C11.8 5.9 10 5 8 5S4.2 5.9 2.8 7.3L4.1 8.6C5.1 7.6 6.5 7 8 7Z"/><circle cx="8" cy="11" r="1.5"/></svg>
+                <svg width="25" height="12" viewBox="0 0 25 12" fill="currentColor"><rect x="0" y="1" width="21" height="10" rx="2" stroke="currentColor" stroke-width="1" fill="none"/><rect x="22" y="4" width="2" height="4" rx="1"/><rect x="2" y="3" width="17" height="6" rx="1"/></svg>
+            </div>
+        </div>
+
+        <main class="device-content">
+            <header class="header">
+                <div class="workspace">
+                    <div class="workspace-mark">A</div>
+                    <span class="workspace-name">Acme<span class="sep">/</span>Today</span>
+                </div>
+                <div class="header-actions">
+                    <button class="icon-btn" aria-label="Filter"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg></button>
+                    <button class="icon-btn" aria-label="New"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
+                </div>
+            </header>
+
+            <section class="title-block">
+                <div class="title-eyebrow">Friday · May 10</div>
+                <h1 class="title">Ship the<br>auth flow<em>.</em></h1>
+                <div class="title-meta">
+                    <span class="meta-pill">CYCLE 14</span>
+                    <span>4 days remaining</span>
+                </div>
+            </section>
+
+            <div class="progress-card">
+                <div class="progress-row">
+                    <span class="progress-label">Cycle progress</span>
+                    <span class="progress-count">23 / 37</span>
+                </div>
+                <div class="progress-bar"><div class="progress-fill"></div></div>
+                <div class="progress-stats">
+                    <div class="stat">
+                        <div class="stat-num success">23</div>
+                        <div class="stat-label">DONE</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-num accent">8</div>
+                        <div class="stat-label">IN PROGRESS</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-num">6</div>
+                        <div class="stat-label">BACKLOG</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section-head">
+                <div class="section-title">In Progress <span class="count">3</span></div>
+                <span class="section-action">View all</span>
+            </div>
+            <div class="task-list">
+                <div class="task">
+                    <div class="checkbox"></div>
+                    <div class="task-body">
+                        <div class="task-title">Wire OAuth callback to session token mint</div>
+                        <div class="task-meta">
+                            <span class="id">ENG-412</span>
+                            <span class="dot">·</span>
+                            <span class="label-pill feat">feature</span>
+                        </div>
+                    </div>
+                    <div class="priority urgent" aria-label="Urgent"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L1 21h22L12 2zm1 14h-2v2h2v-2zm0-6h-2v5h2v-5z"/></svg></div>
+                </div>
+                <div class="task">
+                    <div class="checkbox"></div>
+                    <div class="task-body">
+                        <div class="task-title">Replace email regex with proper RFC 5322 validator</div>
+                        <div class="task-meta">
+                            <span class="id">ENG-418</span>
+                            <span class="dot">·</span>
+                            <span class="label-pill bug">bug</span>
+                        </div>
+                    </div>
+                    <div class="priority high"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M6 15l6-6 6 6"/></svg></div>
+                </div>
+                <div class="task">
+                    <div class="checkbox"></div>
+                    <div class="task-body">
+                        <div class="task-title">Design — empty state for first-time signin</div>
+                        <div class="task-meta">
+                            <span class="id">DSN-091</span>
+                            <span class="dot">·</span>
+                            <span class="label-pill design">design</span>
+                        </div>
+                    </div>
+                    <div class="priority"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14"/></svg></div>
+                </div>
+            </div>
+
+            <div class="section-head">
+                <div class="section-title">Today <span class="count">5</span></div>
+                <span class="section-action">Sort</span>
+            </div>
+            <div class="task-list">
+                <div class="task done">
+                    <div class="checkbox"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+                    <div class="task-body">
+                        <div class="task-title">Audit production logs for stale tokens</div>
+                        <div class="task-meta"><span class="id">SEC-003</span></div>
+                    </div>
+                    <div class="priority"></div>
+                </div>
+                <div class="task done">
+                    <div class="checkbox"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+                    <div class="task-body">
+                        <div class="task-title">Standup notes → write-up doc</div>
+                        <div class="task-meta"><span class="id">DOC-220</span></div>
+                    </div>
+                    <div class="priority"></div>
+                </div>
+                <div class="task">
+                    <div class="checkbox"></div>
+                    <div class="task-body">
+                        <div class="task-title">Migrate auth tests to Vitest harness</div>
+                        <div class="task-meta">
+                            <span class="id">ENG-401</span>
+                            <span class="dot">·</span>
+                            <span class="label-pill">chore</span>
+                        </div>
+                    </div>
+                    <div class="priority high"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M6 15l6-6 6 6"/></svg></div>
+                </div>
+            </div>
+
+            <div class="section-head">
+                <div class="section-title">Activity</div>
+            </div>
+            <div class="activity">
+                <div class="activity-row">
+                    <span class="activity-time">09:24</span>
+                    <span class="activity-text"><b>You</b> closed <span class="tag">ENG-417</span> — JWT refresh race</span>
+                </div>
+                <div class="activity-row">
+                    <span class="activity-time">09:02</span>
+                    <span class="activity-text"><b>Mira</b> moved <span class="tag">ENG-419</span> to In Progress</span>
+                </div>
+                <div class="activity-row">
+                    <span class="activity-time">08:48</span>
+                    <span class="activity-text"><b>CI</b> passed on <span class="tag">main</span> — deploy queued</span>
+                </div>
+                <div class="activity-row">
+                    <span class="activity-time">08:31</span>
+                    <span class="activity-text"><b>Soren</b> reviewed <span class="tag">PR #1284</span></span>
+                </div>
+            </div>
+        </main>
+
+        <div class="home-indicator-area">
+            <div class="home-indicator"></div>
+        </div>
+    </div>
+</body>
+</html>
