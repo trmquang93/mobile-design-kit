@@ -37,12 +37,18 @@
     gap: var(--space-3);
 }
 
-/* Glass variant — translucent nav over content. The backdrop-filter blurs
-   whatever scrolls under the nav, INCLUDING behind the status bar. */
+/* Glass variant — translucent nav over content. The shared `.glass`
+   recipe in components/00-liquid-glass.md provides background, filter,
+   border, and dark/reduced-transparency fallbacks; this rule only
+   overrides the radius (a nav header isn't a capsule) and ensures the
+   backdrop fills behind the status bar.
+
+   Apply both classes in the markup: <header class="nav-header glass">. */
 .nav-header.glass {
-    background: rgba(255, 255, 255, 0.55);
-    backdrop-filter: saturate(180%) blur(20px);
-    -webkit-backdrop-filter: saturate(180%) blur(20px);
+    border-radius: 0;
+    box-shadow: none; /* nav header is full-bleed, not a floating capsule */
+    border-left: 0;
+    border-right: 0;
 }
 
 .nav-back {

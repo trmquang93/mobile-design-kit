@@ -303,14 +303,39 @@ def _classic(items, active, dark, light, accent, badges):
 
 
 def _glass_base_css(dark, light, accent):
+    # Refractive Liquid Glass — see components/00-liquid-glass.md.
+    # Requires the SVG #glass-distortion <defs> block (injected separately).
     return f"""
-        /* Liquid-glass tab bar */
+        /* Liquid-glass tab bar (refractive; falls back to flat blur). */
         .float-tab-glass {{
-            background: color-mix(in srgb, {light} 32%, transparent);
-            backdrop-filter: saturate(180%) blur(24px);
+            background:
+                linear-gradient(135deg,
+                    color-mix(in srgb, {light} 22%, transparent) 0%,
+                    color-mix(in srgb, {light} 6%, transparent) 28%,
+                    color-mix(in srgb, {light} 4%, transparent) 72%,
+                    color-mix(in srgb, {light} 28%, transparent) 100%);
+            backdrop-filter: url(#glass-distortion) saturate(140%);
             -webkit-backdrop-filter: saturate(180%) blur(24px);
-            border: 0.5px solid color-mix(in srgb, {light} 35%, transparent);
-            box-shadow: 0 12px 32px rgba(0,0,0,.18), 0 1px 0 rgba(255,255,255,.45) inset;
+            border: 1px solid color-mix(in srgb, {light} 40%, transparent);
+            box-shadow:
+                0 10px 28px rgba(0,0,0,.20),
+                0 2px 6px rgba(0,0,0,.10),
+                0 1px 0 rgba(255,255,255,.85) inset,
+                0 -1px 1px rgba(255,255,255,.30) inset;
+        }}
+        @supports not (backdrop-filter: url(#glass-distortion)) {{
+            .float-tab-glass {{
+                background: color-mix(in srgb, {light} 32%, transparent);
+                backdrop-filter: saturate(180%) blur(24px);
+                -webkit-backdrop-filter: saturate(180%) blur(24px);
+            }}
+        }}
+        @media (prefers-reduced-transparency: reduce) {{
+            .float-tab-glass {{
+                backdrop-filter: none;
+                -webkit-backdrop-filter: none;
+                background: color-mix(in srgb, {light} 92%, transparent);
+            }}
         }}
         .float-tab-item {{
             pointer-events: auto;
@@ -434,7 +459,33 @@ def build(style, items, active, dark, light, accent, badges):
 
 # ---------- injection ----------
 
-def inject(html: str, css_block: str, tabbar_html: str) -> str:
+GLASS_SVG_DEFS = (
+    '    <!-- Liquid Glass distortion filter (see components/00-liquid-glass.md) -->\n'
+    '    <svg width="0" height="0" style="position:absolute" aria-hidden="true">\n'
+    '      <filter id="glass-distortion" x="0%" y="0%" width="100%" height="100%">\n'
+    '        <feImage preserveAspectRatio="none" result="map"\n'
+    '          href=\'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" preserveAspectRatio="none"><defs>\n'
+    '            <linearGradient id="x" x1="0" y1="0.5" x2="1" y2="0.5">\n'
+    '                <stop offset="0" stop-color="rgb(255,0,0)"/>\n'
+    '                <stop offset="0.15" stop-color="rgb(128,0,0)"/>\n'
+    '                <stop offset="0.85" stop-color="rgb(128,0,0)"/>\n'
+    '                <stop offset="1" stop-color="rgb(255,0,0)"/>\n'
+    '            </linearGradient>\n'
+    '            <linearGradient id="y" x1="0.5" y1="0" x2="0.5" y2="1">\n'
+    '                <stop offset="0" stop-color="rgb(0,255,0)"/>\n'
+    '                <stop offset="0.15" stop-color="rgb(0,128,0)"/>\n'
+    '                <stop offset="0.85" stop-color="rgb(0,128,0)"/>\n'
+    '                <stop offset="1" stop-color="rgb(0,255,0)"/>\n'
+    '            </linearGradient>\n'
+    '        </defs><rect width="100" height="100" fill="url(%23x)"/><rect width="100" height="100" fill="url(%23y)" style="mix-blend-mode:screen"/></svg>\'/>\n'
+    '        <feGaussianBlur in="map" stdDeviation="2" result="smoothed"/>\n'
+    '        <feDisplacementMap in="SourceGraphic" in2="smoothed" scale="40" xChannelSelector="R" yChannelSelector="G"/>\n'
+    '      </filter>\n'
+    '    </svg>\n'
+)
+
+
+def inject(html: str, css_block: str, tabbar_html: str, *, needs_glass_defs: bool) -> str:
     if 'class="float-tab-bar"' in html or 'class="float-tab-bar ' in html:
         raise RuntimeError(
             "A floating tab bar is already present in this file. "
@@ -443,6 +494,17 @@ def inject(html: str, css_block: str, tabbar_html: str) -> str:
     if "</style>" not in html:
         raise RuntimeError("Could not find </style> in the file; not a scaffolded screen?")
     html = html.replace("</style>", css_block + "    </style>", 1)
+
+    if needs_glass_defs and 'id="glass-distortion"' not in html:
+        if "<body" in html:
+            html = re.sub(
+                r"(<body[^>]*>\n?)",
+                lambda m: m.group(1) + GLASS_SVG_DEFS,
+                html,
+                count=1,
+            )
+        else:
+            raise RuntimeError("Could not find <body> to inject the glass-distortion <defs>.")
 
     home_marker = re.search(r"[ \t]*<!--\s*Home Indicator\s*-->", html)
     if home_marker:
@@ -538,7 +600,10 @@ def main() -> int:
 
     html = target.read_text(encoding="utf-8")
     try:
-        new_html = inject(html, css_block, tabbar_html)
+        new_html = inject(
+            html, css_block, tabbar_html,
+            needs_glass_defs=args.style in ("glass", "glass-split"),
+        )
     except RuntimeError as exc:
         print(f"Error: {exc}", file=sys.stderr)
         return 1

@@ -126,31 +126,14 @@ Use semantic tokens that adapt to light/dark mode (`--color-text-primary`, `--co
 
 ### Liquid Glass (iOS 26)
 
-Liquid Glass is Apple's translucent material for the navigation layer floating above content. In HTML mockups, simulate it with `backdrop-filter`:
-
-```css
-.glass {
-    background: rgba(255, 255, 255, 0.55);
-    backdrop-filter: saturate(180%) blur(20px);
-    -webkit-backdrop-filter: saturate(180%) blur(20px);
-    border: 0.5px solid rgba(255, 255, 255, 0.18);
-    border-radius: 9999px; /* capsule */
-}
-
-@media (prefers-color-scheme: dark) {
-    .glass {
-        background: rgba(28, 28, 30, 0.55);
-        border-color: rgba(255, 255, 255, 0.08);
-    }
-}
-```
+Liquid Glass is Apple's translucent material for the navigation layer floating above content. **The full recipe — SVG `<defs>`, CSS, dark mode, reduced-transparency fallback — lives in [components/00-liquid-glass.md](components/00-liquid-glass.md). Always load that file before emitting any `.glass` element.** Every glass surface in this skill uses that recipe; do not invent ad-hoc `backdrop-filter` formulas.
 
 Glass rules:
 - Apply glass to **navigation layer only** (tab bars, nav headers, floating toolbars, FABs). Never on content cards, list rows, or media tiles.
 - Glass elements **float above** content; never stack glass on glass.
 - Capsule (`border-radius: 9999px`) or fully rounded (16--24px) shapes only.
 - Tint subtly using accent color at low opacity (e.g. `rgba(0, 122, 255, 0.18)`). Never purple.
-- For media-rich backgrounds, drop the white fill and rely on `backdrop-filter` alone (the "clear" variant).
+- For media-rich backgrounds, drop the white fill and rely on the filter alone (the "clear" variant).
 
 ### Motion
 

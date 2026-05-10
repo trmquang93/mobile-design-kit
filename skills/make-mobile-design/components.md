@@ -8,6 +8,7 @@ Load the relevant file(s) before generating a screen. **Always load base tokens 
 
 | File | Sections | When to load |
 |------|----------|-------------|
+| [00-liquid-glass.md](components/00-liquid-glass.md) | 0. Liquid Glass — Shared Recipe | Whenever a nav header / tab bar / toolbar / FAB / sheet uses the `.glass` class |
 | [01-base-tokens.md](components/01-base-tokens.md) | 1. Base Layout & Design Tokens | **Always** -- every screen needs this |
 | [02-status-bar.md](components/02-status-bar.md) | 2. Status Bar (iOS) | **Always** -- every screen needs this |
 | [03-navigation.md](components/03-navigation.md) | 3. Navigation Header, 4. Bottom Tab Bar | When screen has nav bar or tab bar |

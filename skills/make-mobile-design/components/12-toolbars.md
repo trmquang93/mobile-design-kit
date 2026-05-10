@@ -12,7 +12,7 @@ Two layouts share the same Liquid Glass recipe used by `scripts/add_tabbar.py` (
 ```html
 <!-- HTML — split layout: primary pill + trailing destructive circle. -->
 <div class="toolbar toolbar--bottom" role="toolbar" aria-label="Message actions">
-    <div class="toolbar__group">
+    <div class="toolbar__group glass">
         <button class="toolbar__btn" aria-label="Archive">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8v13H3V8"/><path d="M1 3h22v5H1z"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
         </button>
@@ -23,7 +23,7 @@ Two layouts share the same Liquid Glass recipe used by `scripts/add_tabbar.py` (
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
         </button>
     </div>
-    <div class="toolbar__group toolbar__group--trailing">
+    <div class="toolbar__group toolbar__group--trailing glass">
         <button class="toolbar__btn toolbar__btn--destructive" aria-label="Delete">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
         </button>
@@ -57,18 +57,16 @@ For a single-pill layout, drop `.toolbar__group--trailing` and put every button 
 .toolbar--bottom > * { pointer-events: auto; }
 
 .toolbar__group {
-    /* Liquid Glass — same recipe as add_tabbar.py glass styles. */
+    /* Liquid Glass — apply the shared `.glass` class alongside this one
+       in markup: <div class="toolbar__group glass">. The recipe lives
+       in components/00-liquid-glass.md (always load it).
+       This rule only sets toolbar-specific layout. */
     display: inline-flex;
     align-items: center;
     gap: var(--space-1);
     height: 60px;
     padding: 0 6px;
     border-radius: 30px;
-
-    background: color-mix(in srgb, #FFFFFF 32%, transparent);
-    backdrop-filter: saturate(180%) blur(24px);
-    -webkit-backdrop-filter: saturate(180%) blur(24px);
-    border: 0.5px solid color-mix(in srgb, #FFFFFF 35%, transparent);
     box-shadow:
         0 12px 32px rgba(0, 0, 0, 0.18),
         0 1px 0 rgba(255, 255, 255, 0.45) inset;
@@ -121,53 +119,23 @@ For a single-pill layout, drop `.toolbar__group--trailing` and put every button 
     }
 }
 
-/* Mount + unmount animations — entry/exit only run when motion is allowed. */
-@media (prefers-reduced-motion: no-preference) {
-    .toolbar--bottom {
-        animation: toolbar-bar-in 280ms cubic-bezier(0.2, 0.9, 0.3, 1) both;
-    }
-    .toolbar--bottom .toolbar__btn {
-        animation: toolbar-btn-in 220ms ease-out both;
-    }
-    /* Stagger inside each group; the trailing circle restarts the count. */
-    .toolbar__group > .toolbar__btn:nth-child(1) { animation-delay:  20ms; }
-    .toolbar__group > .toolbar__btn:nth-child(2) { animation-delay:  50ms; }
-    .toolbar__group > .toolbar__btn:nth-child(3) { animation-delay:  80ms; }
-    .toolbar__group > .toolbar__btn:nth-child(4) { animation-delay: 110ms; }
-    .toolbar__group > .toolbar__btn:nth-child(5) { animation-delay: 140ms; }
-    .toolbar__group > .toolbar__btn:nth-child(6) { animation-delay: 170ms; }
+/* IMPORTANT: do NOT add CSS animations on `.toolbar--bottom` or any
+   ancestor of a `.glass` element. ANY CSS animation (even opacity-only)
+   promotes the element to a separate compositor layer, and
+   `backdrop-filter: url(#glass-distortion)` with `feDisplacementMap`
+   silently fails to identity output across compositor layers. The pill
+   still renders with its sheen + rim highlight, but the backdrop passes
+   through unwarped. See components/00-liquid-glass.md for details.
 
-    .toolbar--leaving                { animation: toolbar-bar-out 220ms cubic-bezier(0.4, 0, 1, 1) both; }
-    .toolbar--leaving .toolbar__btn  { animation: toolbar-btn-out 180ms ease-in both; }
-}
-
-@keyframes toolbar-bar-in {
-    from { transform: translateY(120%); opacity: 0; }
-    to   { transform: translateY(0);    opacity: 1; }
-}
-@keyframes toolbar-btn-in {
-    from { transform: scale(0.9); opacity: 0; }
-    to   { transform: scale(1);   opacity: 1; }
-}
-@keyframes toolbar-bar-out {
-    from { transform: translateY(0);    opacity: 1; }
-    to   { transform: translateY(120%); opacity: 0; }
-}
-@keyframes toolbar-btn-out {
-    from { transform: scale(1);   opacity: 1; }
-    to   { transform: scale(0.9); opacity: 0; }
-}
+   If you need an entrance animation, animate a non-glass WRAPPER around
+   the toolbar (the wrapper takes the layer promotion; the glass pills
+   inside stay in the parent compositor and warp correctly). */
 ```
 
-To dismiss the toolbar with the exit animation, add the `.toolbar--leaving` class and remove the element after the bar animation ends:
-
-```js
-const bar = document.querySelector('.toolbar--bottom');
-bar.classList.add('toolbar--leaving');
-bar.addEventListener('animationend', (e) => {
-    if (e.animationName === 'toolbar-bar-out') bar.remove();
-}, { once: true });
-```
+To dismiss the toolbar, fade a non-glass wrapper (e.g. via JS toggling
+`opacity` and `display: none` after a CSS `transition`) — never
+animate `.toolbar--bottom` itself or you'll re-trigger the displacement
+identity-fallback bug.
 
 ---
 
@@ -178,7 +146,7 @@ Variant of section 27. Single glass capsule, taller, each button stacks an icon 
 ```html
 <!-- HTML — single pill, no trailing split. -->
 <div class="toolbar toolbar--bottom toolbar--labels" role="toolbar" aria-label="Photo edit actions">
-    <div class="toolbar__group toolbar__group--full">
+    <div class="toolbar__group toolbar__group--full glass">
         <button class="toolbar__btn">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
             <span class="toolbar__label">Markup</span>
@@ -235,7 +203,7 @@ Variant of section 27. Adds an ellipsis (`•••`) button on the right that t
 ```html
 <!-- HTML — popover sits inside the menu host group so it inherits pointer-events isolation. -->
 <div class="toolbar toolbar--bottom" role="toolbar" aria-label="Document actions">
-    <div class="toolbar__group toolbar__menu-host" data-menu-open="false">
+    <div class="toolbar__group toolbar__menu-host glass" data-menu-open="false">
         <button class="toolbar__btn" aria-label="Share">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
         </button>
@@ -369,5 +337,5 @@ These class names map 1:1 onto the iOS-native and Expo Router APIs the user is l
 - Bottom variants pad with `env(safe-area-inset-bottom, 0px)`.
 - Buttons hit 44×44 minimum even when the glyph is 22px.
 - Tint uses `--color-primary` (blue/green/orange/teal/indigo only — NEVER purple).
-- Reuse the glass recipe from `add_tabbar.py` (`color-mix #FFFFFF 32%`, `blur 24px`, soft outer shadow + inset highlight). Do not invent a different glass formula.
+- Reuse the shared `.glass` recipe from [components/00-liquid-glass.md](00-liquid-glass.md) (SVG-displacement refractive glass with flat-blur fallback). Do not invent a different glass formula.
 - All entry/exit animations live inside `@media (prefers-reduced-motion: no-preference)`; the bar must render in its final state when motion is reduced.

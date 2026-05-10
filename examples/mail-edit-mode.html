@@ -231,25 +231,36 @@
             padding-bottom: env(safe-area-inset-bottom, 0px);
             display: flex; align-items: center; justify-content: space-between;
             gap: var(--space-3);
-            z-index: 50;
             pointer-events: none;
         }
         .toolbar--bottom > * { pointer-events: auto; }
 
         .toolbar__group {
-            display: inline-flex; align-items: center;
+            display: flex; align-items: center;
             gap: var(--space-1);
             height: 60px;
             padding: 0 6px;
             border-radius: 30px;
-            background: color-mix(in srgb, #FFFFFF 78%, transparent);
-            backdrop-filter: saturate(180%) blur(24px);
-            -webkit-backdrop-filter: saturate(180%) blur(24px);
-            border: 0.5px solid color-mix(in srgb, #000000 6%, transparent);
+            background:
+                linear-gradient(135deg,
+                    color-mix(in srgb, #FFFFFF 22%, transparent) 0%,
+                    color-mix(in srgb, #FFFFFF 6%, transparent) 28%,
+                    color-mix(in srgb, #FFFFFF 4%, transparent) 72%,
+                    color-mix(in srgb, #FFFFFF 28%, transparent) 100%);
+            backdrop-filter: url(#glass-distortion);
+            border: 1px solid color-mix(in srgb, #FFFFFF 40%, transparent);
             box-shadow:
-                0 14px 36px rgba(0, 0, 0, 0.18),
-                0 2px 6px rgba(0, 0, 0, 0.06),
-                0 1px 0 rgba(255, 255, 255, 0.6) inset;
+                0 14px 36px rgba(0, 0, 0, 0.22),
+                0 2px 6px rgba(0, 0, 0, 0.10),
+                0 1px 0 rgba(255, 255, 255, 0.85) inset,
+                0 -1px 1px rgba(255, 255, 255, 0.30) inset;
+        }
+        @supports not (backdrop-filter: url(#glass-distortion)) {
+            .toolbar__group {
+                background: color-mix(in srgb, #FFFFFF 78%, transparent);
+                backdrop-filter: saturate(180%) blur(24px);
+                -webkit-backdrop-filter: saturate(180%) blur(24px);
+            }
         }
         .toolbar__group--trailing {
             width: 60px; padding: 0;
@@ -294,39 +305,40 @@
             pointer-events: none;
         }
 
-        @media (prefers-reduced-motion: no-preference) {
-            .toolbar--bottom {
-                animation: toolbar-bar-in 320ms cubic-bezier(0.2, 0.9, 0.3, 1) both;
-            }
-            .toolbar--bottom .toolbar__btn {
-                animation: toolbar-btn-in 220ms ease-out both;
-            }
-            .toolbar__group > .toolbar__btn:nth-child(1) { animation-delay:  40ms; }
-            .toolbar__group > .toolbar__btn:nth-child(2) { animation-delay:  80ms; }
-            .toolbar__group > .toolbar__btn:nth-child(3) { animation-delay: 120ms; }
+        /* IMPORTANT: NO `animation:` on `.toolbar--bottom` or its descendants.
+           Any CSS animation (even opacity-only) promotes the element to a
+           separate compositor layer. `backdrop-filter: url(#...)` with
+           `feDisplacementMap` cannot sample the backdrop image across
+           compositor layers — it silently falls back to identity output
+           (the pill renders, but the backdrop passes through unwarped).
+           If you need an entrance animation, animate a non-glass WRAPPER
+           around the toolbar so the wrapper takes the layer promotion. */
 
-            .toolbar--leaving               { animation: toolbar-bar-out 240ms cubic-bezier(0.4, 0, 1, 1) both; }
-            .toolbar--leaving .toolbar__btn { animation: toolbar-btn-out 180ms ease-in both; }
-        }
-        @keyframes toolbar-bar-in {
-            from { transform: translateY(120%); opacity: 0; }
-            to   { transform: translateY(0);    opacity: 1; }
-        }
-        @keyframes toolbar-btn-in {
-            from { transform: scale(0.9); opacity: 0; }
-            to   { transform: scale(1);   opacity: 1; }
-        }
-        @keyframes toolbar-bar-out {
-            from { transform: translateY(0);    opacity: 1; }
-            to   { transform: translateY(120%); opacity: 0; }
-        }
-        @keyframes toolbar-btn-out {
-            from { transform: scale(1);   opacity: 1; }
-            to   { transform: scale(0.9); opacity: 0; }
-        }
     </style>
 </head>
 <body>
+    <!-- Liquid Glass distortion filter (see components/00-liquid-glass.md) -->
+    <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+      <filter id="glass-distortion" x="0%" y="0%" width="100%" height="100%">
+        <feImage preserveAspectRatio="none" result="map"
+          href='data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" preserveAspectRatio="none"><defs>
+            <linearGradient id="x" x1="0" y1="0.5" x2="1" y2="0.5">
+                <stop offset="0" stop-color="rgb(255,0,0)"/>
+                <stop offset="0.15" stop-color="rgb(128,0,0)"/>
+                <stop offset="0.85" stop-color="rgb(128,0,0)"/>
+                <stop offset="1" stop-color="rgb(255,0,0)"/>
+            </linearGradient>
+            <linearGradient id="y" x1="0.5" y1="0" x2="0.5" y2="1">
+                <stop offset="0" stop-color="rgb(0,255,0)"/>
+                <stop offset="0.15" stop-color="rgb(0,128,0)"/>
+                <stop offset="0.85" stop-color="rgb(0,128,0)"/>
+                <stop offset="1" stop-color="rgb(0,255,0)"/>
+            </linearGradient>
+        </defs><rect width="100" height="100" fill="url(%23x)"/><rect width="100" height="100" fill="url(%23y)" style="mix-blend-mode:screen"/></svg>'/>
+        <feGaussianBlur in="map" stdDeviation="2" result="smoothed"/>
+        <feDisplacementMap in="SourceGraphic" in2="smoothed" scale="40" xChannelSelector="R" yChannelSelector="G"/>
+      </filter>
+    </svg>
     <div class="device">
         <div class="dynamic-island"></div>
 
@@ -447,7 +459,64 @@
                         <div class="row__preview">Here's what changed in your workspace this week. Most edits happened in "Roadmap 2026" and "Hiring loop"…</div>
                     </div>
                 </li>
+
+                <li class="row" data-selected="false">
+                    <span class="check" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    </span>
+                    <div class="row__body">
+                        <div class="row__top">
+                            <div class="row__sender row__sender--unread">Figma</div>
+                            <div class="row__time">Fri <svg class="row__chevron" width="7" height="11" viewBox="0 0 7 11" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="1 1 6 5.5 1 10"/></svg></div>
+                        </div>
+                        <div class="row__subject">Mai shared "Mobile Design Kit v3" with you</div>
+                        <div class="row__preview">Mai left 6 comments on the latest cover artboards. Open the file to review and reply…</div>
+                    </div>
+                </li>
+
+                <li class="row" data-selected="false">
+                    <span class="check" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    </span>
+                    <div class="row__body">
+                        <div class="row__top">
+                            <div class="row__sender">Vercel</div>
+                            <div class="row__time">Thu <svg class="row__chevron" width="7" height="11" viewBox="0 0 7 11" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="1 1 6 5.5 1 10"/></svg></div>
+                        </div>
+                        <div class="row__subject"><span class="row__flag" aria-hidden="true"></span>Deployment ready: marketing-site@4f8a2c</div>
+                        <div class="row__preview">Production deployment finished in 38s. Preview the live URL or roll back from the dashboard…</div>
+                    </div>
+                </li>
+
+                <li class="row" data-selected="false">
+                    <span class="check" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    </span>
+                    <div class="row__body">
+                        <div class="row__top">
+                            <div class="row__sender">Calendly</div>
+                            <div class="row__time">Wed <svg class="row__chevron" width="7" height="11" viewBox="0 0 7 11" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="1 1 6 5.5 1 10"/></svg></div>
+                        </div>
+                        <div class="row__subject">New booking — Design review with Priya</div>
+                        <div class="row__preview">Priya Shah booked a 30-minute slot on Friday at 2:00 PM. The Zoom link has been added to your calendar…</div>
+                    </div>
+                </li>
+
+                <li class="row" data-selected="false">
+                    <span class="check" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    </span>
+                    <div class="row__body">
+                        <div class="row__top">
+                            <div class="row__sender row__sender--unread">Spotify</div>
+                            <div class="row__time">Tue <svg class="row__chevron" width="7" height="11" viewBox="0 0 7 11" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="1 1 6 5.5 1 10"/></svg></div>
+                        </div>
+                        <div class="row__subject">Your 2026 Wrapped is almost here</div>
+                        <div class="row__preview">We've been crunching the numbers. Get ready to see your top artists, songs, and listening habits of the year…</div>
+                    </div>
+                </li>
             </ul>
+
         </main>
 
         <!-- Bottom toolbar (component 27 — Liquid Glass split: primary pill + destructive circle) -->
