@@ -435,8 +435,8 @@ TEMPLATE = Template(r"""<!DOCTYPE html>
         }
 
         if (tag === 'svg') {
-          var color = parseRgb(cs.color);
-          var colorVal = color ? colorAttr(color) : 'black';
+          var fillRgb = parseRgb(cs.fill) || parseRgb(cs.color);
+          var colorVal = fillRgb ? colorAttr(fillRgb) : 'black';
           // Strip any existing width/height (may come from CSS, not attrs) and
           // inject the computed render size, otherwise a nested <svg> without
           // width/height defaults to 100% of the root viewport in Figma.
@@ -447,8 +447,10 @@ TEMPLATE = Template(r"""<!DOCTYPE html>
           var markup = node.outerHTML.replace(
             /^<svg\b([^>]*)>/i,
             function (_m, attrs) {
-              var stripped = attrs.replace(/\s(?:width|height)\s*=\s*"[^"]*"/gi, '');
-              return '<svg width="' + num(w) + '" height="' + num(h) + '"' + stripped + '>';
+              var stripped = attrs
+                .replace(/\s(?:width|height)\s*=\s*"[^"]*"/gi, '')
+                .replace(/\sfill\s*=\s*"[^"]*"/gi, '');
+              return '<svg width="' + num(w) + '" height="' + num(h) + '" fill="' + colorVal + '"' + stripped + '>';
             }
           ).replace(/currentColor/g, colorVal);
           if (op < 1) out.push('<g opacity="' + op + '">');
