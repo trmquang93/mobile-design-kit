@@ -35,6 +35,8 @@ Open the HTML files directly to feel the scroll/hover behavior. Each example als
 
 Every example screen ships with a one-click **Copy to Figma** button in the corner. Click it, switch to Figma, and paste — the screen lands as fully editable vector layers.
 
+![Copy to Figma button in the corner of an example screen](docs/copy-to-figma.png)
+
 - No screenshots, no re-tracing, no exported asset bundles.
 - Designers pick up a coded mockup and keep iterating in their native tool.
 - Engineers hand off work without annotating static images.
