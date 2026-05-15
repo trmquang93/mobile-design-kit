@@ -1,18 +1,27 @@
 # mobile-design-kit
 
-A Claude Code plugin for designing mobile app screens end-to-end:
+A Claude Code plugin for designing mobile app screens end-to-end on **iOS (Apple HIG)** and **Android (Material 3)**:
 
-1. **make-mobile-design** — generate production-quality HTML mockups using a reusable component library and design tokens.
+1. **make-mobile-design** — generate production-quality HTML mockups using a reusable component library and platform-aware design tokens.
 2. **ios-icon-gen** — export icons (SF Symbols or 275k+ Iconify icons) as Xcode `.imageset` PNG bundles.
 
-## Showcase
+## Showcase — iOS
 
-Five screens, five brand aesthetics — generated with `/make-mobile-design`, each grounded in a real brand entry from [VoltAgent/awesome-design-md](https://github.com/VoltAgent/awesome-design-md).
+Five iOS screens, five brand aesthetics — generated with `/make-mobile-design`, each grounded in a real brand entry from [VoltAgent/awesome-design-md](https://github.com/VoltAgent/awesome-design-md).
 
 | Productivity | Music | Food | Wellness | Mail (Edit Mode) |
 | :---: | :---: | :---: | :---: | :---: |
 | [<img src="examples/screenshots/productivity-today.png" width="160" alt="Today task list">](examples/productivity-today.html) | [<img src="examples/screenshots/music-now-playing.png" width="160" alt="Now Playing">](examples/music-now-playing.html) | [<img src="examples/screenshots/food-recipe.png" width="160" alt="Recipe detail">](examples/food-recipe.html) | [<img src="examples/screenshots/wellness-breathe.png" width="160" alt="Breathe timer">](examples/wellness-breathe.html) | [<img src="examples/screenshots/mail-edit-mode.png" width="160" alt="Mail multi-select with bottom toolbar">](examples/mail-edit-mode.html) |
 | Linear-style cycle view, near-black canvas, mono accents | Spotify-style now-playing with glass tab bar | Editorial recipe detail with serif display & cream surface | Soft-warm breathing timer with serif italic display | iOS Mail multi-select with the new contextual bottom toolbar (component 27) |
+
+## Showcase — Android (Material 3)
+
+Native Material 3 / MD3 Expressive — Pixel 8 frame (412×915), Roboto Flex, MD3 type scale, surface roles, and the canonical bottom-nav pill indicator.
+
+| Home (Photos) | Settings |
+| :---: | :---: |
+| [<img src="examples/screenshots/android-home.png" width="160" alt="Android home with medium top app bar and bottom nav">](examples/android-home.html) | [<img src="examples/screenshots/android-settings.png" width="160" alt="Android settings with center-aligned top app bar and MD3 switches">](examples/android-settings.html) |
+| Medium top app bar, filter chips, elevated/filled cards, extended FAB, MD3 bottom navigation with pill indicator | Center-aligned top app bar with back, profile card, grouped lists with MD3 switches |
 
 Open the HTML files directly to feel the scroll/hover behavior. Each example also includes a floating **Copy to Figma** action — see below.
 
@@ -39,10 +48,21 @@ mobile-design-kit/
 │   └── plugin.json
 └── skills/
     ├── make-mobile-design/
-    │   ├── SKILL.md
-    │   ├── components.md
+    │   ├── SKILL.md             ← orchestrator + platform detection
+    │   ├── ios.md               ← iOS-specific design rules (Apple HIG)
+    │   ├── android.md           ← Android-specific design rules (Material 3)
+    │   ├── components.md        ← index across both platforms
     │   ├── iconify-icons.md
-    │   └── components/
+    │   ├── components/
+    │   │   ├── ios/             ← iOS component docs (00..12)
+    │   │   ├── android/         ← Android component docs (01..09)
+    │   │   └── 11-icons.md      ← cross-platform icon reference
+    │   └── scripts/
+    │       ├── create_ios_template.py
+    │       ├── add_ios_tabbar.py
+    │       ├── create_android_template.py
+    │       ├── add_android_navbar.py
+    │       └── fetch_design_style.py
     └── ios-icon-gen/
         ├── SKILL.md
         └── scripts/
@@ -60,7 +80,7 @@ mobile-design-kit/
 ## Skills
 
 ### `/make-mobile-design [screen-name or description]`
-Builds a single self-contained HTML mockup (max-width 430px) with status bar, nav, and components from the bundled library. Auto-creates a `design-system.html` for the project on first run.
+Builds a single self-contained HTML mockup for **iOS** (430×932 iPhone, Apple HIG) or **Android** (412×915 Pixel 8, Material 3). The skill detects the platform from your wording (mentions of "Android", "Material", "Pixel" → Android; otherwise defaults to iOS) and confirms before scaffolding when the signal is weak. Each platform pulls from its own component library and design-rules file (`ios.md` / `android.md`). Auto-creates a `design-system.html` for the project on first run.
 
 ### `/ios-icon-gen [search <query> | <icon-source> <asset-name> [options]]`
 Search and export icons:

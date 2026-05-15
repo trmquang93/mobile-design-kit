@@ -25,7 +25,7 @@ Six styles, all driven by --style:
                   trailing action like search).
 
 Usage:
-    python3 add_tabbar.py <screen.html> \\
+    python3 add_ios_tabbar.py <screen.html> \\
         --style pill-outline \\
         --item home:Home \\
         --item search:Search \\
@@ -162,7 +162,7 @@ def _icon_circle(items, active, dark, light, accent, badges):
             f'            </button>'
         )
     html = (
-        '\n        <!-- Tab Bar (icon-circle, added by add_tabbar.py) -->\n'
+        '\n        <!-- Tab Bar (icon-circle, added by add_ios_tabbar.py) -->\n'
         '        <nav class="float-tab-bar" aria-label="Primary">\n'
         + "\n".join(rows) + "\n        </nav>\n"
     )
@@ -224,7 +224,7 @@ def _pill(items, active, dark, light, accent, *, filled: bool):
             f'            </button>'
         )
     html = (
-        f'\n        <!-- Tab Bar ({variant}, added by add_tabbar.py) -->\n'
+        f'\n        <!-- Tab Bar ({variant}, added by add_ios_tabbar.py) -->\n'
         '        <nav class="float-tab-bar" aria-label="Primary">\n'
         + "\n".join(rows) + "\n        </nav>\n"
     )
@@ -295,7 +295,7 @@ def _classic(items, active, dark, light, accent, badges):
             f'            </button>'
         )
     html = (
-        '\n        <!-- Tab Bar (classic, added by add_tabbar.py) -->\n'
+        '\n        <!-- Tab Bar (classic, added by add_ios_tabbar.py) -->\n'
         '        <nav class="float-tab-bar" aria-label="Primary">\n'
         + "\n".join(rows) + "\n        </nav>\n"
     )
@@ -303,7 +303,7 @@ def _classic(items, active, dark, light, accent, badges):
 
 
 def _glass_base_css(dark, light, accent):
-    # Refractive Liquid Glass — see components/00-liquid-glass.md.
+    # Refractive Liquid Glass — see components/ios/00-liquid-glass.md.
     # Requires the SVG #glass-distortion <defs> block (injected separately).
     return f"""
         /* Liquid-glass tab bar (refractive; falls back to flat blur). */
@@ -382,7 +382,7 @@ def _glass(items, active, dark, light, accent, badges):
             f'            </button>'
         )
     html = (
-        '\n        <!-- Tab Bar (glass, added by add_tabbar.py) -->\n'
+        '\n        <!-- Tab Bar (glass, added by add_ios_tabbar.py) -->\n'
         '        <nav class="float-tab-bar float-tab-glass" aria-label="Primary">\n'
         + "\n".join(rows) + "\n        </nav>\n"
     )
@@ -428,7 +428,7 @@ def _glass_split(items, active, dark, light, accent, badges):
         )
     trailing_active = " active" if active == trailing_idx else ""
     html = (
-        '\n        <!-- Tab Bar (glass-split, added by add_tabbar.py) -->\n'
+        '\n        <!-- Tab Bar (glass-split, added by add_ios_tabbar.py) -->\n'
         '        <nav class="float-tab-bar float-tab-glass" aria-label="Primary">\n'
         + "\n".join(rows) + "\n        </nav>\n"
         '        <div class="float-tab-trailing float-tab-glass">\n'
@@ -460,7 +460,7 @@ def build(style, items, active, dark, light, accent, badges):
 # ---------- injection ----------
 
 GLASS_SVG_DEFS = (
-    '    <!-- Liquid Glass distortion filter (see components/00-liquid-glass.md) -->\n'
+    '    <!-- Liquid Glass distortion filter (see components/ios/00-liquid-glass.md) -->\n'
     '    <svg width="0" height="0" style="position:absolute" aria-hidden="true">\n'
     '      <filter id="glass-distortion" x="0%" y="0%" width="100%" height="100%">\n'
     '        <feImage preserveAspectRatio="none" result="map"\n'
@@ -515,7 +515,7 @@ def inject(html: str, css_block: str, tabbar_html: str, *, needs_glass_defs: boo
     if device_close == -1:
         raise RuntimeError(
             "Could not find an injection point for the tab bar. "
-            "Re-scaffold the screen with create_device_template.py."
+            "Re-scaffold the screen with create_ios_template.py."
         )
     return html[:device_close] + tabbar_html + html[device_close:]
 

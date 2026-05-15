@@ -2,7 +2,7 @@
 
 Always include at the top of every screen.
 
-**Rule:** The status bar is provided by the device-frame scaffold (`scripts/create_device_template.py`) and is pinned with `position:absolute; top:0; z-index:50`. Do not redefine these properties, do not rewrite the status bar HTML/CSS by hand, and never place the status bar inside a scrolling container (e.g. `.device-content`, body-level scroll, or any nested overflow region). The status bar must never scroll with content.
+**Rule:** The status bar is provided by the device-frame scaffold (`scripts/create_ios_template.py`) and is pinned with `position:absolute; top:0; z-index:50`. Do not redefine these properties, do not rewrite the status bar HTML/CSS by hand, and never place the status bar inside a scrolling container (e.g. `.device-content`, body-level scroll, or any nested overflow region). The status bar must never scroll with content.
 
 ### Status-bar safe area (59px)
 
@@ -29,7 +29,7 @@ Never set `padding-top: 59px` back on `.device-content` — it breaks the top-ed
 ```
 
 ```css
-/* CSS — canonical pinned form (provided by create_device_template.py) */
+/* CSS — canonical pinned form (provided by create_ios_template.py) */
 .status-bar {
     position: absolute;
     top: 0;

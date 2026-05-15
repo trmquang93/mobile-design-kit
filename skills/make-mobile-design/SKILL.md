@@ -13,10 +13,14 @@ Generate production-quality, mobile-first HTML mockups for app screens. Maintain
 Components are split into smaller files under [components/](components/). The index at [components.md](components.md) lists all files and when to load each one.
 
 **IMPORTANT:** Before generating any screen:
-1. **Always** read [components/01-base-tokens.md](components/01-base-tokens.md) and [components/02-status-bar.md](components/02-status-bar.md)
-2. Read additional component files based on what the screen needs (nav bar, cards, buttons, etc.)
-3. Do NOT load all files at once -- only load what the screen requires
-4. **If no `design-system.html` exists in the working directory, you MUST run the brand-suggestion flow in Step 1 below BEFORE asking the user any aesthetic questions.** Do not invent your own aesthetic options (refined minimal / editorial dark / etc.) — the suggestions must come from `VoltAgent/awesome-design-md` via the `fetch_design_style.py` script.
+1. **Determine the target platform first** (see "Step 0 — Platform Detection" below). Default to iOS when no signal is present.
+2. **Always** load the platform-mandatory pair:
+   - **iOS**: [components/ios/01-base-tokens.md](components/ios/01-base-tokens.md) and [components/ios/02-status-bar.md](components/ios/02-status-bar.md)
+   - **Android**: [components/android/01-base-tokens.md](components/android/01-base-tokens.md) and [components/android/02-status-bar.md](components/android/02-status-bar.md)
+3. Load the platform design-rules file: [ios.md](ios.md) for iOS, [android.md](android.md) for Android. These hold platform-specific compliance rules (typography, density, color, motion, forbidden patterns, checklist).
+4. Read additional component files based on what the screen needs (nav bar, cards, buttons, etc.)
+5. Do NOT load all files at once -- only load what the screen requires
+6. **If no `design-system.html` exists in the working directory, you MUST run the brand-suggestion flow in Step 1 below BEFORE asking the user any aesthetic questions.** Do not invent your own aesthetic options (refined minimal / editorial dark / etc.) — the suggestions must come from `VoltAgent/awesome-design-md` via the `fetch_design_style.py` script.
 
 You MUST use components exactly as defined to ensure visual consistency. Do not reinvent components that already exist in the library.
 
@@ -53,128 +57,48 @@ Vary between generations: light vs dark, serif vs grotesque vs mono display, den
 
 ### Reconciliation with Platform Rules
 
-When the target is iOS, the iOS Design Rules below **constrain** the aesthetic levers:
-- The system font stack stays mandatory; aesthetic differentiation comes from weight, scale, color, and layout instead of webfont swaps.
-- The no-purple rule is absolute -- pick a different bold accent.
+When the target is iOS, the rules in [ios.md](ios.md) **constrain** the aesthetic levers:
+- The system font stack (`-apple-system`, SF Pro) stays mandatory; aesthetic differentiation comes from weight, scale, color, and layout instead of webfont swaps.
+- The no-purple rule is absolute — pick a different bold accent.
 - Glass goes on the navigation layer only; for content drama use texture, gradient, or photography.
 
-For Android or platform-agnostic mockups, the levers above are unconstrained -- push them harder. Implementation complexity should match the aesthetic vision: maximalism needs elaborate code; minimalism needs precision.
+When the target is Android, the rules in [android.md](android.md) constrain differently:
+- Roboto Flex (or another Google Fonts pairing) replaces the iOS system stack. Webfonts are fine.
+- MD3 corner shapes, tonal elevation, and 48dp touch targets are mandatory.
+- No frosted-glass surfaces — MD3 uses surface-tint overlays, not Apple-style backdrop blur.
+
+Within those constraints, push the aesthetic levers above as hard as the brand allows. Implementation complexity should match the aesthetic vision: maximalism needs elaborate code; minimalism needs precision.
+
+## Platform Detection
+
+This skill targets two platforms: **iOS** (Apple HIG, iPhone) and **Android** (Material 3, Pixel). Each has its own scaffold, components, and rules. Pick one per screen — never mix.
+
+### Detection rules
+
+1. **Explicit iOS signals** in the request → target = iOS. Keywords: "iOS", "iPhone", "Apple", "HIG", "Liquid Glass", "Dynamic Island", "SF Pro", "SwiftUI", "UIKit".
+2. **Explicit Android signals** → target = Android. Keywords: "Android", "Pixel", "Material", "Material 3", "MD3", "Material You", "Google", "Roboto", "Jetpack Compose".
+3. **Both signals or neither** → default to **iOS** silently. Existing callers without a platform mention continue to get the iOS behavior.
+4. **Android inferred with weak signal** (one keyword, ambiguous context) → confirm once with `AskUserQuestion` ("Targeting Android (Material 3) — confirm?") before scaffolding. Strong signal (≥2 keywords or explicit "Android") can skip the confirmation but must state "Targeting Android (Material 3)" in the first user-facing line so the user can interrupt.
+5. **User asks for "both platforms"** → ask the user to pick one platform per file; never produce a hybrid mockup.
+
+After detection, set the platform target for the rest of the workflow:
+
+- **iOS** → load `ios.md`, scaffold with `create_ios_template.py`, add tab bars with `add_ios_tabbar.py`, components live in `components/ios/`.
+- **Android** → load `android.md`, scaffold with `create_android_template.py`, add bottom nav with `add_android_navbar.py`, components live in `components/android/`.
+
+Platform rules live in dedicated files (`ios.md`, `android.md`). Load the one matching the chosen target — they hold typography, color, density, motion, forbidden patterns, and compliance checklists for that platform.
 
 ## iOS Design Rules
 
-When the target platform is iOS (or unspecified, since this skill is mobile-first), apply Apple Human Interface Guidelines. These rules override stylistic preferences -- treat them as non-negotiable for iOS mockups.
+iOS-specific design rules (Apple HIG, type ramp, Liquid Glass, compliance checklist) live in [ios.md](ios.md). **Load that file when target = iOS** before generating the screen.
 
-### Core Principles (Apple HIG)
+## Android Design Rules
 
-1. **Clarity**: Every element is easily understood. Minimalist layout, straightforward navigation.
-2. **Deference**: UI minimizes distractions. Content takes center stage, chrome recedes.
-3. **Depth**: Visual layers communicate hierarchy through translucency, blur, and motion.
-4. **Consistency**: Familiar patterns -- don't reinvent native controls.
+Android-specific design rules (Material 3, Roboto Flex, MD3 type scale, color roles, motion, compliance checklist) live in [android.md](android.md). **Load that file when target = Android** before generating the screen.
 
-### Typography
+---
 
-Default to the San Francisco family on iOS mockups:
-- Use `font-family: -apple-system, "SF Pro Text", "SF Pro Display", system-ui, sans-serif;`
-- Body and labels at 13--19px use SF Pro Text proportions; titles at 20px+ use SF Pro Display proportions (the system font handles this automatically via `-apple-system`).
-- Avoid custom webfonts unless brand-critical. If a custom font is required, pair it with `-apple-system` as fallback.
-- Respect Dynamic Type spirit: do not lock font sizes in absolute `px` for body text where `rem`/`em` can scale.
-
-#### iOS HIG Type Ramp (use these tokens, not web-style sizes)
-
-**Body is 17px on iOS.** Web defaults of 14--15px will make the screen feel like a webpage. Use the tokens from `01-base-tokens.md`:
-
-| Token | Size | Use |
-|---|---|---|
-| `--text-largetitle` | 34px | Large title at top of scroll (primary screens) |
-| `--text-title1` | 28px | Title 1 |
-| `--text-title2` | 22px | Title 2 (sheet headers) |
-| `--text-title3` | 20px | Title 3 (card titles) |
-| `--text-body` | **17px** | Body, list rows, button labels — **default** |
-| `--text-callout` | 16px | Callout |
-| `--text-subheadline` | 15px | Subheadline |
-| `--text-footnote` | 13px | Footnote, list meta, grouped-list section headers |
-| `--text-caption1` | 12px | Caption |
-| `--text-caption2` | 11px | Tab bar labels, fine print |
-
-Anything below 13px is for legal copy, captions, or tab-bar labels only. Never set body or list-row text below 15px.
-
-### iOS Density & Layout
-
-iOS screens favour **content-first hierarchy and whitespace**. The most common failure mode is treating the device frame like a webpage and packing it with sections, rows, and CTAs.
-
-- **One screen, one job.** Aim for **3–5 distinct sections** above the fold. If a screen has more, split it.
-- **Default content insets:** `16px` horizontal, `24–32px` between sections.
-- **Large-title nav pattern** for primary tabs/screens: a 34pt title sits at the top of the scroll region (not pinned), with a single search bar or short subtitle underneath.
-- **Lists are grouped or inset-grouped:** wrap row groups in one rounded card with 16px outer margin and dividers between rows. Do not put a card around every individual row.
-- **Whitespace is a feature, not a gap to fill.** Do **not** add filler rows just so the content scrolls.
-- **Buttons:** primary action is a 50px-tall pill or 44px filled rect; label at 17pt semibold.
-- **Touch targets:** minimum 44×44px.
-
-### Color Palette
-
-**CRITICAL: Never use purple as a primary, accent, or gradient color. No purple gradients. No purple tints on glass.**
-
-Preferred accent colors:
-- **Blue** -- trust, productivity, communication (default iOS accent)
-- **Green** -- health, success, nature
-- **Orange** -- energy, creativity, warmth
-- **Red** -- alerts, importance (use sparingly)
-- **Teal / Cyan** -- modern, fresh, technical
-- **Indigo** -- depth without purple (use carefully, never drift toward violet)
-
-Use semantic tokens that adapt to light/dark mode (`--color-text-primary`, `--color-bg-secondary`, etc. from `01-base-tokens.md`). Avoid hardcoded greys.
-
-### Liquid Glass (iOS 26)
-
-Liquid Glass is Apple's translucent material for the navigation layer floating above content. **The full recipe — SVG `<defs>`, CSS, dark mode, reduced-transparency fallback — lives in [components/00-liquid-glass.md](components/00-liquid-glass.md). Always load that file before emitting any `.glass` element.** Every glass surface in this skill uses that recipe; do not invent ad-hoc `backdrop-filter` formulas.
-
-Glass rules:
-- Apply glass to **navigation layer only** (tab bars, nav headers, floating toolbars, FABs). Never on content cards, list rows, or media tiles.
-- Glass elements **float above** content; never stack glass on glass.
-- Capsule (`border-radius: 9999px`) or fully rounded (16--24px) shapes only.
-- Tint subtly using accent color at low opacity (e.g. `rgba(0, 122, 255, 0.18)`). Never purple.
-- For media-rich backgrounds, drop the white fill and rely on the filter alone (the "clear" variant).
-
-### Motion
-
-- Spring-feel transitions: 0.3--0.45s with `cubic-bezier(0.34, 1.56, 0.64, 1)` for bouncy, or `cubic-bezier(0.25, 0.1, 0.25, 1)` for smooth.
-- Micro-interactions (hover, tap, toggle) under 0.2s.
-- Respect reduced motion: wrap non-essential animations in `@media (prefers-reduced-motion: no-preference)`.
-
-### Forbidden Patterns
-
-NEVER produce iOS mockups with:
-- Purple as primary, accent, gradient, or glass tint.
-- Custom navigation bars that replace the native large-title pattern when a native pattern fits.
-- Skeuomorphic textures, heavy drop shadows, or beveled edges.
-- Cluttered layouts that violate content-first hierarchy.
-- Glass effects on content surfaces (lists, cards, media tiles, modals body).
-- Animations longer than 0.5s for micro-interactions.
-- Touch targets smaller than 44x44px.
-
-### Accessibility
-
-- Body text contrast ratio >= 4.5:1; large text >= 3:1.
-- Every interactive element gets a visible focus / pressed state.
-- Use `aria-label` on icon-only buttons.
-- Honor `prefers-color-scheme` and `prefers-reduced-motion`.
-
-### Compliance Check
-
-Before delivering an iOS mockup, verify:
-- [ ] No purple anywhere (text, accent, gradient, glass tint, illustration).
-- [ ] System font stack used for typography (no Inter / Roboto / Google Fonts on iOS).
-- [ ] Body, list rows, and button labels render at 17px (`--text-body`); section headers at 13px (`--text-footnote`); tab bar labels at 11px (`--text-caption2`).
-- [ ] Screen has 3–5 sections max with generous whitespace; no filler rows added just to enable scrolling.
-- [ ] Glass only on nav layer, not on content.
-- [ ] All touch targets >= 44x44px.
-- [ ] Light/dark mode tokens, not hardcoded colors.
-- [ ] Animations respect `prefers-reduced-motion`.
-- [ ] Screen was generated by running `create_device_template.py`; content lives inside `.device-content`; status bar is pinned and does not scroll with content.
-- [ ] Any floating overlay over `.device-content` (custom tab bar, FAB, banner) uses `pointer-events: none` on the wrapper with `pointer-events: auto` on interactive children; the screen scrolls anywhere inside the device frame, including over the overlay.
-- [ ] `.device-content { padding-top: 0 }` (scaffold default — never overridden to 59px). The first child of `.device-content` owns the 59px status-bar safe area via its own `padding-top: calc(59px + …)`. Verified by scrolling — top nav (if any) stays pinned at y=0 and its background fills behind the status bar, OR for transparent/full-bleed first child, scrolled content reaches the top edge.
-
-For Android mockups or platform-agnostic prototypes, these rules are advisory rather than mandatory -- but the no-purple guideline still applies unless the user explicitly requests purple.
+The remainder of this file describes the platform-agnostic workflow (aesthetic thinking, brand suggestion, scaffolding, component-usage rules). Apply it on top of whichever platform rules file you loaded.
 
 ## Workflow
 
@@ -211,26 +135,48 @@ If the user provides a screenshot, analyze it and reproduce the layout faithfull
 
 ### Step 3: Scaffold the Device Frame (REQUIRED)
 
-**You MUST run `create_device_template.py` to scaffold every new screen file.** Do not write a screen HTML file by hand. The scaffold provides the pinned status bar, Dynamic Island, home indicator, and `.device-content` scroll region — all of which must remain unchanged.
+**You MUST run the platform's scaffold script to create every new screen file.** Do not write a screen HTML file by hand. The scaffold provides the pinned status bar, top chrome (Dynamic Island for iOS, hole-punch for Android), bottom indicator, and `.device-content` scroll region — all of which must remain unchanged.
+
+#### iOS — `create_ios_template.py`
 
 ```bash
-python3 "${CLAUDE_PLUGIN_ROOT}/skills/make-mobile-design/scripts/create_device_template.py" my-screen.html --title "My Screen"
+python3 "${CLAUDE_PLUGIN_ROOT}/skills/make-mobile-design/scripts/create_ios_template.py" my-screen.html --title "My Screen"
 ```
 
 This produces a self-contained HTML file with:
 - Centered Dynamic Island pill at the top
-- Status bar (9:41, signal/wifi/battery icons) — pinned via `position:absolute; top:0; z-index:50`
+- Status bar (9:41, signal/wifi/battery icons, 59px) — pinned via `position:absolute; top:0; z-index:50`
 - Empty `<main class="device-content">` slot for your screen content (the scroll region)
 - Home indicator bar at the bottom
+- iPhone 14 Pro frame: 430×932
 
-After scaffolding, your job is to fill `.device-content` with components from [components.md](components.md).
-
-#### Adding a Floating Tab Bar (REQUIRED when the screen has a tab bar)
-
-**You MUST use `add_tabbar.py` to add a tab bar — never hand-write the markup.** The script injects the chosen style above the home indicator and adds the matching CSS to the existing `<style>` block.
+#### Android — `create_android_template.py`
 
 ```bash
-python3 "${CLAUDE_PLUGIN_ROOT}/skills/make-mobile-design/scripts/add_tabbar.py" my-screen.html \
+python3 "${CLAUDE_PLUGIN_ROOT}/skills/make-mobile-design/scripts/create_android_template.py" my-screen.html --title "My Screen"
+```
+
+This produces a Pixel 8 frame:
+- Top hole-punch camera (14×14, centered)
+- Status bar (9:41, signal/wifi/battery icons, 24px) — pinned via `position:absolute; top:0; z-index:50`
+- Roboto Flex loaded via Google Fonts
+- Full MD3 token set inlined (`--md-sys-color-*`, `--md-sys-typescale-*`, `--md-sys-shape-corner-*`, `--md-sys-elevation-*`, `--md-sys-motion-*`) with a dark-mode override under `prefers-color-scheme: dark`
+- Empty `<main class="device-content">` slot for screen content
+- Gesture-navigation pill at the bottom
+- Pixel 8 frame: 412×915
+
+After scaffolding, your job is to fill `.device-content` with components from [components.md](components.md) — iOS components for iOS screens, Android components for Android screens. **Never mix.**
+
+#### Adding a Floating Tab Bar / Bottom Navigation (REQUIRED when the screen has one)
+
+Use the platform-appropriate script — never hand-write the markup. The scripts inject the chosen style above the bottom indicator and add the matching CSS to the existing `<style>` block.
+
+##### iOS — `add_ios_tabbar.py`
+
+**You MUST use `add_ios_tabbar.py` to add a tab bar — never hand-write the markup.** The script injects the chosen style above the home indicator and adds the matching CSS to the existing `<style>` block.
+
+```bash
+python3 "${CLAUDE_PLUGIN_ROOT}/skills/make-mobile-design/scripts/add_ios_tabbar.py" my-screen.html \
     --style pill-filled \
     --item home:Home \
     --item search:Search \
@@ -260,21 +206,44 @@ python3 "${CLAUDE_PLUGIN_ROOT}/skills/make-mobile-design/scripts/add_tabbar.py" 
 - Recommended item count is 3–5; the script warns outside that range.
 - All styles float above content (z-index 50), so you do **not** need to add bottom padding to `.device-content`.
 
-Do NOT also include the older `.tab-bar` component from `03-navigation.md` on the same screen — pick one tab bar style. The floating tab bar from `add_tabbar.py` is the default for this skill.
+Do NOT also include the older `.tab-bar` component from `03-navigation.md` on the same screen — pick one tab bar style. The floating tab bar from `add_ios_tabbar.py` is the default for this skill.
+
+##### Android — `add_android_navbar.py`
+
+**You MUST use `add_android_navbar.py` to add a Material 3 bottom navigation bar.** The script injects the bottom nav above the gesture-nav pill with the canonical MD3 pill-shaped active indicator.
+
+```bash
+python3 "${CLAUDE_PLUGIN_ROOT}/skills/make-mobile-design/scripts/add_android_navbar.py" my-screen.html \
+    --item home:Home \
+    --item search:Search \
+    --item bookmark:Saved \
+    --item user:Profile \
+    --active 0 \
+    --badge 2:3
+```
+
+Arguments:
+
+- `--item <icon>:<title>` — repeat for each destination. Icon is a built-in alias (`home`, `search`, `mail`, `user`, `settings`, `heart`, `bell`, `bookmark`, `calendar`, `chat`, …) or any Iconify name (`mdi:home`, `material-symbols:search`, …). The script biases toward `material-symbols` for the default aliases — most native Android.
+- `--active IDX` — 0-based index of the active destination.
+- `--badge IDX:COUNT` — notification badge on item IDX. Repeatable.
+- `--style standard|elevated` — `elevated` adds a level-2 shadow (default: `standard`).
+- 3–5 destinations recommended; the script warns outside that range.
+- Wrapper has `pointer-events: none`; buttons have `pointer-events: auto` so scroll passes through inert footprint.
 
 **Prohibitions (non-negotiable):**
 - Do NOT place the status bar (or home indicator) inside `.device-content` or in any element that scrolls.
 - Do NOT replace the `.device` / `.device-content` structure with a body-level scroll layout (e.g. `body { min-height:100vh; }` as the scroll container, status bar in normal flow).
 - Do NOT rewrite the status bar CSS; the scaffold's `position:absolute; top:0; z-index:50` is the canonical form. Do not change it to `static`, `relative`, `sticky`, or `fixed`.
 - Do NOT redesign the device chrome — leave the island, status bar, and home indicator markup and styles as-is.
-- Do NOT add a custom floating overlay (tab bar, FAB, banner, sheet handle) over `.device-content` without `pointer-events: none` on the overlay wrapper and `pointer-events: auto` on its interactive children. Overlays that are *siblings* of `.device-content` swallow scroll/touch on their footprint and the screen feels unscrollable. The `add_tabbar.py` output already does this — match the pattern for any hand-written overlay.
+- Do NOT add a custom floating overlay (tab bar, FAB, banner, sheet handle) over `.device-content` without `pointer-events: none` on the overlay wrapper and `pointer-events: auto` on its interactive children. Overlays that are *siblings* of `.device-content` swallow scroll/touch on their footprint and the screen feels unscrollable. The `add_ios_tabbar.py` output already does this — match the pattern for any hand-written overlay.
 - Do NOT change `.device-content` to `display: flex; flex-direction: column`. With a fixed-height container and `overflow-y: auto`, flex shrinks every child below its natural size to fit the viewport, so `scrollHeight` collapses to `clientHeight` and the screen stops scrolling entirely. Keep `.device-content` as block layout (the scaffold default).
 - Top navigation bars (`.nav-header` from section 3a, or any custom top bar — back button + title + actions) MUST stay pinned under the status bar while content scrolls. Use `position: sticky; top: 0; z-index: 10` on the nav element, which lives as the first child inside `.device-content`. Do NOT leave a top nav in normal flow — it will scroll off with the content, which is wrong mobile behavior. **Exception:** large-title headers (`.page-header`, section 3b) are intentionally part of the scroll region per HIG and must NOT be made sticky.
-- **The 59px status-bar safe area belongs on the FIRST CHILD of `.device-content`, never on `.device-content` itself.** The scaffold sets `.device-content { padding-top: 0 }` so navigation bars and hero media can render their background behind the status bar to the top edge of the screen — correct iOS behavior. The first child must absorb the 59px via its own `padding-top`: a `.nav-header` uses `padding-top: calc(59px + var(--space-2))` (background fills behind status bar); a `.page-header` or first content section adds 59px to its top padding; a full-bleed hero/photo bleeds behind the status bar with no padding. Do NOT add `padding-top: 59px` to `.device-content`, do NOT use `margin-top: -59px` on the nav (breaks sticky pinning), and do NOT use half-opacity tints or background-matching tricks. See `components/02-status-bar.md` "Status-bar safe area" and `components/03-navigation.md` §3a / §3a-i.
+- **The 59px status-bar safe area belongs on the FIRST CHILD of `.device-content`, never on `.device-content` itself.** The scaffold sets `.device-content { padding-top: 0 }` so navigation bars and hero media can render their background behind the status bar to the top edge of the screen — correct iOS behavior. The first child must absorb the 59px via its own `padding-top`: a `.nav-header` uses `padding-top: calc(59px + var(--space-2))` (background fills behind status bar); a `.page-header` or first content section adds 59px to its top padding; a full-bleed hero/photo bleeds behind the status bar with no padding. Do NOT add `padding-top: 59px` to `.device-content`, do NOT use `margin-top: -59px` on the nav (breaks sticky pinning), and do NOT use half-opacity tints or background-matching tricks. See `components/ios/02-status-bar.md` "Status-bar safe area" and `components/ios/03-navigation.md` §3a / §3a-i.
 
 ### Step 4: Generate the HTML Mockup
 
-For iOS-targeted screens, re-read the **iOS Design Rules** section above and apply every item in the Compliance Check before writing the file.
+Re-read the platform rules file ([ios.md](ios.md) or [android.md](android.md)) for the chosen target and apply every item in its Compliance Check before writing the file.
 
 Create a single self-contained HTML file following these rules:
 
