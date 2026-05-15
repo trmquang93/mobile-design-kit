@@ -6,5 +6,6 @@
     "name": "quang",
     "email": "trmquang3103@gmail.com"
   },
-  "keywords": ["mobile", "design", "ios", "android", "material-3", "mockup", "icons", "iconify", "sf-symbols", "html", "xcode"]
+  "keywords": ["mobile", "design", "ios", "android", "material-3", "mockup", "icons", "iconify", "sf-symbols", "html", "xcode"],
+  "skills": ["./skills/make-mobile-design", "./skills/ios-icon-gen"]
 }

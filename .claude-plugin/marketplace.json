@@ -16,6 +16,7 @@
       "version": "0.3.0",
       "category": "design",
       "keywords": ["mobile", "design", "ios", "android", "material-3", "mockup", "icons", "iconify", "sf-symbols", "html", "xcode"],
+      "skills": ["./skills/make-mobile-design", "./skills/ios-icon-gen"],
       "strict": false
     }
   ]

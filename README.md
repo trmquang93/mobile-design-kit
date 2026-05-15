@@ -100,10 +100,30 @@ mobile-design-kit/
 
 ## Install from GitHub
 
+### Claude Code (plugin marketplace)
+
 ```
 /plugin marketplace add trmquang93/mobile-design-kit
 /plugin install mobile-design-kit@mobile-design-kit-marketplace
 ```
+
+### Any agent via [`vercel-labs/skills`](https://github.com/vercel-labs/skills)
+
+Install one or both skills into any supported coding agent (Claude Code, Cursor, Codex, OpenCode, Gemini CLI, Copilot, and 50+ more):
+
+```bash
+# List the skills in this repo
+npx skills add trmquang93/mobile-design-kit --list
+
+# Install both skills, prompting which agents to target
+npx skills add trmquang93/mobile-design-kit --skill '*'
+
+# Or install a single skill to a specific agent
+npx skills add trmquang93/mobile-design-kit -s make-mobile-design -a claude-code
+npx skills add trmquang93/mobile-design-kit -s ios-icon-gen     -a cursor
+```
+
+Skills land in the agent's standard skill directory (e.g. `.claude/skills/`, `.cursor/skills/`, `.agents/skills/`). The bundled scripts under each skill's `scripts/` directory are shipped alongside `SKILL.md` so the workflows work identically across agents.
 
 ## Skills
 
