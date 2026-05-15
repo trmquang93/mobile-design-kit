@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Linear Settings</title>
+    <title>Superhuman Inbox</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wght@8..144,300..900&family=Roboto+Mono:wght@400;500&family=Inter:wght@400;500;600;700&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wght@8..144,300..900&family=Roboto+Mono:wght@400;500&family=Fraunces:opsz,wght@9..144,400;500;600&family=Inter:wght@400;500;600;700&display=swap">
     <style>
         :root {
             /* Material 3 — baseline LIGHT scheme.
@@ -291,6 +291,84 @@
             -webkit-backdrop-filter: blur(20px) saturate(160%);
         }
         .figma-export-toast[hidden] { display: none; }
+    
+        /* Material 3 bottom navigation bar (added by add_android_navbar.py) */
+        .bottom-nav {
+            position: absolute;
+            bottom: 0;
+            left: 0; right: 0;
+            height: 104px;
+            display: flex;
+            justify-content: space-around;
+            align-items: flex-start;
+            padding: 12px 8px 40px;
+            background: var(--md-sys-color-surface-container);
+            z-index: 40;
+            pointer-events: none;
+        }
+        .bottom-nav__item {
+            pointer-events: auto;
+            flex: 1;
+            max-width: 80px;
+            min-height: 48px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            border: none;
+            background: transparent;
+            color: var(--md-sys-color-on-surface-variant);
+            cursor: pointer;
+            padding: 0;
+            position: relative;
+        }
+        .bottom-nav__indicator {
+            width: 64px;
+            height: 32px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: var(--md-sys-shape-corner-full);
+            transition: background-color 200ms var(--md-sys-motion-easing-emphasized),
+                        color 200ms var(--md-sys-motion-easing-emphasized);
+            position: relative;
+        }
+        .bottom-nav__indicator .bottom-nav__icon {
+            display: block;
+            width: 24px; height: 24px;
+            background-color: currentColor;
+            -webkit-mask: var(--icon) no-repeat center / contain;
+            mask: var(--icon) no-repeat center / contain;
+        }
+        .bottom-nav__item.is-active .bottom-nav__indicator {
+            background: var(--md-sys-color-secondary-container);
+            color: var(--md-sys-color-on-secondary-container);
+        }
+        .bottom-nav__item.is-active { color: var(--md-sys-color-on-surface); }
+        .bottom-nav__label {
+            font-size: var(--md-sys-typescale-label-medium);
+            font-weight: 500;
+            line-height: 1.33;
+            letter-spacing: 0.5px;
+        }
+        .bottom-nav__item.is-active .bottom-nav__label { font-weight: 700; }
+        .bottom-nav__badge {
+            position: absolute;
+            top: -2px;
+            right: 12px;
+            min-width: 16px;
+            height: 16px;
+            padding: 0 4px;
+            border-radius: 8px;
+            background: var(--md-sys-color-error);
+            color: var(--md-sys-color-on-error);
+            font-size: 10px;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid var(--md-sys-color-surface-container);
+        }
     </style>
 </head>
 <body>
@@ -314,273 +392,316 @@
         <!-- Screen content goes here -->
         <main class="device-content">
             <style>
-                /* Linear-inspired brand override (near-black canvas + lavender accent) */
+                /* Superhuman-inspired brand override (warm off-white + deep indigo) */
                 :root {
-                    --md-sys-color-primary:                #5e6ad2;
+                    --md-sys-color-primary:                #1b1938;
                     --md-sys-color-on-primary:             #ffffff;
-                    --md-sys-color-secondary:              #828fff;
-                    --md-sys-color-on-secondary:           #1a1d3a;
-                    --md-sys-color-secondary-container:    #2a2f5c;
-                    --md-sys-color-on-secondary-container: #dbdfff;
-                    --md-sys-color-background:             #010102;
-                    --md-sys-color-on-background:          #f7f8f8;
-                    --md-sys-color-surface:                #010102;
-                    --md-sys-color-on-surface:             #f7f8f8;
-                    --md-sys-color-surface-variant:        #0f1011;
-                    --md-sys-color-on-surface-variant:     #8a8f98;
-                    --md-sys-color-outline:                #23252a;
-                    --md-sys-color-outline-variant:        #18191a;
-                    --md-sys-color-surface-container-lowest:  #010102;
-                    --md-sys-color-surface-container-low:      #0a0b0c;
-                    --md-sys-color-surface-container:          #0f1011;
-                    --md-sys-color-surface-container-high:     #141516;
-                    --md-sys-color-surface-container-highest:  #18191a;
-                    --ln-ink:        #f7f8f8;
-                    --ln-ink-muted:  #d0d6e0;
-                    --ln-ink-subtle: #8a8f98;
-                    --ln-hairline:   #23252a;
-                    --ln-hairline-strong: #34343a;
+                    --md-sys-color-primary-container:      #e8e6f4;
+                    --md-sys-color-on-primary-container:   #1b1938;
+                    --md-sys-color-secondary:              #155555;
+                    --md-sys-color-on-secondary:           #ffffff;
+                    --md-sys-color-secondary-container:    #cfe6e6;
+                    --md-sys-color-on-secondary-container: #0e3030;
+                    --md-sys-color-background:             #fafaf8;
+                    --md-sys-color-on-background:          #292827;
+                    --md-sys-color-surface:                #fafaf8;
+                    --md-sys-color-on-surface:             #292827;
+                    --md-sys-color-surface-variant:        #ffffff;
+                    --md-sys-color-on-surface-variant:     #73706d;
+                    --md-sys-color-outline:                #e8e4dd;
+                    --md-sys-color-outline-variant:        #efece6;
+                    --md-sys-color-surface-container-lowest:  #ffffff;
+                    --md-sys-color-surface-container-low:      #f5f4f0;
+                    --md-sys-color-surface-container:          #efece6;
+                    --md-sys-color-surface-container-high:     #e8e4dd;
+                    --md-sys-color-surface-container-highest:  #e0dccf;
+                    --sh-ink:        #292827;
+                    --sh-ink-mute:   #73706d;
+                    --sh-ink-faint:  #9a9794;
+                    --sh-indigo:     #1b1938;
+                    --sh-violet:     #5a4fcf;
+                    --sh-teal:       #155555;
+                    --sh-hairline:   #e8e4dd;
+                    --sh-unread:     #1b1938;
                 }
                 body { background: #1a1a1a; }
-                .device { background: #010102; }
+                .device { background: #fafaf8; }
                 .device-content {
-                    background: #010102; color: var(--ln-ink);
+                    background: #fafaf8; color: var(--sh-ink);
                     font-family: "Inter", var(--font-roboto);
-                    letter-spacing: -0.01em;
                 }
-                .status-bar { color: var(--ln-ink); }
+                .status-bar { color: var(--sh-ink); }
 
-                .ln-topbar {
+                .sh-topbar {
                     position: sticky; top: 0; z-index: 10;
-                    background: #010102;
-                    padding: calc(24px + 12px) 16px 12px;
+                    background: #fafaf8;
+                    padding: calc(24px + 14px) 16px 12px;
                     display: flex; align-items: center; gap: 8px;
-                    border-bottom: 1px solid var(--ln-hairline);
+                    border-bottom: 1px solid var(--sh-hairline);
                 }
-                .ln-icon-btn {
+                .sh-icon-btn {
                     width: 36px; height: 36px; border: none; background: transparent;
-                    color: var(--ln-ink-muted); border-radius: 6px;
+                    color: var(--sh-ink-mute); border-radius: 8px;
                     display: inline-flex; align-items: center; justify-content: center;
                     cursor: pointer;
                 }
-                .ln-icon-btn:hover { background: var(--md-sys-color-surface-container); color: var(--ln-ink); }
-                .ln-topbar h1 { flex: 1; font-size: 15px; font-weight: 500; letter-spacing: -0.2px; color: var(--ln-ink); }
-                .ln-kbd {
-                    display: inline-flex; align-items: center; gap: 4px;
+                .sh-icon-btn:hover { background: var(--md-sys-color-surface-container); color: var(--sh-ink); }
+                .sh-title-block { flex: 1; }
+                .sh-title {
+                    font-family: "Fraunces", Georgia, serif;
+                    font-weight: 500; font-size: 22px; letter-spacing: -0.4px;
+                    color: var(--sh-indigo); line-height: 1.1;
+                }
+                .sh-meta { font-size: 11px; color: var(--sh-ink-mute); letter-spacing: 0.3px; text-transform: uppercase; font-weight: 600; margin-top: 2px; }
+                .sh-meta b { color: var(--sh-indigo); }
+
+                .sh-shortcut-row {
+                    display: flex; gap: 6px; padding: 12px 16px 0;
+                    overflow-x: auto;
+                }
+                .sh-shortcut-row::-webkit-scrollbar { display: none; }
+                .sh-shortcut {
+                    flex-shrink: 0;
+                    display: inline-flex; align-items: center; gap: 6px;
+                    height: 30px; padding: 0 12px;
+                    background: transparent;
+                    border: 1px solid var(--sh-hairline);
+                    color: var(--sh-ink); font-size: 12px; font-weight: 500;
+                    border-radius: 6px;
+                    cursor: pointer;
+                }
+                .sh-shortcut.is-active { background: var(--sh-indigo); color: #fff; border-color: var(--sh-indigo); }
+                .sh-shortcut kbd {
+                    font-family: "Roboto Mono", ui-monospace, monospace;
+                    font-size: 10px;
+                    background: rgba(0,0,0,0.06);
+                    padding: 1px 4px; border-radius: 3px;
+                    color: var(--sh-ink-mute);
+                }
+                .sh-shortcut.is-active kbd { background: rgba(255,255,255,0.18); color: rgba(255,255,255,0.85); }
+
+                .sh-group-head {
+                    padding: 20px 16px 6px;
+                    font-family: "Fraunces", serif; font-weight: 500;
+                    font-size: 13px; letter-spacing: 0.4px; text-transform: uppercase;
+                    color: var(--sh-ink-mute);
+                }
+
+                .sh-list { list-style: none; padding: 0; margin: 0; background: #fafaf8; }
+                .sh-mail {
+                    display: grid;
+                    grid-template-columns: auto 1fr auto;
+                    grid-template-rows: auto auto;
+                    column-gap: 12px; row-gap: 2px;
+                    padding: 12px 16px;
+                    border-bottom: 1px solid var(--sh-hairline);
+                    cursor: pointer;
+                }
+                .sh-mail:hover { background: #fff; }
+                .sh-mail__avatar {
+                    grid-row: 1 / span 2;
+                    width: 36px; height: 36px; border-radius: 50%;
+                    background: var(--md-sys-color-surface-container);
+                    color: var(--sh-indigo);
+                    display: inline-flex; align-items: center; justify-content: center;
+                    font-weight: 700; font-size: 13px;
+                    letter-spacing: -0.2px;
+                }
+                .sh-mail__from {
+                    font-size: 14px;
+                    font-weight: 600;
+                    color: var(--sh-indigo);
+                    letter-spacing: -0.1px;
+                    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+                }
+                .sh-mail__time {
+                    font-size: 12px;
+                    color: var(--sh-ink-mute);
+                    white-space: nowrap;
+                    font-variant-numeric: tabular-nums;
+                }
+                .sh-mail__subject {
+                    grid-column: 2 / -1;
+                    font-size: 13px;
+                    line-height: 1.35;
+                    color: var(--sh-ink);
+                    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+                }
+                .sh-mail__subject b {
+                    font-weight: 600;
+                    color: var(--sh-indigo);
+                }
+                .sh-mail__subject span { color: var(--sh-ink-mute); font-weight: 400; }
+                .sh-mail.is-unread .sh-mail__from::before {
+                    content: ""; display: inline-block;
+                    width: 6px; height: 6px; border-radius: 50%;
+                    background: #5a4fcf;
+                    vertical-align: middle;
+                    margin-right: 6px;
+                }
+                .sh-mail__tag {
+                    display: inline-block;
+                    font-size: 10px; font-weight: 700;
+                    padding: 2px 6px; border-radius: 3px;
+                    letter-spacing: 0.4px; text-transform: uppercase;
+                    margin-right: 6px;
+                    vertical-align: middle;
+                }
+                .sh-mail__tag--vip   { background: #f6e3a8; color: #6b4f00; }
+                .sh-mail__tag--team  { background: #cfe6e6; color: #0e3030; }
+                .sh-mail__tag--cal   { background: #e8e6f4; color: #1b1938; }
+                .sh-mail__tag--bills { background: #f7d5d5; color: #6b1818; }
+
+                .sh-fab {
+                    position: absolute;
+                    right: 18px;
+                    bottom: calc(80px + 24px + 16px);
+                    height: 52px; padding: 0 22px;
+                    background: var(--sh-indigo);
+                    color: #fff;
+                    border: none; border-radius: 26px;
+                    font: 600 14px / 1 "Inter", sans-serif;
+                    display: inline-flex; align-items: center; gap: 10px;
+                    box-shadow: 0 8px 22px rgba(27, 25, 56, 0.32);
+                    z-index: 30;
+                    cursor: pointer;
+                    letter-spacing: -0.1px;
+                }
+                .sh-fab kbd {
                     font-family: "Roboto Mono", ui-monospace, monospace;
                     font-size: 11px;
-                    color: var(--ln-ink-subtle);
-                    background: var(--md-sys-color-surface-container);
-                    border: 1px solid var(--ln-hairline);
-                    border-radius: 4px;
-                    padding: 2px 6px;
+                    background: rgba(255,255,255,0.14);
+                    padding: 2px 6px; border-radius: 3px;
                     line-height: 1;
                 }
-
-                .ln-workspace {
-                    margin: 16px 16px 24px;
-                    padding: 16px;
-                    background: var(--md-sys-color-surface-container);
-                    border: 1px solid var(--ln-hairline);
-                    border-radius: 10px;
-                    display: flex; align-items: center; gap: 14px;
-                }
-                .ln-ws-mark {
-                    width: 44px; height: 44px;
-                    border-radius: 8px;
-                    background: linear-gradient(135deg, #5e6ad2, #828fff);
-                    color: #fff;
-                    font-weight: 700; font-size: 18px;
-                    display: inline-flex; align-items: center; justify-content: center;
-                    letter-spacing: -0.5px;
-                }
-                .ln-ws-body { flex: 1; min-width: 0; }
-                .ln-ws-name { font-weight: 600; font-size: 15px; letter-spacing: -0.2px; }
-                .ln-ws-url { color: var(--ln-ink-subtle); font-size: 12px; margin-top: 2px; font-family: "Roboto Mono", ui-monospace, monospace; }
-                .ln-ws-plan {
-                    font-size: 11px; font-weight: 600;
-                    color: #828fff;
-                    background: rgba(94, 106, 210, 0.12);
-                    padding: 3px 8px; border-radius: 4px;
-                    text-transform: uppercase; letter-spacing: 0.4px;
-                }
-
-                .ln-group { margin: 0 0 28px; }
-                .ln-group__label {
-                    padding: 0 16px 8px;
-                    font-size: 11px; font-weight: 600;
-                    color: var(--ln-ink-subtle);
-                    letter-spacing: 0.6px; text-transform: uppercase;
-                }
-                .ln-list {
-                    background: var(--md-sys-color-surface-container);
-                    border-top: 1px solid var(--ln-hairline);
-                    border-bottom: 1px solid var(--ln-hairline);
-                }
-                .ln-row {
-                    display: flex; align-items: center; gap: 12px;
-                    padding: 12px 16px;
-                    min-height: 52px;
-                    border-bottom: 1px solid var(--ln-hairline);
-                    cursor: pointer;
-                }
-                .ln-row:last-child { border-bottom: none; }
-                .ln-row:hover { background: var(--md-sys-color-surface-container-high); }
-                .ln-row__icon {
-                    width: 18px; height: 18px;
-                    color: var(--ln-ink-muted);
-                    display: inline-flex; flex-shrink: 0;
-                }
-                .ln-row__label { flex: 1; font-size: 14px; font-weight: 500; letter-spacing: -0.1px; }
-                .ln-row__value { color: var(--ln-ink-subtle); font-size: 13px; font-weight: 400; }
-                .ln-row__chev { color: var(--ln-ink-subtle); }
-                .ln-pill {
-                    background: #1f6a3a; color: #a8eebf;
-                    font-size: 11px; font-weight: 600;
-                    padding: 3px 8px; border-radius: 4px;
-                }
-
-                .ln-toggle {
-                    width: 32px; height: 18px; border-radius: 9px;
-                    background: var(--ln-hairline);
-                    position: relative; cursor: pointer; transition: background 150ms ease;
-                    flex-shrink: 0;
-                }
-                .ln-toggle::after {
-                    content: ""; position: absolute; top: 2px; left: 2px;
-                    width: 14px; height: 14px; border-radius: 50%;
-                    background: #fff;
-                    transition: transform 150ms ease;
-                }
-                .ln-toggle.is-on { background: #5e6ad2; }
-                .ln-toggle.is-on::after { transform: translateX(14px); }
-
-                .ln-shortcut-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 16px; min-height: 44px; border-bottom: 1px solid var(--ln-hairline); }
-                .ln-shortcut-row:last-child { border-bottom: none; }
-                .ln-shortcut-row span { font-size: 13px; font-weight: 500; color: var(--ln-ink); }
-                .ln-shortcut-row__keys { display: flex; gap: 4px; }
             </style>
 
-            <header class="ln-topbar">
-                <button class="ln-icon-btn" aria-label="Back">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>
-                </button>
-                <h1>Settings</h1>
-                <span class="ln-kbd">⌘ K</span>
+            <header class="sh-topbar">
+                <button class="sh-icon-btn" aria-label="Menu"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h10"/></svg></button>
+                <div class="sh-title-block">
+                    <div class="sh-title">Inbox</div>
+                    <div class="sh-meta"><b>12</b> Unread · Triage in 4 min</div>
+                </div>
+                <button class="sh-icon-btn" aria-label="Search"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg></button>
+                <button class="sh-icon-btn" aria-label="More"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><circle cx="6" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="18" cy="12" r="1.8"/></svg></button>
             </header>
 
-            <div class="ln-workspace">
-                <span class="ln-ws-mark">⌬</span>
-                <div class="ln-ws-body">
-                    <div class="ln-ws-name">Lattice Studio</div>
-                    <div class="ln-ws-url">lattice.linear.app</div>
-                </div>
-                <span class="ln-ws-plan">Plus</span>
+            <div class="sh-shortcut-row">
+                <button class="sh-shortcut is-active">Inbox <kbd>I</kbd></button>
+                <button class="sh-shortcut">Important <kbd>+</kbd></button>
+                <button class="sh-shortcut">Team</button>
+                <button class="sh-shortcut">Calendar <kbd>C</kbd></button>
+                <button class="sh-shortcut">Read later</button>
             </div>
 
-            <section class="ln-group">
-                <div class="ln-group__label">Account</div>
-                <div class="ln-list">
-                    <div class="ln-row">
-                        <span class="ln-row__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 5-6 8-6s6.5 2 8 6"/></svg></span>
-                        <span class="ln-row__label">Profile</span>
-                        <span class="ln-row__value">@ari.h</span>
-                        <span class="ln-row__chev"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg></span>
-                    </div>
-                    <div class="ln-row">
-                        <span class="ln-row__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 9l9 5 9-5"/></svg></span>
-                        <span class="ln-row__label">Email</span>
-                        <span class="ln-row__value">ari@lattice.studio</span>
-                        <span class="ln-row__chev"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg></span>
-                    </div>
-                    <div class="ln-row">
-                        <span class="ln-row__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="4" y="11" width="16" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></span>
-                        <span class="ln-row__label">Two-factor auth</span>
-                        <span class="ln-pill">Enabled</span>
-                        <span class="ln-row__chev"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg></span>
-                    </div>
-                </div>
-            </section>
+            <div class="sh-group-head">Today</div>
+            <ul class="sh-list">
+                <li class="sh-mail is-unread">
+                    <span class="sh-mail__avatar" style="background:#f6e3a8;color:#6b4f00">RP</span>
+                    <span class="sh-mail__from">Reema Patel</span>
+                    <span class="sh-mail__time">9:14</span>
+                    <span class="sh-mail__subject"><span class="sh-mail__tag sh-mail__tag--vip">VIP</span><b>Series A close — final memo</b> <span>Hey Ari, attached is the v4 memo for tomorrow's…</span></span>
+                </li>
+                <li class="sh-mail is-unread">
+                    <span class="sh-mail__avatar" style="background:#cfe6e6;color:#0e3030">JK</span>
+                    <span class="sh-mail__from">Jonas Kovač</span>
+                    <span class="sh-mail__time">8:42</span>
+                    <span class="sh-mail__subject"><span class="sh-mail__tag sh-mail__tag--team">TEAM</span><b>Sprint 24 retro notes</b> <span>Three highlights, two action items, one chart…</span></span>
+                </li>
+                <li class="sh-mail">
+                    <span class="sh-mail__avatar" style="background:#e8e6f4;color:#1b1938">📅</span>
+                    <span class="sh-mail__from">Google Calendar</span>
+                    <span class="sh-mail__time">8:00</span>
+                    <span class="sh-mail__subject"><span class="sh-mail__tag sh-mail__tag--cal">CAL</span><b>3 events today</b> <span>Standup · 1:1 w/ Maya · Investor sync</span></span>
+                </li>
+                <li class="sh-mail is-unread">
+                    <span class="sh-mail__avatar" style="background:#dcd5fa;color:#1b1938">MS</span>
+                    <span class="sh-mail__from">Maya Sundström</span>
+                    <span class="sh-mail__time">7:38</span>
+                    <span class="sh-mail__subject"><b>Hiring loop — mobile lead, finalists</b> <span>I narrowed it to three. All passed onsite…</span></span>
+                </li>
+            </ul>
 
-            <section class="ln-group">
-                <div class="ln-group__label">Workspace</div>
-                <div class="ln-list">
-                    <div class="ln-row">
-                        <span class="ln-row__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3"/><circle cx="17" cy="10" r="2.5"/><path d="M3 20c.8-3.2 3.2-5 6-5s5.2 1.8 6 5"/><path d="M14 20c.6-2.2 2.2-3.5 4-3.5"/></svg></span>
-                        <span class="ln-row__label">Members</span>
-                        <span class="ln-row__value">12 active</span>
-                        <span class="ln-row__chev"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg></span>
-                    </div>
-                    <div class="ln-row">
-                        <span class="ln-row__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="7" height="7" rx="1.5"/><rect x="14" y="4" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg></span>
-                        <span class="ln-row__label">Teams</span>
-                        <span class="ln-row__value">CORE · MOB · WEB</span>
-                        <span class="ln-row__chev"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg></span>
-                    </div>
-                    <div class="ln-row">
-                        <span class="ln-row__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4l-2 2-2-2"/><rect x="4" y="6" width="16" height="14" rx="2"/><path d="M9 12h6M9 16h4"/></svg></span>
-                        <span class="ln-row__label">Templates</span>
-                        <span class="ln-row__value">8</span>
-                        <span class="ln-row__chev"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg></span>
-                    </div>
-                </div>
-            </section>
+            <div class="sh-group-head">Yesterday</div>
+            <ul class="sh-list">
+                <li class="sh-mail">
+                    <span class="sh-mail__avatar" style="background:#fff;border:1px solid var(--sh-hairline);color:var(--sh-indigo)">F</span>
+                    <span class="sh-mail__from">Figma</span>
+                    <span class="sh-mail__time">Wed</span>
+                    <span class="sh-mail__subject"><b>Eli Park shared "Onboarding v4"</b> <span>3 new frames, 12 comments — review by Fri</span></span>
+                </li>
+                <li class="sh-mail">
+                    <span class="sh-mail__avatar" style="background:#f7d5d5;color:#6b1818">$</span>
+                    <span class="sh-mail__from">Stripe Billing</span>
+                    <span class="sh-mail__time">Wed</span>
+                    <span class="sh-mail__subject"><span class="sh-mail__tag sh-mail__tag--bills">BILLS</span><b>Invoice #2024-08831</b> <span>$4,820 due May 28 from Lattice Studio</span></span>
+                </li>
+                <li class="sh-mail">
+                    <span class="sh-mail__avatar" style="background:#dcd5fa;color:#1b1938">LO</span>
+                    <span class="sh-mail__from">Lila Okafor</span>
+                    <span class="sh-mail__time">Wed</span>
+                    <span class="sh-mail__subject"><b>RE: speaking slot @ ShipIt 2026</b> <span>Yes — happy to. Topic: Designing for trust at…</span></span>
+                </li>
+            </ul>
 
-            <section class="ln-group">
-                <div class="ln-group__label">Preferences</div>
-                <div class="ln-list">
-                    <div class="ln-row">
-                        <span class="ln-row__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M21 12.79A9 9 0 1 1 11.21 3a7 7 0 0 0 9.79 9.79z"/></svg></span>
-                        <span class="ln-row__label">Theme</span>
-                        <span class="ln-row__value">Dark · System</span>
-                        <span class="ln-row__chev"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg></span>
-                    </div>
-                    <div class="ln-row">
-                        <span class="ln-row__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M10 21a2 2 0 0 0 4 0"/></svg></span>
-                        <span class="ln-row__label">Notifications</span>
-                        <span class="ln-toggle is-on" role="switch" aria-checked="true"></span>
-                    </div>
-                    <div class="ln-row">
-                        <span class="ln-row__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 7h6M9 11h6M9 15h4"/></svg></span>
-                        <span class="ln-row__label">Markdown preview</span>
-                        <span class="ln-toggle is-on" role="switch" aria-checked="true"></span>
-                    </div>
-                    <div class="ln-row">
-                        <span class="ln-row__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span>
-                        <span class="ln-row__label">Time format</span>
-                        <span class="ln-row__value">24-hour</span>
-                        <span class="ln-row__chev"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg></span>
-                    </div>
-                </div>
-            </section>
+            <div class="sh-group-head">This week</div>
+            <ul class="sh-list">
+                <li class="sh-mail">
+                    <span class="sh-mail__avatar" style="background:#cfe6e6;color:#0e3030">PV</span>
+                    <span class="sh-mail__from">Pranav Vyas</span>
+                    <span class="sh-mail__time">Mon</span>
+                    <span class="sh-mail__subject"><b>API review — auth surface</b> <span>One concern about the refresh-token rotation…</span></span>
+                </li>
+                <li class="sh-mail">
+                    <span class="sh-mail__avatar" style="background:#f6e3a8;color:#6b4f00">CN</span>
+                    <span class="sh-mail__from">Clara Núñez</span>
+                    <span class="sh-mail__time">Mon</span>
+                    <span class="sh-mail__subject"><span class="sh-mail__tag sh-mail__tag--vip">VIP</span><b>Q3 board materials draft</b> <span>Light edits on slides 12-18. Send by Tues…</span></span>
+                </li>
+            </ul>
 
-            <section class="ln-group">
-                <div class="ln-group__label">Keyboard shortcuts</div>
-                <div class="ln-list">
-                    <div class="ln-shortcut-row">
-                        <span>Command menu</span>
-                        <span class="ln-shortcut-row__keys"><span class="ln-kbd">⌘</span><span class="ln-kbd">K</span></span>
-                    </div>
-                    <div class="ln-shortcut-row">
-                        <span>New issue</span>
-                        <span class="ln-shortcut-row__keys"><span class="ln-kbd">C</span></span>
-                    </div>
-                    <div class="ln-shortcut-row">
-                        <span>Toggle sidebar</span>
-                        <span class="ln-shortcut-row__keys"><span class="ln-kbd">⌘</span><span class="ln-kbd">.</span></span>
-                    </div>
-                    <div class="ln-shortcut-row">
-                        <span>Cycle status</span>
-                        <span class="ln-shortcut-row__keys"><span class="ln-kbd">S</span><span class="ln-kbd">then</span><span class="ln-kbd">↵</span></span>
-                    </div>
-                </div>
-            </section>
-
-            <div style="padding: 0 16px 32px; color: var(--ln-ink-subtle); font-size: 11px; font-family: 'Roboto Mono', ui-monospace, monospace;">
-                Build 2026.05.16 · linear-mobile/3.18.2
-            </div>
+            <div style="height: 140px"></div>
         </main>
 
+        <!-- Compose FAB (Cmd+Shift+C) -->
+        <button class="sh-fab" aria-label="Compose">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4l11-11-4-4L4 16v4z"/><path d="M14 5l4 4"/></svg>
+            Compose
+            <kbd>⌘ ⇧ C</kbd>
+        </button>
+
+
+        <!-- Bottom Navigation (standard, added by add_android_navbar.py) -->
+        <nav class="bottom-nav" aria-label="Primary">
+    <button class="bottom-nav__item is-active" aria-current="page" aria-label="Inbox">
+        <span class="bottom-nav__indicator" style="--icon: url('https://api.iconify.design/material-symbols/inbox-outline.svg');">
+            <span class="bottom-nav__icon" aria-hidden="true"></span>
+        </span>
+        <span class="bottom-nav__label">Inbox</span>
+        <span class="bottom-nav__badge" aria-label="12 notifications">12</span>
+    </button>
+    <button class="bottom-nav__item" aria-label="Snoozed">
+        <span class="bottom-nav__indicator" style="--icon: url('https://api.iconify.design/material-symbols/bedtime-outline.svg');">
+            <span class="bottom-nav__icon" aria-hidden="true"></span>
+        </span>
+        <span class="bottom-nav__label">Snoozed</span>
+        
+    </button>
+    <button class="bottom-nav__item" aria-label="Sent">
+        <span class="bottom-nav__indicator" style="--icon: url('https://api.iconify.design/material-symbols/send-outline.svg');">
+            <span class="bottom-nav__icon" aria-hidden="true"></span>
+        </span>
+        <span class="bottom-nav__label">Sent</span>
+        
+    </button>
+    <button class="bottom-nav__item" aria-label="Done">
+        <span class="bottom-nav__indicator" style="--icon: url('https://api.iconify.design/material-symbols/check-circle-outline.svg');">
+            <span class="bottom-nav__icon" aria-hidden="true"></span>
+        </span>
+        <span class="bottom-nav__label">Done</span>
+        
+    </button>
+        </nav>
         <!-- Gesture-navigation pill -->
         <div class="gesture-nav-area">
             <div class="gesture-nav-pill"></div>

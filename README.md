@@ -9,19 +9,25 @@ A Claude Code plugin for designing mobile app screens end-to-end on **iOS (Apple
 
 Five iOS screens, five brand aesthetics — generated with `/make-mobile-design`, each grounded in a real brand entry from [VoltAgent/awesome-design-md](https://github.com/VoltAgent/awesome-design-md).
 
-| Productivity | Music | Food | Wellness | Mail (Edit Mode) |
-| :---: | :---: | :---: | :---: | :---: |
-| [<img src="examples/screenshots/productivity-today.png" width="160" alt="Today task list">](examples/productivity-today.html) | [<img src="examples/screenshots/music-now-playing.png" width="160" alt="Now Playing">](examples/music-now-playing.html) | [<img src="examples/screenshots/food-recipe.png" width="160" alt="Recipe detail">](examples/food-recipe.html) | [<img src="examples/screenshots/wellness-breathe.png" width="160" alt="Breathe timer">](examples/wellness-breathe.html) | [<img src="examples/screenshots/mail-edit-mode.png" width="160" alt="Mail multi-select with bottom toolbar">](examples/mail-edit-mode.html) |
-| Linear-style cycle view, near-black canvas, mono accents | Spotify-style now-playing with glass tab bar | Editorial recipe detail with serif display & cream surface | Soft-warm breathing timer with serif italic display | iOS Mail multi-select with the new contextual bottom toolbar (component 27) |
+![iOS showcase strip](examples/screenshots/ios-showcase-strip.png)
+
+- **Productivity** — [`productivity-today.html`](examples/productivity-today.html) · Linear-style cycle view, near-black canvas, mono accents
+- **Music** — [`music-now-playing.html`](examples/music-now-playing.html) · Spotify-style now-playing with glass tab bar
+- **Food** — [`food-recipe.html`](examples/food-recipe.html) · Editorial recipe detail with serif display & cream surface
+- **Wellness** — [`wellness-breathe.html`](examples/wellness-breathe.html) · Soft-warm breathing timer with serif italic display
+- **Mail (Edit Mode)** — [`mail-edit-mode.html`](examples/mail-edit-mode.html) · iOS Mail multi-select with contextual bottom toolbar (component 27)
 
 ## Showcase — Android (Material 3)
 
 Native Material 3 / MD3 Expressive — Pixel 8 frame (412×915), Roboto Flex, MD3 type scale, surface roles, and the canonical bottom-nav pill indicator.
 
-| Home (Photos) | Settings |
-| :---: | :---: |
-| [<img src="examples/screenshots/android-home.png" width="160" alt="Android home with medium top app bar and bottom nav">](examples/android-home.html) | [<img src="examples/screenshots/android-settings.png" width="160" alt="Android settings with center-aligned top app bar and MD3 switches">](examples/android-settings.html) |
-| Medium top app bar, filter chips, elevated/filled cards, extended FAB, MD3 bottom navigation with pill indicator | Center-aligned top app bar with back, profile card, grouped lists with MD3 switches |
+![Android showcase strip](examples/screenshots/android-showcase-strip.png)
+
+- **Home (Photos)** — [`android-home.html`](examples/android-home.html) · Medium top app bar, filter chips, elevated/filled cards, extended FAB, MD3 bottom navigation with pill indicator
+- **Settings** — [`android-settings.html`](examples/android-settings.html) · Center-aligned top app bar with back, profile card, grouped lists with MD3 switches
+- **Fitness (Today)** — [`android-fitness.html`](examples/android-fitness.html) · Activity-rings card (3 SVG arcs), 2×2 tonal stat-tile grid, workout list with rounded tonal icons, extended FAB
+- **Mail (Inbox)** — [`android-mail.html`](examples/android-mail.html) · MD3 search bar with leading menu + trailing avatar, filter chips, two-line mail rows with star toggle, Compose FAB, badge on bottom-nav
+- **Music (Now Playing)** — [`android-music.html`](examples/android-music.html) · Center-aligned top app bar with overline, gradient album art, MD3 slider, transport row with prominent play button, up-next list
 
 Open the HTML files directly to feel the scroll/hover behavior. Each example also includes a floating **Copy to Figma** action — see below.
 
@@ -29,16 +35,20 @@ Open the HTML files directly to feel the scroll/hover behavior. Each example als
 
 Every example screen ships with a one-click **Copy to Figma** button in the corner. Click it, switch to Figma, and paste — the screen lands as fully editable vector layers.
 
+![Copy to Figma button in the corner of an example screen](docs/copy-to-figma.png)
+
 - No screenshots, no re-tracing, no exported asset bundles.
 - Designers pick up a coded mockup and keep iterating in their native tool.
 - Engineers hand off work without annotating static images.
 - Design reviews happen on real, editable artifacts.
 
-To regenerate the PNGs:
+To regenerate the PNGs (per-screen + showcase strips):
 
 ```
 cd examples && npm install && node capture.mjs
 ```
+
+`capture.mjs` writes one PNG per `.html`, then runs `build_strips.py` to recompose the iOS and Android strip images used in the README. The strip script requires Pillow (`python3 -m pip install Pillow`).
 
 ## Layout
 

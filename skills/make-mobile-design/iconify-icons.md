@@ -23,6 +23,8 @@ Note: `%23` is the URL-encoded `#` for hex colors.
      width="32" height="32" alt="scan">
 ```
 
+> **Copy-to-Figma note:** `<img>` is the most Figma-export-friendly choice — it round-trips as an `<image>` reference. The CSS-mask variant below is also supported (the serializer pre-fetches and inlines the SVG tinted by `background-color`). The plain "CSS background" variant is NOT — Figma sees only the element's `background-color` rect, not the icon — avoid it for anything you intend to paste into Figma.
+
 **As CSS background (for buttons, pseudo-elements):**
 ```css
 .icon-receipt {

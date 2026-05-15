@@ -1,6 +1,8 @@
-// Capture each examples/*.html as a PNG of the .device frame.
+// Capture each examples/*.html as a PNG of the .device frame, then
+// recompose the iOS and Android showcase strips used in the README.
 // Usage: cd examples && npm install && node capture.mjs
 import { readdir } from 'node:fs/promises';
+import { spawn } from 'node:child_process';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import puppeteer from 'puppeteer';
@@ -28,6 +30,15 @@ try {
         await page.evaluate(() => document.fonts && document.fonts.ready);
         await new Promise((r) => setTimeout(r, 400));
 
+        // hide the Copy-to-Figma host chrome so it doesn't show up in screenshots
+        await page.evaluate(() => {
+            document
+                .querySelectorAll('.figma-export-toolbar, [data-figma-export-ignore]')
+                .forEach((el) => {
+                    el.style.display = 'none';
+                });
+        });
+
         const device = await page.$('.device');
         if (!device) {
             console.warn(`!! ${file}: no .device element found, skipping`);
@@ -42,3 +53,12 @@ try {
 } finally {
     await browser.close();
 }
+
+// Recompose showcase strips for README.
+await new Promise((resolveStrip, rejectStrip) => {
+    const proc = spawn('python3', [join(here, 'build_strips.py')], { stdio: 'inherit' });
+    proc.on('exit', (code) => {
+        if (code === 0) resolveStrip();
+        else rejectStrip(new Error(`build_strips.py exited with code ${code}`));
+    });
+});
