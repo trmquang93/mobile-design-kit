@@ -231,15 +231,17 @@ Arguments:
 - 3–5 destinations recommended; the script warns outside that range.
 - Wrapper has `pointer-events: none`; buttons have `pointer-events: auto` so scroll passes through inert footprint.
 
-**Prohibitions (non-negotiable):**
-- Do NOT place the status bar (or home indicator) inside `.device-content` or in any element that scrolls.
+**Prohibitions (non-negotiable, both platforms unless tagged):**
+- Do NOT place the status bar (or home indicator / gesture pill) inside `.device-content` or in any element that scrolls.
 - Do NOT replace the `.device` / `.device-content` structure with a body-level scroll layout (e.g. `body { min-height:100vh; }` as the scroll container, status bar in normal flow).
 - Do NOT rewrite the status bar CSS; the scaffold's `position:absolute; top:0; z-index:50` is the canonical form. Do not change it to `static`, `relative`, `sticky`, or `fixed`.
-- Do NOT redesign the device chrome — leave the island, status bar, and home indicator markup and styles as-is.
-- Do NOT add a custom floating overlay (tab bar, FAB, banner, sheet handle) over `.device-content` without `pointer-events: none` on the overlay wrapper and `pointer-events: auto` on its interactive children. Overlays that are *siblings* of `.device-content` swallow scroll/touch on their footprint and the screen feels unscrollable. The `add_ios_tabbar.py` output already does this — match the pattern for any hand-written overlay.
+- Do NOT redesign the device chrome — leave the island/hole-punch, status bar, and home indicator/gesture pill markup and styles as-is.
+- Do NOT add a custom floating overlay (tab bar, FAB, banner, sheet handle) over `.device-content` without `pointer-events: none` on the overlay wrapper and `pointer-events: auto` on its interactive children. Overlays that are *siblings* of `.device-content` swallow scroll/touch on their footprint and the screen feels unscrollable. The `add_ios_tabbar.py` and `add_android_navbar.py` outputs already do this — match the pattern for any hand-written overlay.
 - Do NOT change `.device-content` to `display: flex; flex-direction: column`. With a fixed-height container and `overflow-y: auto`, flex shrinks every child below its natural size to fit the viewport, so `scrollHeight` collapses to `clientHeight` and the screen stops scrolling entirely. Keep `.device-content` as block layout (the scaffold default).
-- Top navigation bars (`.nav-header` from section 3a, or any custom top bar — back button + title + actions) MUST stay pinned under the status bar while content scrolls. Use `position: sticky; top: 0; z-index: 10` on the nav element, which lives as the first child inside `.device-content`. Do NOT leave a top nav in normal flow — it will scroll off with the content, which is wrong mobile behavior. **Exception:** large-title headers (`.page-header`, section 3b) are intentionally part of the scroll region per HIG and must NOT be made sticky.
-- **The 59px status-bar safe area belongs on the FIRST CHILD of `.device-content`, never on `.device-content` itself.** The scaffold sets `.device-content { padding-top: 0 }` so navigation bars and hero media can render their background behind the status bar to the top edge of the screen — correct iOS behavior. The first child must absorb the 59px via its own `padding-top`: a `.nav-header` uses `padding-top: calc(59px + var(--space-2))` (background fills behind status bar); a `.page-header` or first content section adds 59px to its top padding; a full-bleed hero/photo bleeds behind the status bar with no padding. Do NOT add `padding-top: 59px` to `.device-content`, do NOT use `margin-top: -59px` on the nav (breaks sticky pinning), and do NOT use half-opacity tints or background-matching tricks. See `components/ios/02-status-bar.md` "Status-bar safe area" and `components/ios/03-navigation.md` §3a / §3a-i.
+- Top navigation bars (top app bar / nav header — back button + title + actions) MUST stay pinned under the status bar while content scrolls. Use `position: sticky; top: 0; z-index: 10` on the nav element, which lives as the first child inside `.device-content`. Do NOT leave a top nav in normal flow — it will scroll off with the content, which is wrong mobile behavior. **iOS exception:** large-title headers (`.page-header`, iOS components §3b) are intentionally part of the scroll region per HIG and must NOT be made sticky.
+- **Status-bar safe area belongs on the FIRST CHILD of `.device-content`, never on `.device-content` itself.** The scaffold sets `.device-content { padding-top: 0 }` so navigation bars and hero media can render their background behind the status bar to the top edge of the screen. The first child absorbs the safe-area height via its own `padding-top`. Do NOT add status-bar padding to `.device-content`, do NOT use negative `margin-top` on the nav (breaks sticky pinning), and do NOT use half-opacity tints or background-matching tricks.
+  - **iOS:** safe area is **59px**. A `.nav-header` uses `padding-top: calc(59px + var(--space-2))`. See `components/ios/02-status-bar.md` "Status-bar safe area" and `components/ios/03-navigation.md` §3a / §3a-i.
+  - **Android:** safe area is **24px**. The MD3 top app bar uses `padding-top: calc(24px + 8dp)`. See `components/android/02-status-bar.md` and `components/android/03-navigation.md`.
 
 ### Step 4: Generate the HTML Mockup
 
@@ -261,8 +263,8 @@ Create a single self-contained HTML file following these rules:
 - All touch targets minimum 44x44px
 
 #### CSS Architecture
-- Start with the Base Layout & Design Tokens from components.md (Section 1) -- this is the `:root` block and CSS reset
-- Use the exact CSS variable names defined in components.md (`--color-primary`, `--space-4`, `--radius-md`, etc.)
+- Start with the Base Layout & Design Tokens from the platform's tokens file -- iOS: `components/ios/01-base-tokens.md`; Android: `components/android/01-base-tokens.md`. This is the `:root` block (and CSS reset on iOS).
+- Use the exact CSS variable names defined in that tokens file (iOS: `--color-primary`, `--space-4`, `--radius-md`, …; Android: `--md-sys-color-*`, `--md-sys-typescale-*`, `--md-sys-shape-corner-*`, `--md-sys-elevation-*`).
 - No utility class frameworks -- write semantic CSS
 - Use `flexbox` and `grid` for layout
 - Use `scroll-snap` for horizontal carousels
@@ -270,21 +272,21 @@ Create a single self-contained HTML file following these rules:
 - Hide scrollbars with `-webkit-scrollbar: none` and `scrollbar-width: none`
 
 #### Component Usage Rules
-- **ALWAYS** copy component HTML and CSS exactly from components.md -- do not rewrite or restyle them
-- When a screen needs a navigation header, use the Nav Header component (Section 3)
-- When a screen needs bottom navigation, use the Tab Bar component (Section 4)
-- When a screen needs search, use the Search Bar component (Section 5)
-- Use the Section Header component (Section 8) for all section dividers
-- Use the List Item component (Section 10) for all row-based content
-- Use icons from the Common SVG Icons set (Section 25) for standard UI icons (chevrons, close, home, search, etc.)
-- For domain-specific or additional icons not in Section 25, use the **Iconify API** (Section 26) -- see icon usage guide below
+- **ALWAYS** copy component HTML and CSS exactly from the platform's component files (`components/ios/*.md` for iOS, `components/android/*.md` for Android) -- do not rewrite or restyle them
+- When a screen needs a navigation header / top app bar, use the Nav Header / Top App Bar component from `components/ios/03-navigation.md` (iOS §3) or `components/android/03-navigation.md` (Android §A3)
+- When a screen needs bottom navigation, use the Tab Bar (iOS §4 in `components/ios/03-navigation.md`) or Bottom Navigation Bar (Android §A4 in `components/android/03-navigation.md`)
+- When a screen needs search, use the Search Bar from `components/ios/04-search-filters.md` (iOS §5) or `components/android/04-search-filters.md` (Android §A5)
+- Use the Section Header from `components/ios/05-content.md` (iOS §8) or `components/android/05-content.md` (Android §A8) for all section dividers
+- Use the List Item from `components/ios/05-content.md` (iOS §10) or `components/android/05-content.md` (Android §A10) for all row-based content
+- Use icons from the Common SVG Icons set in `components/11-icons.md` (§25) for standard UI icons (chevrons, close, home, search, etc.)
+- For domain-specific or additional icons, use the **Iconify API** (§26 in `components/11-icons.md`) -- see icon usage guide below
 - If a needed component does not exist in the library, create it following the same CSS variable and naming patterns
 
 #### Interactivity
-- Copy JS snippets from components.md where provided (checkbox toggle, tab switching)
+- Copy JS snippets from component files where provided (checkbox toggle, tab switching)
 - Cards/rows that highlight on tap
-- Bottom sheets using the Bottom Sheet component (Section 18)
-- Floating action buttons using the FAB component (Section 17)
+- Bottom sheets using the Bottom Sheet component (iOS §18 in `components/ios/08-overlays.md`; Android §A19 in `components/android/08-overlays.md`)
+- Floating action buttons using the FAB component (iOS §17 in `components/ios/07-interactive.md`; Android §A18 in `components/android/07-interactive.md`)
 
 #### Content
 - Use realistic sample data relevant to the app context

@@ -92,9 +92,8 @@ def parse_badge(raw: str) -> tuple[int, str]:
     return int(idx_str), count.strip()
 
 
-def icon_url(icon: str, color_hex: str) -> str:
-    # color is URL-encoded as %23{hex}
-    return f"https://api.iconify.design/{icon.replace(':', '/', 1)}.svg?color=%23{color_hex.lstrip('#')}"
+def icon_url(icon: str) -> str:
+    return f"https://api.iconify.design/{icon.replace(':', '/', 1)}.svg"
 
 
 def build(style: str, items, active: int, badges: dict[int, str]) -> tuple[str, str]:
@@ -144,7 +143,13 @@ def build(style: str, items, active: int, badges: dict[int, str]) -> tuple[str, 
                         color 200ms var(--md-sys-motion-easing-emphasized);
             position: relative;
         }
-        .bottom-nav__indicator img { width: 24px; height: 24px; }
+        .bottom-nav__indicator .bottom-nav__icon {
+            display: block;
+            width: 24px; height: 24px;
+            background-color: currentColor;
+            -webkit-mask: var(--icon) no-repeat center / contain;
+            mask: var(--icon) no-repeat center / contain;
+        }
         .bottom-nav__item.is-active .bottom-nav__indicator {
             background: var(--md-sys-color-secondary-container);
             color: var(--md-sys-color-on-secondary-container);
@@ -176,13 +181,9 @@ def build(style: str, items, active: int, badges: dict[int, str]) -> tuple[str, 
         }
 """
 
-    inactive_color = "49454F"   # --md-sys-color-on-surface-variant (light scheme)
-    active_color   = "4F378B"   # --md-sys-color-on-secondary-container
-
     nav_items = []
     for idx, (icon, title) in enumerate(items):
         is_active = idx == active
-        color = active_color if is_active else inactive_color
         active_cls = " is-active" if is_active else ""
         active_attr = ' aria-current="page"' if is_active else ""
         badge_html = ""
@@ -192,8 +193,8 @@ def build(style: str, items, active: int, badges: dict[int, str]) -> tuple[str, 
             badge_html = f'<span class="bottom-nav__badge" aria-label="{count} notifications">{display}</span>'
         nav_items.append(
             f'    <button class="bottom-nav__item{active_cls}"{active_attr} aria-label="{title}">\n'
-            f'        <span class="bottom-nav__indicator">\n'
-            f'            <img src="{icon_url(icon, color)}" alt="" aria-hidden="true">\n'
+            f"        <span class=\"bottom-nav__indicator\" style=\"--icon: url('{icon_url(icon)}');\">\n"
+            f'            <span class="bottom-nav__icon" aria-hidden="true"></span>\n'
             f'        </span>\n'
             f'        <span class="bottom-nav__label">{title}</span>\n'
             f'        {badge_html}\n'

@@ -296,7 +296,13 @@
                         color 200ms var(--md-sys-motion-easing-emphasized);
             position: relative;
         }
-        .bottom-nav__indicator img { width: 24px; height: 24px; }
+        .bottom-nav__indicator .bottom-nav__icon {
+            display: block;
+            width: 24px; height: 24px;
+            background-color: currentColor;
+            -webkit-mask: var(--icon) no-repeat center / contain;
+            mask: var(--icon) no-repeat center / contain;
+        }
         .bottom-nav__item.is-active .bottom-nav__indicator {
             background: var(--md-sys-color-secondary-container);
             color: var(--md-sys-color-on-secondary-container);
@@ -543,32 +549,32 @@
         <!-- Bottom Navigation (standard, added by add_android_navbar.py) -->
         <nav class="bottom-nav" aria-label="Primary">
     <button class="bottom-nav__item is-active" aria-current="page" aria-label="Home">
-        <span class="bottom-nav__indicator">
-            <img src="https://api.iconify.design/material-symbols/home.svg?color=%234F378B" alt="" aria-hidden="true">
+        <span class="bottom-nav__indicator" style="--icon: url('https://api.iconify.design/material-symbols/home.svg');">
+            <span class="bottom-nav__icon" aria-hidden="true"></span>
         </span>
         <span class="bottom-nav__label">Home</span>
-        
+
     </button>
     <button class="bottom-nav__item" aria-label="Explore">
-        <span class="bottom-nav__indicator">
-            <img src="https://api.iconify.design/material-symbols/explore-outline.svg?color=%2349454F" alt="" aria-hidden="true">
+        <span class="bottom-nav__indicator" style="--icon: url('https://api.iconify.design/material-symbols/explore-outline.svg');">
+            <span class="bottom-nav__icon" aria-hidden="true"></span>
         </span>
         <span class="bottom-nav__label">Explore</span>
-        
+
     </button>
     <button class="bottom-nav__item" aria-label="Saved">
-        <span class="bottom-nav__indicator">
-            <img src="https://api.iconify.design/material-symbols/favorite-outline.svg?color=%2349454F" alt="" aria-hidden="true">
+        <span class="bottom-nav__indicator" style="--icon: url('https://api.iconify.design/material-symbols/favorite-outline.svg');">
+            <span class="bottom-nav__icon" aria-hidden="true"></span>
         </span>
         <span class="bottom-nav__label">Saved</span>
         <span class="bottom-nav__badge" aria-label="5 notifications">5</span>
     </button>
     <button class="bottom-nav__item" aria-label="Profile">
-        <span class="bottom-nav__indicator">
-            <img src="https://api.iconify.design/material-symbols/person-outline.svg?color=%2349454F" alt="" aria-hidden="true">
+        <span class="bottom-nav__indicator" style="--icon: url('https://api.iconify.design/material-symbols/person-outline.svg');">
+            <span class="bottom-nav__icon" aria-hidden="true"></span>
         </span>
         <span class="bottom-nav__label">Profile</span>
-        
+
     </button>
         </nav>
         <!-- Gesture-navigation pill -->
