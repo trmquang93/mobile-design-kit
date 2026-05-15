@@ -88,6 +88,43 @@ After detection, set the platform target for the rest of the workflow:
 
 Platform rules live in dedicated files (`ios.md`, `android.md`). Load the one matching the chosen target — they hold typography, color, density, motion, forbidden patterns, and compliance checklists for that platform.
 
+## Form-Factor Detection
+
+After detecting the platform, decide form-factor: **phone** (default) or
+**tablet**. Form-factor is a second axis — each platform supports both.
+
+### Detection rules
+
+1. **Strong tablet signals** in the request → form-factor = tablet,
+   announce it. Keywords: `iPad`, `Pixel Tablet`, `tablet`, `split view`,
+   `navigation rail`, `expanded window class`, `large screen`,
+   `list-detail`.
+2. **Weak tablet signals only** (one ambiguous keyword like `sidebar`,
+   `landscape`) AND platform is iOS or Android → confirm with one
+   `AskUserQuestion`: "This looks like a tablet layout (iPad / Pixel
+   Tablet). Confirm form-factor?" with options phone / tablet.
+3. **No tablet signal** → form-factor = **phone** (default). Existing
+   phone callers stay unchanged.
+
+After detection, set the form-factor for the rest of the workflow:
+
+- **Phone** (default) → scaffold with `create_ios_template.py` /
+  `create_android_template.py`. Components from `components/ios/` /
+  `components/android/`.
+- **Tablet** → scaffold with `create_ipad_template.py` /
+  `create_android_tablet_template.py`. **Additionally** load
+  `components/ios/13-tablet-layouts.md` or
+  `components/android/10-tablet-layouts.md` for the layout wrappers
+  (split view, sidebar, nav rail, list-detail). Existing platform
+  components are reused unchanged for cell content.
+
+Tablet templates default to **landscape**; portrait is opt-in via
+`--orientation portrait` on either scaffold script. Phone templates
+remain portrait-only.
+
+The platform rule files (`ios.md`, `android.md`) each have a **Tablet**
+section that applies on top of phone rules when form-factor = tablet.
+
 ## iOS Design Rules
 
 iOS-specific design rules (Apple HIG, type ramp, Liquid Glass, compliance checklist) live in [ios.md](ios.md). **Load that file when target = iOS** before generating the screen.
@@ -164,6 +201,37 @@ This produces a Pixel 8 frame:
 - Empty `<main class="device-content">` slot for screen content
 - Gesture-navigation pill at the bottom
 - Pixel 8 frame: 412×915
+
+#### iPad (form-factor = tablet, platform = iOS) — `create_ipad_template.py`
+
+```bash
+python3 "${CLAUDE_PLUGIN_ROOT}/skills/make-mobile-design/scripts/create_ipad_template.py" my-screen.html --title "My Screen"
+# Portrait (834×1194) instead of the default landscape (1194×834):
+python3 "${CLAUDE_PLUGIN_ROOT}/skills/make-mobile-design/scripts/create_ipad_template.py" my-screen.html --orientation portrait
+```
+
+Produces an iPad Pro 11" frame: no Dynamic Island, 24px status bar
+(time + signal/wifi/battery), home indicator pill, `<main class="device-content">`
+slot, embedded Copy-to-Figma serializer. Use the layout wrappers from
+[components/ios/13-tablet-layouts.md](components/ios/13-tablet-layouts.md)
+(`.split-view`, `.sidebar-ipad`, `.detail-pane`, `.three-column`) as the
+first child of `.device-content`. Fill cells with existing iOS components.
+
+#### Pixel Tablet (form-factor = tablet, platform = Android) — `create_android_tablet_template.py`
+
+```bash
+python3 "${CLAUDE_PLUGIN_ROOT}/skills/make-mobile-design/scripts/create_android_tablet_template.py" my-screen.html --title "My Screen"
+# Portrait (800×1280 dp) instead of the default landscape (1280×800 dp):
+python3 "${CLAUDE_PLUGIN_ROOT}/skills/make-mobile-design/scripts/create_android_tablet_template.py" my-screen.html --orientation portrait
+```
+
+Produces a Pixel Tablet frame: no hole-punch (bezel camera), 24dp status
+bar, MD3 tokens, Roboto Flex via Google Fonts, gesture-nav pill,
+`<main class="device-content">` slot, embedded Copy-to-Figma serializer.
+Use the wrappers from
+[components/android/10-tablet-layouts.md](components/android/10-tablet-layouts.md)
+(`.tablet-shell`, `.list-detail`, `.three-column-md`) plus the existing
+`.nav-rail` from `components/android/09-navigation-drawer.md` §A23.
 
 After scaffolding, your job is to fill `.device-content` with components from [components.md](components.md) — iOS components for iOS screens, Android components for Android screens. **Never mix.**
 

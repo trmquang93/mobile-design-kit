@@ -1,6 +1,6 @@
 {
   "name": "mobile-design-kit",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Design mobile app screens as HTML mockups for iOS (Apple HIG) and Android (Material 3), and export icons as Xcode asset catalogs. Bundles make-mobile-design (HTML mockup + design system) with ios-icon-gen (SF Symbols + Iconify PNG imagesets).",
   "author": {
     "name": "quang",

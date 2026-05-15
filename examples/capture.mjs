@@ -1,6 +1,13 @@
 // Capture each examples/*.html as a PNG of the .device frame, then
 // recompose the iOS and Android showcase strips used in the README.
 // Usage: cd examples && npm install && node capture.mjs
+//
+// Viewport convention (filename-prefix-driven, see viewportFor()):
+//   ipad-*           → 1280×900 viewport (iPad Pro 11" landscape default)
+//   android-tablet-* → 1360×900 viewport (Pixel Tablet landscape default)
+//   everything else  → 480×980 viewport (phone scaffolds, 430×932 iPhone / 412×915 Pixel 8)
+// The viewport just has to be larger than the .device frame; puppeteer
+// screenshots the element's bounding box, not the viewport.
 import { readdir } from 'node:fs/promises';
 import { spawn } from 'node:child_process';
 import { dirname, join, resolve } from 'node:path';
@@ -14,6 +21,12 @@ const files = (await readdir(here))
     .filter((f) => f.endsWith('.html'))
     .sort();
 
+function viewportFor(file) {
+    if (file.startsWith('ipad-')) return { width: 1280, height: 900, deviceScaleFactor: 2 };
+    if (file.startsWith('android-tablet-')) return { width: 1360, height: 900, deviceScaleFactor: 2 };
+    return { width: 480, height: 980, deviceScaleFactor: 2 };
+}
+
 const browser = await puppeteer.launch({
     headless: 'new',
     args: ['--no-sandbox', '--disable-setuid-sandbox'],
@@ -23,7 +36,7 @@ try {
     for (const file of files) {
         const url = pathToFileURL(resolve(here, file)).href;
         const page = await browser.newPage();
-        await page.setViewport({ width: 480, height: 980, deviceScaleFactor: 2 });
+        await page.setViewport(viewportFor(file));
         await page.goto(url, { waitUntil: 'networkidle0', timeout: 30000 });
 
         // wait an extra beat for fonts and Iconify SVGs

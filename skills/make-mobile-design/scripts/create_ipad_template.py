@@ -1,19 +1,17 @@
 #!/usr/bin/env python3
-"""Generate a standalone HTML Pixel 8 device template with a top hole-punch
-camera, 24dp status bar, and gesture-navigation pill — ready to be filled
-with Material 3 screen content.
+"""Generate a standalone HTML iPad Pro 11" device template with a 24px
+status bar, rounded-rect bezel, home indicator pill, and the Figma export
+serializer — ready to be filled with iPadOS / Apple-HIG screen content.
 
 Usage:
-    python3 create_android_template.py <output.html> [--title "Screen Name"]
+    python3 create_ipad_template.py <output.html> [--title "Screen Name"]
+                                                  [--orientation landscape|portrait]
 
-Notes:
-- 412 x 915 viewport (Pixel 8 logical density).
-- MD3 baseline tokens inlined in :root; keep in sync with
-  components/android/01-base-tokens.md.
-- Roboto Flex loaded from Google Fonts.
-- .device-content uses padding-top: 0 so the FIRST CHILD owns the 24px
-  status-bar safe area, matching the iOS scaffold convention (lets a top
-  app bar's background fill behind the status bar).
+Defaults:
+    landscape (1194 x 834). --orientation portrait flips to 834 x 1194.
+
+Mirrors create_ios_template.py — the Copy-to-Figma serializer is identical.
+The iPad has no Dynamic Island; the status bar is 24px (vs 59px on iPhone).
 """
 
 import argparse
@@ -27,151 +25,39 @@ TEMPLATE = Template(r"""<!DOCTYPE html>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>$title</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wght@8..144,300..900&family=Roboto+Mono:wght@400;500&display=swap">
     <style>
         :root {
-            /* Material 3 — baseline LIGHT scheme.
-               Keep in sync with components/android/01-base-tokens.md. */
-            --md-sys-color-primary:                #6750A4;
-            --md-sys-color-on-primary:             #FFFFFF;
-            --md-sys-color-primary-container:      #EADDFF;
-            --md-sys-color-on-primary-container:   #4F378B;
-            --md-sys-color-secondary:              #625B71;
-            --md-sys-color-on-secondary:           #FFFFFF;
-            --md-sys-color-secondary-container:    #E8DEF8;
-            --md-sys-color-on-secondary-container: #1D192B;
-            --md-sys-color-tertiary:               #7D5260;
-            --md-sys-color-on-tertiary:            #FFFFFF;
-            --md-sys-color-tertiary-container:     #FFD8E4;
-            --md-sys-color-on-tertiary-container:  #31111D;
-            --md-sys-color-error:                  #B3261E;
-            --md-sys-color-on-error:               #FFFFFF;
-            --md-sys-color-error-container:        #F9DEDC;
-            --md-sys-color-on-error-container:     #410E0B;
-            --md-sys-color-background:             #FEF7FF;
-            --md-sys-color-on-background:          #1D1B20;
-            --md-sys-color-surface:                #FEF7FF;
-            --md-sys-color-on-surface:             #1D1B20;
-            --md-sys-color-surface-variant:        #E7E0EC;
-            --md-sys-color-on-surface-variant:     #49454F;
-            --md-sys-color-outline:                #79747E;
-            --md-sys-color-outline-variant:        #CAC4D0;
-            --md-sys-color-surface-container-lowest:  #FFFFFF;
-            --md-sys-color-surface-container-low:     #F7F2FA;
-            --md-sys-color-surface-container:         #F3EDF7;
-            --md-sys-color-surface-container-high:    #ECE6F0;
-            --md-sys-color-surface-container-highest: #E6E0E9;
-            --md-sys-color-surface-tint:           var(--md-sys-color-primary);
-            --md-sys-color-inverse-surface:        #322F35;
-            --md-sys-color-inverse-on-surface:     #F5EFF7;
-            --md-sys-color-scrim:                  #000000;
+            --color-bg: #FFFFFF;
+            --color-text: #000000;
+            --color-text-secondary: #6B7280;
+            --color-island: #000000;
+            --font-system: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 
-            /* MD3 type scale (size / line-height in px). Use Roboto Flex. */
-            --md-sys-typescale-display-large:    57px;
-            --md-sys-typescale-display-medium:   45px;
-            --md-sys-typescale-display-small:    36px;
-            --md-sys-typescale-headline-large:   32px;
-            --md-sys-typescale-headline-medium:  28px;
-            --md-sys-typescale-headline-small:   24px;
-            --md-sys-typescale-title-large:      22px;
-            --md-sys-typescale-title-medium:     16px;
-            --md-sys-typescale-title-small:      14px;
-            --md-sys-typescale-body-large:       16px;
-            --md-sys-typescale-body-medium:      14px;
-            --md-sys-typescale-body-small:       12px;
-            --md-sys-typescale-label-large:      14px;
-            --md-sys-typescale-label-medium:     12px;
-            --md-sys-typescale-label-small:      11px;
-
-            /* MD3 corner shape tokens */
-            --md-sys-shape-corner-none:        0px;
-            --md-sys-shape-corner-extra-small: 4px;
-            --md-sys-shape-corner-small:       8px;
-            --md-sys-shape-corner-medium:      12px;
-            --md-sys-shape-corner-large:       16px;
-            --md-sys-shape-corner-extra-large: 28px;
-            --md-sys-shape-corner-full:        9999px;
-
-            /* MD3 tonal elevation — combine box-shadow with surface-tint
-               overlay for full effect (see android.md "Elevation"). */
-            --md-sys-elevation-level0: none;
-            --md-sys-elevation-level1: 0 1px 2px rgba(0,0,0,0.30), 0 1px 3px 1px rgba(0,0,0,0.15);
-            --md-sys-elevation-level2: 0 1px 2px rgba(0,0,0,0.30), 0 2px 6px 2px rgba(0,0,0,0.15);
-            --md-sys-elevation-level3: 0 4px 8px 3px rgba(0,0,0,0.15), 0 1px 3px rgba(0,0,0,0.30);
-            --md-sys-elevation-level4: 0 6px 10px 4px rgba(0,0,0,0.15), 0 2px 3px rgba(0,0,0,0.30);
-            --md-sys-elevation-level5: 0 8px 12px 6px rgba(0,0,0,0.15), 0 4px 4px rgba(0,0,0,0.30);
-
-            /* MD3 motion easing */
-            --md-sys-motion-easing-standard:               cubic-bezier(0.2, 0.0, 0, 1.0);
-            --md-sys-motion-easing-emphasized:             cubic-bezier(0.2, 0.0, 0, 1.0);
-            --md-sys-motion-easing-emphasized-decelerate:  cubic-bezier(0.05, 0.7, 0.1, 1.0);
-            --md-sys-motion-easing-emphasized-accelerate:  cubic-bezier(0.3, 0.0, 0.8, 0.15);
-            --md-sys-motion-easing-linear:                 linear;
-
-            /* MD3 motion durations */
-            --md-sys-motion-duration-short1:  50ms;
-            --md-sys-motion-duration-short2: 100ms;
-            --md-sys-motion-duration-short3: 150ms;
-            --md-sys-motion-duration-short4: 200ms;
-            --md-sys-motion-duration-medium1: 250ms;
-            --md-sys-motion-duration-medium2: 300ms;
-            --md-sys-motion-duration-medium3: 350ms;
-            --md-sys-motion-duration-medium4: 400ms;
-            --md-sys-motion-duration-long1:  450ms;
-            --md-sys-motion-duration-long2:  500ms;
-
-            --font-roboto: "Roboto Flex", "Roboto", "Google Sans", system-ui, -apple-system, sans-serif;
-            --font-mono:   "Roboto Mono", ui-monospace, "SF Mono", Menlo, monospace;
-        }
-
-        @media (prefers-color-scheme: dark) {
-            :root {
-                --md-sys-color-primary:                #D0BCFF;
-                --md-sys-color-on-primary:             #381E72;
-                --md-sys-color-primary-container:      #4F378B;
-                --md-sys-color-on-primary-container:   #EADDFF;
-                --md-sys-color-secondary:              #CCC2DC;
-                --md-sys-color-on-secondary:           #332D41;
-                --md-sys-color-secondary-container:    #4A4458;
-                --md-sys-color-on-secondary-container: #E8DEF8;
-                --md-sys-color-tertiary:               #EFB8C8;
-                --md-sys-color-on-tertiary:            #492532;
-                --md-sys-color-tertiary-container:     #633B48;
-                --md-sys-color-on-tertiary-container:  #FFD8E4;
-                --md-sys-color-error:                  #F2B8B5;
-                --md-sys-color-on-error:               #601410;
-                --md-sys-color-error-container:        #8C1D18;
-                --md-sys-color-on-error-container:     #F9DEDC;
-                --md-sys-color-background:             #141218;
-                --md-sys-color-on-background:          #E6E0E9;
-                --md-sys-color-surface:                #141218;
-                --md-sys-color-on-surface:             #E6E0E9;
-                --md-sys-color-surface-variant:        #49454F;
-                --md-sys-color-on-surface-variant:     #CAC4D0;
-                --md-sys-color-outline:                #938F99;
-                --md-sys-color-outline-variant:        #49454F;
-                --md-sys-color-surface-container-lowest:  #0F0D13;
-                --md-sys-color-surface-container-low:     #1D1B20;
-                --md-sys-color-surface-container:         #211F26;
-                --md-sys-color-surface-container-high:    #2B2930;
-                --md-sys-color-surface-container-highest: #36343B;
-                --md-sys-color-inverse-surface:        #E6E0E9;
-                --md-sys-color-inverse-on-surface:     #322F35;
-            }
+            /* iOS HIG type ramp — keep in sync with components/ios/01-base-tokens.md */
+            --text-caption2:    11px;
+            --text-caption1:    12px;
+            --text-footnote:    13px;
+            --text-subheadline: 15px;
+            --text-callout:     16px;
+            --text-body:        17px;
+            --text-title3:      20px;
+            --text-title2:      22px;
+            --text-title1:      28px;
+            --text-largetitle:  34px;
+            --text-md:          var(--text-body);
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
 
         html, body {
             background: #1a1a1a;
-            font-family: var(--font-roboto);
-            font-size: var(--md-sys-typescale-body-large);
-            line-height: 1.5;
-            color: var(--md-sys-color-on-surface);
+            font-family: var(--font-system);
+            font-size: var(--text-body);
+            line-height: 1.29;
+            letter-spacing: -0.022em;
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
+            color: var(--color-text);
             min-height: 100vh;
         }
 
@@ -182,37 +68,21 @@ TEMPLATE = Template(r"""<!DOCTYPE html>
             padding: 20px 0;
         }
 
-        /* Pixel 8 frame: 412 x 915 logical px, ~36px corner radius */
         .device {
             position: relative;
-            width: 412px;
-            height: 915px;
-            min-width: 412px;
-            min-height: 915px;
+            width: ${width}px;
+            height: ${height}px;
+            min-width: ${width}px;
+            min-height: ${height}px;
             flex-shrink: 0;
-            background: var(--md-sys-color-background);
-            border-radius: 44px;
+            background: var(--color-bg);
+            border-radius: 38px;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
             overflow: hidden;
         }
 
-        /* Hole-punch camera — centered, top */
-        .hole-punch {
-            position: absolute;
-            top: 10px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 14px;
-            height: 14px;
-            background: #000;
-            border-radius: 50%;
-            z-index: 100;
-            pointer-events: none;
-        }
-
-        /* Status bar (matches components/android/02-status-bar.md) — 24px,
-           pinned via position:absolute; top:0; z-index:50.
-           pointer-events: none so taps fall through to scrolling content. */
+        /* Status Bar — iPad has NO Dynamic Island. 24px height, time on
+           left, system icons on right. Pinned via position:absolute. */
         .status-bar {
             position: absolute;
             top: 0;
@@ -222,60 +92,73 @@ TEMPLATE = Template(r"""<!DOCTYPE html>
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 4px 20px 0;
-            font-size: var(--md-sys-typescale-label-medium);
-            font-weight: 500;
-            color: var(--md-sys-color-on-surface);
+            padding: 4px 24px 0;
+            font-size: var(--text-footnote);
+            font-weight: 600;
             z-index: 50;
             pointer-events: none;
         }
 
-        .status-bar-time { letter-spacing: 0.02em; }
-        .status-bar-icons { display: flex; gap: 4px; align-items: center; }
+        .status-bar-time {
+            font-size: var(--text-footnote);
+            font-weight: 600;
+            letter-spacing: 0.02em;
+        }
 
-        /* Scrollable content. Same convention as the iOS scaffold:
-           padding-top is 0 — the FIRST CHILD inside .device-content owns the
-           24px status-bar safe area via its own padding-top:
-              .top-app-bar  → padding-top: calc(24px + 8px)
-              .page-content → padding-top: 24px
-              full-bleed    → 0 (image/hero bleeds behind status bar)
+        .status-bar-icons {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+        }
 
-           Any floating overlay over .device-content (custom bottom nav, FAB,
-           snackbar) MUST set `pointer-events: none` on its wrapper and
-           `pointer-events: auto` on its interactive children, otherwise the
-           overlay swallows scroll over its footprint. */
+        /* Scrollable content — scrolls behind status bar and home indicator.
+           Any floating overlay placed over .device-content (custom tab bar, FAB,
+           banner, sheet handle) MUST set `pointer-events: none` on its wrapper
+           and `pointer-events: auto` on its interactive children, otherwise the
+           overlay swallows wheel/touch and the screen stops scrolling under it.
+
+           NOTE: padding-top is intentionally 0 — the 24px status-bar safe area
+           is the responsibility of the FIRST element inside .device-content,
+           NOT this container. This is so navigation bars (.nav-header, glass
+           top bars, hero images) can render their background behind the status
+           bar to the very top edge of the screen, which is the correct iOS
+           behavior. See components/ios/13-tablet-layouts.md §31a for the pattern. */
         .device-content {
             position: absolute;
             inset: 0;
             overflow-y: auto;
             -webkit-overflow-scrolling: touch;
-            padding-top: 0;          /* status-bar offset belongs on first child */
-            padding-bottom: 24px;    /* clearance above gesture-nav pill */
-            background: var(--md-sys-color-background);
+            padding-top: 0;       /* status-bar offset belongs on first child */
+            padding-bottom: 34px; /* space for home indicator */
         }
+        /* Block layout, NOT flex — flex-direction:column with overflow:auto
+           lets browsers shrink children below their content size and the
+           container then reports scrollHeight == clientHeight (no scroll). */
+
         .device-content::-webkit-scrollbar { display: none; }
         .device-content { scrollbar-width: none; }
 
-        /* Gesture-nav pill — overlay, never scrolls */
-        .gesture-nav-area {
+        /* Home Indicator — overlays content, stays fixed during scroll */
+        .home-indicator-area {
             position: absolute;
             bottom: 0;
             left: 0;
             right: 0;
-            height: 24px;
+            height: 34px;
             display: flex;
             justify-content: center;
             align-items: flex-end;
-            padding-bottom: 10px;
+            padding-bottom: 8px;
             pointer-events: none;
             z-index: 50;
         }
-        .gesture-nav-pill {
-            width: 108px;
-            height: 4px;
-            background: var(--md-sys-color-on-surface);
-            border-radius: 2px;
-            opacity: 0.85;
+
+        .home-indicator {
+            width: 134px;
+            height: 5px;
+            background: var(--color-text);
+            border-radius: 3px;
+            opacity: 0.9;
         }
 
         /* Figma export chrome — host page only, not part of the design payload */
@@ -287,7 +170,7 @@ TEMPLATE = Template(r"""<!DOCTYPE html>
             gap: 8px;
             align-items: center;
             z-index: 1000;
-            font-family: var(--font-roboto);
+            font-family: var(--font-system);
         }
         .figma-export-btn {
             appearance: none;
@@ -296,7 +179,7 @@ TEMPLATE = Template(r"""<!DOCTYPE html>
             backdrop-filter: blur(20px) saturate(160%);
             -webkit-backdrop-filter: blur(20px) saturate(160%);
             color: #fff;
-            font: 500 13px var(--font-roboto);
+            font: 600 13px var(--font-system);
             padding: 8px 14px;
             border-radius: 999px;
             cursor: pointer;
@@ -317,31 +200,25 @@ TEMPLATE = Template(r"""<!DOCTYPE html>
     </style>
 </head>
 <body>
-    <div class="device" data-platform="android">
-        <!-- Hole-punch camera (always on top) -->
-        <div class="hole-punch"></div>
-
-        <!-- Status bar -->
+    <div class="device" data-platform="ios" data-form-factor="tablet">
+        <!-- Status Bar (iPad: no Dynamic Island, 24px) -->
         <div class="status-bar">
             <span class="status-bar-time">9:41</span>
             <div class="status-bar-icons">
-                <!-- Signal -->
-                <svg width="13" height="13" viewBox="73.6 9.47 36.1 36.06" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M109.695 12.2225C109.695 10.7038 108.464 9.47253 106.945 9.47253C105.426 9.47253 104.195 10.7038 104.195 12.2225V42.7781C104.195 44.2969 105.426 45.5281 106.945 45.5281C108.464 45.5281 109.695 44.2969 109.695 42.7781V12.2225ZM89.2219 28.4164C89.2219 26.8976 87.9907 25.6664 86.4719 25.6664C84.9532 25.6664 83.7219 26.8976 83.7219 28.4164V42.7775C83.7219 44.2963 84.9532 45.5275 86.4719 45.5275C87.9907 45.5275 89.2219 44.2963 89.2219 42.7775V28.4164ZM76.3892 33.917C77.908 33.917 79.1392 35.1482 79.1392 36.667V42.7781C79.1392 44.2969 77.908 45.5281 76.3892 45.5281C74.8704 45.5281 73.6392 44.2969 73.6392 42.7781V36.667C73.6392 35.1482 74.8704 33.917 76.3892 33.917ZM99.6113 20.4724C99.6113 18.9536 98.3801 17.7224 96.8613 17.7224C95.3425 17.7224 94.1113 18.9536 94.1113 20.4724V42.7779C94.1113 44.2967 95.3425 45.5279 96.8613 45.5279C98.3801 45.5279 99.6113 44.2967 99.6113 42.7779V20.4724Z"/></svg>
-                <!-- Wi-Fi -->
-                <svg width="18" height="13" viewBox="3.4 9 46.7 34.4" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M16.7266 15.9883C20.0518 14.6069 23.6178 13.898 27.2186 13.9027L27.2218 13.9027C34.7956 13.9027 41.6459 16.9777 46.6005 21.9533C47.5531 22.9099 49.1008 22.9132 50.0574 21.9606C51.0141 21.008 51.0174 19.4603 50.0648 18.5037C44.2305 12.6446 36.1489 9.01425 27.2234 9.01382C22.9773 9.0085 18.7722 9.84448 14.851 11.4735C10.9293 13.1027 7.36927 15.4929 4.37663 18.5059C3.42526 19.4637 3.4305 21.0114 4.38835 21.9628C5.34619 22.9142 6.89392 22.9089 7.8453 21.9511C10.3828 19.3963 13.4013 17.3697 16.7266 15.9883ZM27.2234 9.01382L27.2218 9.01382V11.4583L27.225 9.01382L27.2234 9.01382ZM20.0813 24.5246C22.3374 23.5614 24.7656 23.0663 27.2188 23.0694H27.2248C29.678 23.0663 32.1062 23.5614 34.3623 24.5246C36.6185 25.4878 38.6556 26.8991 40.3501 28.6729C41.2827 29.649 42.83 29.6844 43.8062 28.7518C44.7824 27.8192 44.8177 26.2719 43.8851 25.2957C41.7334 23.0434 39.1467 21.2514 36.2819 20.0283C33.418 18.8057 30.3357 18.177 27.2218 18.1805C24.1078 18.177 21.0256 18.8057 18.1617 20.0283C15.2969 21.2514 12.7102 23.0434 10.5585 25.2957C9.62589 26.2719 9.66124 27.8192 10.6374 28.7518C11.6136 29.6844 13.1609 29.649 14.0935 28.6729C15.788 26.8991 17.8251 25.4878 20.0813 24.5246ZM27.2218 18.1805L27.2188 18.1805L27.2218 20.6249L27.2248 18.1805L27.2218 18.1805ZM23.4996 33.0373C24.668 32.5078 25.9362 32.2346 27.2191 32.236H27.2218C29.9236 32.236 32.346 33.4225 34.001 35.3088C34.8914 36.3236 36.4358 36.4244 37.4506 35.534C38.4654 34.6437 38.5663 33.0992 37.6759 32.0844C35.1328 29.186 31.3912 27.3476 27.2232 27.3471L27.2245 27.3472L27.2218 29.7916V27.3471H27.2232C25.2429 27.3451 23.2852 27.767 21.4815 28.5844C19.6774 29.402 18.0693 30.5964 16.7652 32.0872C15.8764 33.1034 15.9796 34.6477 16.9958 35.5365C18.0119 36.4253 19.5562 36.3221 20.445 35.306C21.2896 34.3404 22.3311 33.5669 23.4996 33.0373ZM30.5556 40.3332C30.5556 42.0208 29.1875 43.3888 27.5 43.3888C25.8125 43.3888 24.4444 42.0208 24.4444 40.3332C24.4444 38.6457 25.8125 37.2777 27.5 37.2777C29.1875 37.2777 30.5556 38.6457 30.5556 40.3332Z"/></svg>
-                <!-- Battery -->
-                <svg width="19" height="13" viewBox="132.9 11.4 45.85 32.1" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M134.93 13.472C136.22 12.1827 137.968 11.4584 139.792 11.4584H167.292C169.115 11.4584 170.864 12.1827 172.153 13.472C173.442 14.7613 174.167 16.51 174.167 18.3334V18.7266C175.124 19.0652 176.004 19.615 176.736 20.347C178.026 21.6363 178.75 23.385 178.75 25.2084V29.7917C178.75 31.6151 178.026 33.3638 176.736 34.6531C176.004 35.385 175.124 35.9349 174.167 36.2735V36.6667C174.167 38.4901 173.442 40.2388 172.153 41.5281C170.864 42.8174 169.115 43.5417 167.292 43.5417H139.792C137.968 43.5417 136.22 42.8174 134.93 41.5281C133.641 40.2388 132.917 38.4901 132.917 36.6667V18.3334C132.917 16.51 133.641 14.7613 134.93 13.472ZM139.792 16.0417C139.184 16.0417 138.601 16.2832 138.171 16.7129C137.741 17.1427 137.5 17.7256 137.5 18.3334V36.6667C137.5 37.2745 137.741 37.8574 138.171 38.2872C138.601 38.7169 139.184 38.9584 139.792 38.9584H167.292C167.899 38.9584 168.482 38.7169 168.912 38.2872C169.342 37.8574 169.583 37.2745 169.583 36.6667V34.375C169.583 33.1094 170.609 32.0834 171.875 32.0834C172.483 32.0834 173.066 31.8419 173.495 31.4122C173.925 30.9824 174.167 30.3995 174.167 29.7917V25.2084C174.167 24.6006 173.925 24.0177 173.495 23.5879C173.066 23.1582 172.483 22.9167 171.875 22.9167C170.609 22.9167 169.583 21.8907 169.583 20.625V18.3334C169.583 17.7256 169.342 17.1427 168.912 16.7129C168.482 16.2832 167.899 16.0417 167.292 16.0417H139.792ZM144.375 20.625C145.641 20.625 146.667 21.6511 146.667 22.9167V32.0834C146.667 33.349 145.641 34.375 144.375 34.375C143.109 34.375 142.083 33.349 142.083 32.0834V22.9167C142.083 21.6511 143.109 20.625 144.375 20.625ZM153.542 20.625C154.807 20.625 155.833 21.6511 155.833 22.9167V32.0834C155.833 33.349 154.807 34.375 153.542 34.375C152.276 34.375 151.25 33.349 151.25 32.0834V22.9167C151.25 21.6511 152.276 20.625 153.542 20.625ZM162.708 20.625C163.974 20.625 165 21.6511 165 22.9167V32.0834C165 33.349 163.974 34.375 162.708 34.375C161.443 34.375 160.417 33.349 160.417 32.0834V22.9167C160.417 21.6511 161.443 20.625 162.708 20.625Z"/></svg>
+                <svg width="20" height="13" viewBox="0 0 20 13" fill="currentColor"><path fill-rule="evenodd" clip-rule="evenodd" d="M19.3466 1.625C19.3466 1.00368 18.8654 0.5 18.2718 0.5H17.1969C16.6033 0.5 16.1221 1.00368 16.1221 1.625V11.375C16.1221 11.9963 16.6033 12.5 17.1969 12.5H18.2718C18.8654 12.5 19.3466 11.9963 19.3466 11.375V1.625ZM11.8565 2.9H12.9313C13.5249 2.9 14.0061 3.41577 14.0061 4.052V11.348C14.0061 11.9842 13.5249 12.5 12.9313 12.5H11.8565C11.2629 12.5 10.7817 11.9842 10.7817 11.348V4.052C10.7817 3.41577 11.2629 2.9 11.8565 2.9ZM7.49008 5.5H6.41527C5.82167 5.5 5.34046 6.02233 5.34046 6.66667V11.3333C5.34046 11.9777 5.82167 12.5 6.41527 12.5H7.49008C8.08368 12.5 8.56489 11.9777 8.56489 11.3333V6.66667C8.56489 6.02233 8.08368 5.5 7.49008 5.5ZM2.14962 7.9H1.07481C0.481208 7.9 0 8.41487 0 9.05V11.35C0 11.9851 0.481208 12.5 1.07481 12.5H2.14962C2.74322 12.5 3.22443 11.9851 3.22443 11.35V9.05C3.22443 8.41487 2.74322 7.9 2.14962 7.9Z"/></svg>
+                <svg width="18" height="13" viewBox="26.9 0 17.3 13" fill="currentColor"><path fill-rule="evenodd" clip-rule="evenodd" d="M35.5408 3.02062C38.0469 3.02072 40.4571 3.92573 42.2734 5.54859C42.4102 5.67388 42.6288 5.6723 42.7635 5.54504L44.0709 4.30497C44.1391 4.24043 44.1771 4.153 44.1766 4.06204C44.176 3.97107 44.1369 3.88407 44.0679 3.82028C39.3008 -0.47342 31.7801 -0.47342 27.0129 3.82028C26.9439 3.88402 26.9047 3.971 26.9041 4.06197C26.9034 4.15293 26.9414 4.24038 27.0095 4.30497L28.3173 5.54504C28.4519 5.67249 28.6707 5.67407 28.8074 5.54859C30.6239 3.92562 33.0344 3.02061 35.5408 3.02062ZM35.539 7.16274C36.9067 7.16265 38.2255 7.66492 39.2393 8.57193C39.3765 8.70066 39.5925 8.69787 39.7261 8.56564L41.0232 7.27077C41.0915 7.20285 41.1294 7.11071 41.1285 7.01496C41.1275 6.91922 41.0877 6.82786 41.018 6.76132C37.9308 3.92401 33.1498 3.92401 30.0626 6.76132C29.9929 6.82786 29.9531 6.91926 29.9522 7.01504C29.9512 7.11081 29.9893 7.20294 30.0577 7.27077L31.3545 8.56564C31.4881 8.69787 31.7041 8.70066 31.8413 8.57193C32.8544 7.66552 34.1722 7.1633 35.539 7.16274ZM38.0803 9.90455C38.0823 10.008 38.0449 10.1076 37.9771 10.1801L35.7838 12.5894C35.7195 12.6602 35.6319 12.7 35.5404 12.7C35.4489 12.7 35.3613 12.6602 35.297 12.5894L33.1033 10.1801C33.0356 10.1076 32.9983 10.0079 33.0003 9.90447C33.0023 9.80107 33.0434 9.70315 33.114 9.63384C34.5147 8.34428 36.5661 8.34428 37.9669 9.63384C38.0373 9.70321 38.0784 9.80115 38.0803 9.90455Z"/></svg>
+                <svg width="27" height="13" viewBox="52.5 0 27 13" fill="none"><rect opacity="0.35" x="52.5474" y="0.5" width="24" height="12" rx="3.8" stroke="currentColor"/><path opacity="0.4" d="M77.9473 4.66666V8.66666C78.752 8.32788 79.2753 7.53979 79.2753 6.66666C79.2753 5.79352 78.752 5.00543 77.9473 4.66666Z" fill="currentColor"/><rect x="53.8474" y="2" width="21" height="9" rx="2.5" fill="currentColor"/></svg>
             </div>
         </div>
 
-        <!-- Screen content goes here -->
+        <!-- Insert screen content here -->
         <main class="device-content">
-            <!-- Fill with Android (Material 3) components -->
+            <!-- Screen content goes here -->
         </main>
 
-        <!-- Gesture-navigation pill -->
-        <div class="gesture-nav-area">
-            <div class="gesture-nav-pill"></div>
+        <!-- Home Indicator -->
+        <div class="home-indicator-area">
+            <div class="home-indicator"></div>
         </div>
     </div>
 
@@ -369,7 +246,7 @@ TEMPLATE = Template(r"""<!DOCTYPE html>
      *   - <img> (emitted as <image href="..."> — Figma may refuse remote URLs)
      *   - overflow clipping via <clipPath>
      * Not exported:
-     *   - box-shadow, backdrop-filter, CSS filters, transforms
+     *   - box-shadow, backdrop-filter (glass), CSS filters, transforms
      *   - background-image (non-gradient), pseudo-elements (::before/::after)
      */
     (function () {
@@ -429,6 +306,7 @@ TEMPLATE = Template(r"""<!DOCTYPE html>
             pos: pm ? parseFloat(pm[1]) / 100 : (arr.length > 1 ? idx / (arr.length - 1) : 0)
           };
         });
+        // CSS gradient angle: 0deg points up. SVG x1/y1 -> x2/y2 in objectBoundingBox.
         var rad = (angle - 90) * Math.PI / 180;
         var dx = Math.cos(rad) * 0.5, dy = Math.sin(rad) * 0.5;
         var id = 'fgmg' + (++defCounter);
@@ -456,6 +334,7 @@ TEMPLATE = Template(r"""<!DOCTYPE html>
         var rects = Array.prototype.slice.call(range.getClientRects());
         if (rects.length === 0) return [];
         if (rects.length === 1) return [{ text: text, rect: rects[0] }];
+        // Multi-line: binary-search per line to find character span
         var lines = [];
         var len = text.length;
         var offset = 0;
@@ -494,6 +373,7 @@ TEMPLATE = Template(r"""<!DOCTYPE html>
           var ln = lines[i];
           var lx = ln.rect.left - ox;
           var ly = ln.rect.top - oy;
+          // Baseline ≈ font cap-height. Center font within line box, then drop to baseline.
           var ty = ly + (ln.rect.height - size) / 2 + size * 0.82;
           var tx = lx;
           var anchor = 'start';
@@ -523,8 +403,15 @@ TEMPLATE = Template(r"""<!DOCTYPE html>
         var x = r.left - ox, y = r.top - oy, w = r.width, h = r.height;
         if (w <= 0 || h <= 0) return;
 
-        // CSS mask icon (e.g. Iconify SVG used as `mask` with a
-        // `background-color` tint — the Android bottom nav uses this).
+        // Inline <svg> — embed the element verbatim so its own fill/stroke/
+        // viewBox attributes survive. Wrap in a <g transform="translate(...)">
+        // for positioning (don't mutate the inner svg's attributes — duplicate
+        // width/height would produce invalid XML that Figma rejects).
+        // Resolve `currentColor` to the actual text color at export time:
+        // Figma's SVG paste parser doesn't reliably propagate color context,
+        // so unresolved `currentColor` falls back to black.
+        // CSS mask icon (Iconify SVG used as `mask` with a `background-color`
+        // tint — used by the iOS floating tab bar and any other masked icon).
         // Figma's SVG paste can't read CSS `mask`, so without this the icon
         // appears as a solid filled rectangle. Pre-fetched SVG markup is
         // recolored with the element's background-color and inlined.
@@ -550,6 +437,13 @@ TEMPLATE = Template(r"""<!DOCTYPE html>
         if (tag === 'svg') {
           var fillRgb = parseRgb(cs.fill) || parseRgb(cs.color);
           var colorVal = fillRgb ? colorAttr(fillRgb) : 'black';
+          // Strip any existing width/height (may come from CSS, not attrs) and
+          // inject the computed render size, otherwise a nested <svg> without
+          // width/height defaults to 100% of the root viewport in Figma.
+          // Also resolve currentColor so strokes/fills don't fall back to black.
+          // Only strip width/height on the OUTER <svg ...> opening tag — a
+          // global replace also wipes width/height from inner <rect>/<image>
+          // elements (e.g. status-bar cellular/battery rects), erasing them.
           var markup = node.outerHTML.replace(
             /^<svg\b([^>]*)>/i,
             function (_m, attrs) {
@@ -565,6 +459,7 @@ TEMPLATE = Template(r"""<!DOCTYPE html>
           return;
         }
 
+        // <img> — emit as <image>; Figma may or may not fetch the href on paste
         if (tag === 'img') {
           var src = node.currentSrc || node.src;
           out.push('<image x="' + num(x) + '" y="' + num(y) +
@@ -575,11 +470,14 @@ TEMPLATE = Template(r"""<!DOCTYPE html>
 
         if (op < 1) out.push('<g opacity="' + op + '">');
 
+        // Background / border rect
         var bg = parseRgb(cs.backgroundColor);
         var grad = gradientDef(cs.backgroundImage);
         var borderW = parseFloat(cs.borderTopWidth) || 0;
         var borderC = borderW > 0 ? parseRgb(cs.borderTopColor) : null;
         var rx = parseFloat(cs.borderTopLeftRadius) || 0;
+        // Clamp rx to min(w,h)/2 — CSS border-radius: 9999px renders as a
+        // pill, but SVG clamps rx and ry independently, producing an ellipse.
         rx = Math.min(rx, Math.min(w, h) / 2);
         if (grad || bg || (borderW && borderC)) {
           var fillVal = grad || (bg ? colorAttr(bg) : 'none');
@@ -593,6 +491,10 @@ TEMPLATE = Template(r"""<!DOCTYPE html>
                    '" fill="' + fillVal + '" fill-opacity="' + fillOp + '"' + strokeAttr + '/>');
         }
 
+        // Children, possibly clipped by overflow.
+        // SVG paint order is strict DOM order — CSS z-index is ignored.
+        // Stable-sort element children by computed z-index so stacked
+        // positioned layers (e.g. status-bar over .ambient) paint correctly.
         var kids = Array.prototype.slice.call(node.childNodes);
         var ordered = kids.map(function (c, idx) {
           var z = 0;
@@ -674,12 +576,22 @@ TEMPLATE = Template(r"""<!DOCTYPE html>
 """)
 
 
+IPAD_LANDSCAPE = (1194, 834)
+IPAD_PORTRAIT = (834, 1194)
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(
-        description="Generate a Pixel 8 (Android, Material 3) device template HTML file."
+        description="Generate an iPad Pro 11\" device template HTML file."
     )
     parser.add_argument("output", help="Output HTML file path")
-    parser.add_argument("--title", default="Android Screen", help="Page title (default: 'Android Screen')")
+    parser.add_argument("--title", default="iPad Screen", help="Page title (default: 'iPad Screen')")
+    parser.add_argument(
+        "--orientation",
+        choices=("landscape", "portrait"),
+        default="landscape",
+        help="Device orientation (default: landscape).",
+    )
     args = parser.parse_args()
 
     out_path = Path(args.output)
@@ -687,9 +599,11 @@ def main() -> int:
         print(f"Error: parent directory does not exist: {out_path.parent}", file=sys.stderr)
         return 1
 
-    html = TEMPLATE.substitute(title=args.title)
+    width, height = IPAD_LANDSCAPE if args.orientation == "landscape" else IPAD_PORTRAIT
+
+    html = TEMPLATE.substitute(title=args.title, width=width, height=height)
     out_path.write_text(html, encoding="utf-8")
-    print(f"Created Android device template: {out_path}")
+    print(f"Created iPad device template ({args.orientation}, {width}x{height}): {out_path}")
     return 0
 
 

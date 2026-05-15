@@ -6,14 +6,14 @@
   },
   "metadata": {
     "description": "Marketplace for mobile-design-kit — HTML mobile mockups (iOS + Android) + iOS icon export.",
-    "version": "0.2.0"
+    "version": "0.3.0"
   },
   "plugins": [
     {
       "name": "mobile-design-kit",
       "source": "./",
       "description": "Design mobile app screens as HTML mockups for iOS (Apple HIG) and Android (Material 3), and export icons as Xcode asset catalogs.",
-      "version": "0.2.0",
+      "version": "0.3.0",
       "category": "design",
       "keywords": ["mobile", "design", "ios", "android", "material-3", "mockup", "icons", "iconify", "sf-symbols", "html", "xcode"],
       "strict": false

@@ -1,12 +1,34 @@
-<!DOCTYPE html>
+#!/usr/bin/env python3
+"""Generate a standalone HTML Pixel Tablet device template — Material 3
+expanded window class. 24dp status bar, gesture-navigation pill, no
+hole-punch camera (the Pixel Tablet has a bezel camera).
+
+Usage:
+    python3 create_android_tablet_template.py <output.html>
+        [--title "Screen Name"] [--orientation landscape|portrait]
+
+Defaults:
+    landscape (1280 x 800 dp). --orientation portrait flips to 800 x 1280 dp.
+
+Mirrors create_android_template.py — MD3 tokens, Roboto Flex, and the
+Copy-to-Figma serializer are identical. The Pixel Tablet has no
+hole-punch and no Dynamic Island.
+"""
+
+import argparse
+import sys
+from pathlib import Path
+from string import Template
+
+TEMPLATE = Template(r"""<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Revolut Hub</title>
+    <title>$title</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wght@8..144,300..900&family=Roboto+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;600;700&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wght@8..144,300..900&family=Roboto+Mono:wght@400;500&display=swap">
     <style>
         :root {
             /* Material 3 — baseline LIGHT scheme.
@@ -159,33 +181,21 @@
             padding: 20px 0;
         }
 
-        /* Pixel 8 frame: 412 x 915 logical px, ~36px corner radius */
+        /* Pixel Tablet frame: 1280 x 800 dp landscape (default), ~28px corner */
         .device {
             position: relative;
-            width: 412px;
-            height: 915px;
-            min-width: 412px;
-            min-height: 915px;
+            width: ${width}px;
+            height: ${height}px;
+            min-width: ${width}px;
+            min-height: ${height}px;
             flex-shrink: 0;
             background: var(--md-sys-color-background);
-            border-radius: 44px;
+            border-radius: 28px;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
             overflow: hidden;
         }
-
-        /* Hole-punch camera — centered, top */
-        .hole-punch {
-            position: absolute;
-            top: 10px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 14px;
-            height: 14px;
-            background: #000;
-            border-radius: 50%;
-            z-index: 100;
-            pointer-events: none;
-        }
+        /* Pixel Tablet camera lives in the bezel — no hole-punch on the
+           device surface. (.hole-punch is intentionally absent.) */
 
         /* Status bar (matches components/android/02-status-bar.md) — 24px,
            pinned via position:absolute; top:0; z-index:50.
@@ -291,90 +301,11 @@
             -webkit-backdrop-filter: blur(20px) saturate(160%);
         }
         .figma-export-toast[hidden] { display: none; }
-    
-        /* Material 3 bottom navigation bar (added by add_android_navbar.py) */
-        .bottom-nav {
-            position: absolute;
-            bottom: 0;
-            left: 0; right: 0;
-            height: 104px;
-            display: flex;
-            justify-content: space-around;
-            align-items: flex-start;
-            padding: 12px 8px 40px;
-            background: var(--md-sys-color-surface-container);
-            z-index: 40;
-            pointer-events: none;
-        }
-        .bottom-nav__item {
-            pointer-events: auto;
-            flex: 1;
-            max-width: 80px;
-            min-height: 48px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 4px;
-            border: none;
-            background: transparent;
-            color: var(--md-sys-color-on-surface-variant);
-            cursor: pointer;
-            padding: 0;
-            position: relative;
-        }
-        .bottom-nav__indicator {
-            width: 64px;
-            height: 32px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: var(--md-sys-shape-corner-full);
-            transition: background-color 200ms var(--md-sys-motion-easing-emphasized),
-                        color 200ms var(--md-sys-motion-easing-emphasized);
-            position: relative;
-        }
-        .bottom-nav__indicator .bottom-nav__icon {
-            display: block;
-            width: 24px; height: 24px;
-            background-color: currentColor;
-            -webkit-mask: var(--icon) no-repeat center / contain;
-            mask: var(--icon) no-repeat center / contain;
-        }
-        .bottom-nav__item.is-active .bottom-nav__indicator {
-            background: var(--md-sys-color-secondary-container);
-            color: var(--md-sys-color-on-secondary-container);
-        }
-        .bottom-nav__item.is-active { color: var(--md-sys-color-on-surface); }
-        .bottom-nav__label {
-            font-size: var(--md-sys-typescale-label-medium);
-            font-weight: 500;
-            line-height: 1.33;
-            letter-spacing: 0.5px;
-        }
-        .bottom-nav__item.is-active .bottom-nav__label { font-weight: 700; }
-        .bottom-nav__badge {
-            position: absolute;
-            top: -2px;
-            right: 12px;
-            min-width: 16px;
-            height: 16px;
-            padding: 0 4px;
-            border-radius: 8px;
-            background: var(--md-sys-color-error);
-            color: var(--md-sys-color-on-error);
-            font-size: 10px;
-            font-weight: 500;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            border: 2px solid var(--md-sys-color-surface-container);
-        }
     </style>
 </head>
 <body>
-    <div class="device" data-platform="android">
-        <!-- Hole-punch camera (always on top) -->
-        <div class="hole-punch"></div>
+    <div class="device" data-platform="android" data-form-factor="tablet">
+        <!-- Pixel Tablet camera lives in the bezel — no on-surface hole-punch. -->
 
         <!-- Status bar -->
         <div class="status-bar">
@@ -391,267 +322,9 @@
 
         <!-- Screen content goes here -->
         <main class="device-content">
-            <style>
-                /* Revolut-inspired brand override (Material 3 dark + cobalt-violet) */
-                :root {
-                    --md-sys-color-primary:                #494fdf;
-                    --md-sys-color-on-primary:             #ffffff;
-                    --md-sys-color-primary-container:      #2a2e8c;
-                    --md-sys-color-on-primary-container:   #dbdcff;
-                    --md-sys-color-secondary:              #b0b3ff;
-                    --md-sys-color-on-secondary:           #0e1147;
-                    --md-sys-color-secondary-container:    #1f2363;
-                    --md-sys-color-on-secondary-container: #dbdcff;
-                    --md-sys-color-background:             #000000;
-                    --md-sys-color-on-background:          #ffffff;
-                    --md-sys-color-surface:                #000000;
-                    --md-sys-color-on-surface:             #ffffff;
-                    --md-sys-color-surface-variant:        #16181a;
-                    --md-sys-color-on-surface-variant:     rgba(255,255,255,0.72);
-                    --md-sys-color-outline:                rgba(255,255,255,0.18);
-                    --md-sys-color-outline-variant:        rgba(255,255,255,0.10);
-                    --md-sys-color-surface-container-lowest:  #0a0a0a;
-                    --md-sys-color-surface-container-low:      #0e1012;
-                    --md-sys-color-surface-container:          #16181a;
-                    --md-sys-color-surface-container-high:     #1e2024;
-                    --md-sys-color-surface-container-highest:  #26282c;
-                    --rv-teal:    #00a87e;
-                    --rv-pink:    #e61e49;
-                    --rv-orange:  #ec7e00;
-                    --rv-blue:    #007bc2;
-                    --rv-stone:   #8d969e;
-                }
-                body { background: #1a1a1a; }
-                .device { background: #000; }
-                .device-content { background: #000; color: #fff; font-family: "Space Grotesk", var(--font-roboto); }
-                .status-bar { color: #fff; }
-
-                .rv-topbar {
-                    display: flex; align-items: center; justify-content: space-between;
-                    padding: calc(24px + 12px) 20px 12px;
-                    background: #000; position: sticky; top: 0; z-index: 10;
-                }
-                .rv-id { display: flex; align-items: center; gap: 10px; }
-                .rv-avatar {
-                    width: 36px; height: 36px; border-radius: 50%;
-                    background: linear-gradient(135deg, #494fdf 0%, #00a87e 100%);
-                    color: #fff; font-weight: 700; font-size: 14px;
-                    display: inline-flex; align-items: center; justify-content: center;
-                }
-                .rv-id__name { font-weight: 500; font-size: 15px; letter-spacing: -0.1px; }
-                .rv-id__name small { display: block; color: var(--rv-stone); font-weight: 400; font-size: 11px; letter-spacing: 0.4px; text-transform: uppercase; margin-top: 2px; }
-                .rv-icon-pill {
-                    width: 40px; height: 40px; border-radius: 50%;
-                    background: rgba(255,255,255,0.06); border: none;
-                    display: inline-flex; align-items: center; justify-content: center;
-                    color: #fff; cursor: pointer;
-                }
-
-                .rv-hero { padding: 20px 24px 12px; }
-                .rv-hero__label { color: var(--rv-stone); font-size: 12px; letter-spacing: 0.6px; text-transform: uppercase; font-weight: 500; }
-                .rv-hero__amount {
-                    font-family: "Space Grotesk", var(--font-roboto);
-                    font-weight: 500;
-                    font-size: 56px; line-height: 1.0; letter-spacing: -2.2px;
-                    margin: 8px 0 8px;
-                    display: flex; align-items: flex-start; gap: 4px;
-                }
-                .rv-hero__cur { font-size: 28px; line-height: 1; opacity: 0.45; padding-top: 8px; }
-                .rv-hero__cents { font-size: 28px; line-height: 1; opacity: 0.45; padding-top: 8px; letter-spacing: -1px; }
-                .rv-hero__delta { color: var(--rv-teal); font-weight: 500; font-size: 14px; display: inline-flex; align-items: center; gap: 6px; }
-                .rv-hero__delta b { font-weight: 600; }
-                .rv-hero__spark { margin-top: 14px; height: 56px; width: 100%; display: block; }
-
-                .rv-ccy-row { display: flex; gap: 8px; padding: 16px 20px 4px; overflow-x: auto; }
-                .rv-ccy-row::-webkit-scrollbar { display: none; }
-                .rv-ccy {
-                    flex-shrink: 0;
-                    display: inline-flex; align-items: center; gap: 8px;
-                    height: 36px; padding: 0 14px;
-                    border-radius: 999px;
-                    background: rgba(255,255,255,0.06);
-                    color: #fff; font-size: 13px; font-weight: 500;
-                    border: 1px solid transparent; cursor: pointer;
-                }
-                .rv-ccy.is-active { background: #fff; color: #000; }
-                .rv-ccy__flag { width: 16px; height: 16px; border-radius: 50%; display: inline-block; }
-
-                .rv-actions {
-                    display: grid; grid-template-columns: repeat(4, 1fr);
-                    gap: 10px; padding: 18px 20px 8px;
-                }
-                .rv-action {
-                    background: var(--md-sys-color-surface-container);
-                    border: none; color: #fff;
-                    border-radius: 14px;
-                    aspect-ratio: 1 / 1;
-                    display: flex; flex-direction: column; align-items: center; justify-content: center;
-                    gap: 8px; cursor: pointer;
-                }
-                .rv-action__icon { color: #fff; display: inline-flex; }
-                .rv-action__label { font-size: 12px; font-weight: 500; letter-spacing: 0.1px; }
-
-                .rv-section { display: flex; justify-content: space-between; align-items: center; padding: 24px 20px 8px; }
-                .rv-section h2 { font-size: 17px; font-weight: 600; letter-spacing: -0.2px; }
-                .rv-section a { color: var(--rv-stone); font-size: 13px; font-weight: 500; text-decoration: none; }
-
-                .rv-tx-list { padding: 0 8px; display: flex; flex-direction: column; gap: 2px; }
-                .rv-tx { display: flex; align-items: center; gap: 14px; padding: 10px 12px; border-radius: 12px; }
-                .rv-tx__icon {
-                    width: 44px; height: 44px; flex-shrink: 0; border-radius: 50%;
-                    display: inline-flex; align-items: center; justify-content: center;
-                    font-size: 18px; color: #fff; font-weight: 600;
-                }
-                .rv-tx__body { flex: 1; min-width: 0; }
-                .rv-tx__title { font-size: 15px; font-weight: 500; letter-spacing: -0.1px; }
-                .rv-tx__sub { font-size: 12px; color: var(--rv-stone); margin-top: 2px; }
-                .rv-tx__amt { font-size: 15px; font-weight: 600; letter-spacing: -0.2px; text-align: right; white-space: nowrap; }
-                .rv-tx__amt small { display: block; color: var(--rv-stone); font-size: 11px; font-weight: 400; margin-top: 2px; }
-                .rv-tx__amt.is-positive { color: var(--rv-teal); }
-            </style>
-
-            <header class="rv-topbar">
-                <div class="rv-id">
-                    <span class="rv-avatar">MA</span>
-                    <div class="rv-id__name">Mira Aaltonen<small>Metal · Helsinki</small></div>
-                </div>
-                <button class="rv-icon-pill" aria-label="Search">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M15.5 14h-.79l-.28-.27A6.5 6.5 0 1 0 13 15.5l.27.28v.79l5 5L19.49 20l-5-5zm-6 0a4.5 4.5 0 1 1 4.5-4.5 4.5 4.5 0 0 1-4.5 4.5z"/></svg>
-                </button>
-            </header>
-
-            <section class="rv-hero">
-                <div class="rv-hero__label">Total balance</div>
-                <div class="rv-hero__amount"><span class="rv-hero__cur">€</span>12,489<span class="rv-hero__cents">.20</span></div>
-                <div class="rv-hero__delta">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M7 14l5-5 5 5z"/></svg>
-                    <b>+€420.18</b> today · +3.6%
-                </div>
-                <svg class="rv-hero__spark" viewBox="0 0 320 56" preserveAspectRatio="none" aria-hidden="true">
-                    <defs>
-                        <linearGradient id="sparkfill" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="0%" stop-color="#00a87e" stop-opacity="0.4"/>
-                            <stop offset="100%" stop-color="#00a87e" stop-opacity="0"/>
-                        </linearGradient>
-                    </defs>
-                    <path d="M0 38 L24 30 L48 34 L72 26 L96 30 L120 22 L144 28 L168 16 L192 20 L216 12 L240 18 L264 8 L288 14 L320 4 L320 56 L0 56 Z" fill="url(#sparkfill)"/>
-                    <path d="M0 38 L24 30 L48 34 L72 26 L96 30 L120 22 L144 28 L168 16 L192 20 L216 12 L240 18 L264 8 L288 14 L320 4" fill="none" stroke="#00a87e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-            </section>
-
-            <div class="rv-ccy-row">
-                <button class="rv-ccy is-active"><span class="rv-ccy__flag" style="background:#005bbb"></span>EUR · 9,820</button>
-                <button class="rv-ccy"><span class="rv-ccy__flag" style="background:#c8102e"></span>GBP · 1,240</button>
-                <button class="rv-ccy"><span class="rv-ccy__flag" style="background:#3c3b6e"></span>USD · 1,108</button>
-                <button class="rv-ccy"><span class="rv-ccy__flag" style="background:#f7931a"></span>BTC · 0.0142</button>
-            </div>
-
-            <div class="rv-actions">
-                <button class="rv-action">
-                    <span class="rv-action__icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M2 21l21-9L2 3v7l15 2-15 2z"/></svg></span>
-                    <span class="rv-action__label">Send</span>
-                </button>
-                <button class="rv-action">
-                    <span class="rv-action__icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 8h12M4 16h12M16 8l-4-4M16 16l-4 4"/></svg></span>
-                    <span class="rv-action__label">Request</span>
-                </button>
-                <button class="rv-action">
-                    <span class="rv-action__icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M19 5h-3V3H8v2H5c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm-7 14a3 3 0 1 1 0-6 3 3 0 0 1 0 6zM7 9V7h10v2H7z"/></svg></span>
-                    <span class="rv-action__label">Cards</span>
-                </button>
-                <button class="rv-action">
-                    <span class="rv-action__icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 22 12 18.27 5.82 22 7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></span>
-                    <span class="rv-action__label">Rewards</span>
-                </button>
-            </div>
-
-            <div class="rv-section"><h2>Recent</h2><a href="#">See all</a></div>
-
-            <div class="rv-tx-list">
-                <div class="rv-tx">
-                    <span class="rv-tx__icon" style="background:#1a1a1a; border:1px solid rgba(255,255,255,0.12);">
-                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 6h2l2 12h11l2-9H7"/><circle cx="9" cy="20" r="1.4"/><circle cx="17" cy="20" r="1.4"/></svg>
-                    </span>
-                    <div class="rv-tx__body"><div class="rv-tx__title">K-Market Töölö</div><div class="rv-tx__sub">Groceries · 09:24</div></div>
-                    <div class="rv-tx__amt">-€42.16<small>EUR</small></div>
-                </div>
-                <div class="rv-tx">
-                    <span class="rv-tx__icon" style="background:linear-gradient(135deg,#494fdf,#7a7fad)">N</span>
-                    <div class="rv-tx__body"><div class="rv-tx__title">Niko Salminen</div><div class="rv-tx__sub">Apartment rent · Yesterday</div></div>
-                    <div class="rv-tx__amt">-€680.00<small>EUR</small></div>
-                </div>
-                <div class="rv-tx">
-                    <span class="rv-tx__icon" style="background:#00a87e">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
-                    </span>
-                    <div class="rv-tx__body"><div class="rv-tx__title">Salary · Stack &amp; Co.</div><div class="rv-tx__sub">Bank transfer · Tue</div></div>
-                    <div class="rv-tx__amt is-positive">+€3,250.00<small>EUR</small></div>
-                </div>
-                <div class="rv-tx">
-                    <span class="rv-tx__icon" style="background:#ec7e00">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M19.77 7.23l.01-.01-3.72-3.72L15 4.56l2.11 2.11c-.94.36-1.61 1.26-1.61 2.33a2.5 2.5 0 0 0 2.5 2.5c.36 0 .69-.08 1-.21v7.21c0 .55-.45 1-1 1s-1-.45-1-1V14c0-1.1-.9-2-2-2h-1V5c0-1.1-.9-2-2-2H6c-1.1 0-2 .9-2 2v16h10v-7.5h1.5v5a2.5 2.5 0 0 0 5 0V9c0-.69-.28-1.32-.73-1.77zM12 10H6V5h6v5zm6 0c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1z"/></svg>
-                    </span>
-                    <div class="rv-tx__body"><div class="rv-tx__title">Shell · Mannerheimintie</div><div class="rv-tx__sub">Transport · Mon</div></div>
-                    <div class="rv-tx__amt">-€58.40<small>EUR</small></div>
-                </div>
-                <div class="rv-tx">
-                    <span class="rv-tx__icon" style="background:#e61e49">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
-                    </span>
-                    <div class="rv-tx__body"><div class="rv-tx__title">Netflix</div><div class="rv-tx__sub">Subscription · Sun</div></div>
-                    <div class="rv-tx__amt">-€15.99<small>EUR</small></div>
-                </div>
-                <div class="rv-tx">
-                    <span class="rv-tx__icon" style="background:#007bc2">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M21 16v-2l-8-5V3.5C13 2.67 12.33 2 11.5 2S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/></svg>
-                    </span>
-                    <div class="rv-tx__body"><div class="rv-tx__title">Finnair AY853</div><div class="rv-tx__sub">Travel · Sat</div></div>
-                    <div class="rv-tx__amt">-€312.00<small>EUR</small></div>
-                </div>
-            </div>
-
-            <div style="height: 140px"></div>
+            <!-- Fill with Android (Material 3) components -->
         </main>
 
-
-        <!-- Bottom Navigation (standard, added by add_android_navbar.py) -->
-        <nav class="bottom-nav" aria-label="Primary">
-    <button class="bottom-nav__item is-active" aria-current="page" aria-label="Home">
-        <span class="bottom-nav__indicator" style="--icon: url('https://api.iconify.design/mdi/home.svg');">
-            <span class="bottom-nav__icon" aria-hidden="true"></span>
-        </span>
-        <span class="bottom-nav__label">Home</span>
-        
-    </button>
-    <button class="bottom-nav__item" aria-label="Cards">
-        <span class="bottom-nav__indicator" style="--icon: url('https://api.iconify.design/material-symbols/credit-card-outline.svg');">
-            <span class="bottom-nav__icon" aria-hidden="true"></span>
-        </span>
-        <span class="bottom-nav__label">Cards</span>
-        
-    </button>
-    <button class="bottom-nav__item" aria-label="Payments">
-        <span class="bottom-nav__indicator" style="--icon: url('https://api.iconify.design/material-symbols/payments-outline.svg');">
-            <span class="bottom-nav__icon" aria-hidden="true"></span>
-        </span>
-        <span class="bottom-nav__label">Payments</span>
-        
-    </button>
-    <button class="bottom-nav__item" aria-label="Stocks">
-        <span class="bottom-nav__indicator" style="--icon: url('https://api.iconify.design/material-symbols/bar-chart-4-bars.svg');">
-            <span class="bottom-nav__icon" aria-hidden="true"></span>
-        </span>
-        <span class="bottom-nav__label">Stocks</span>
-        
-    </button>
-    <button class="bottom-nav__item" aria-label="Profile">
-        <span class="bottom-nav__indicator" style="--icon: url('https://api.iconify.design/material-symbols/person-outline.svg');">
-            <span class="bottom-nav__icon" aria-hidden="true"></span>
-        </span>
-        <span class="bottom-nav__label">Profile</span>
-        
-    </button>
-        </nav>
         <!-- Gesture-navigation pill -->
         <div class="gesture-nav-area">
             <div class="gesture-nav-pill"></div>
@@ -710,7 +383,7 @@
 
       function gradientDef(bgImage) {
         if (!bgImage || bgImage === 'none') return null;
-        var m = bgImage.match(/linear-gradient\(([\s\S]+)\)\s*$/);
+        var m = bgImage.match(/linear-gradient\(([\s\S]+)\)\s*$$/);
         if (!m) return null;
         var inner = m[1];
         var parts = [], depth = 0, start = 0;
@@ -725,7 +398,7 @@
         }
         var angle = 180;
         var stopParts = parts;
-        var degMatch = parts[0] && parts[0].match(/^(-?\d+(?:\.\d+)?)deg$/);
+        var degMatch = parts[0] && parts[0].match(/^(-?\d+(?:\.\d+)?)deg$$/);
         if (degMatch) { angle = parseFloat(degMatch[1]); stopParts = parts.slice(1); }
         else if (parts[0] && /^to\s+/.test(parts[0])) {
           var dirs = { top: 0, right: 90, bottom: 180, left: 270,
@@ -849,7 +522,7 @@
           var maskColorVal = colorAttr(maskColor);
           var vbm = maskSvg.match(/viewBox\s*=\s*"([^"]+)"/i);
           var vb = vbm ? vbm[1].split(/\s+/).map(parseFloat) : [0, 0, 24, 24];
-          var inner = maskSvg.replace(/^[\s\S]*?<svg[^>]*>/i, '').replace(/<\/svg>\s*$/i, '');
+          var inner = maskSvg.replace(/^[\s\S]*?<svg[^>]*>/i, '').replace(/<\/svg>\s*$$/i, '');
           inner = inner.replace(/currentColor/g, maskColorVal);
           var msx = w / (vb[2] || 24), msy = h / (vb[3] || 24);
           if (op < 1) out.push('<g opacity="' + op + '">');
@@ -984,3 +657,39 @@
     </script>
 </body>
 </html>
+""")
+
+
+TABLET_LANDSCAPE = (1280, 800)
+TABLET_PORTRAIT = (800, 1280)
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(
+        description="Generate a Pixel Tablet (Android, Material 3 expanded window class) template."
+    )
+    parser.add_argument("output", help="Output HTML file path")
+    parser.add_argument("--title", default="Android Tablet Screen", help="Page title.")
+    parser.add_argument(
+        "--orientation",
+        choices=("landscape", "portrait"),
+        default="landscape",
+        help="Device orientation (default: landscape).",
+    )
+    args = parser.parse_args()
+
+    out_path = Path(args.output)
+    if not out_path.parent.exists():
+        print(f"Error: parent directory does not exist: {out_path.parent}", file=sys.stderr)
+        return 1
+
+    width, height = TABLET_LANDSCAPE if args.orientation == "landscape" else TABLET_PORTRAIT
+
+    html = TEMPLATE.substitute(title=args.title, width=width, height=height)
+    out_path.write_text(html, encoding="utf-8")
+    print(f"Created Android tablet template ({args.orientation}, {width}x{height}): {out_path}")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
