@@ -1,0 +1,852 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Mail — iPad</title>
+    <style>
+        :root {
+            --color-bg: #FFFFFF;
+            --color-text: #000000;
+            --color-text-secondary: #6B7280;
+            --color-island: #000000;
+            --font-system: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+
+            /* iOS HIG type ramp — keep in sync with components/ios/01-base-tokens.md */
+            --text-caption2:    11px;
+            --text-caption1:    12px;
+            --text-footnote:    13px;
+            --text-subheadline: 15px;
+            --text-callout:     16px;
+            --text-body:        17px;
+            --text-title3:      20px;
+            --text-title2:      22px;
+            --text-title1:      28px;
+            --text-largetitle:  34px;
+            --text-md:          var(--text-body);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        html, body {
+            background: #1a1a1a;
+            font-family: var(--font-system);
+            font-size: var(--text-body);
+            line-height: 1.29;
+            letter-spacing: -0.022em;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            color: var(--color-text);
+            min-height: 100vh;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px 0;
+        }
+
+        .device {
+            position: relative;
+            width: 1194px;
+            height: 834px;
+            min-width: 1194px;
+            min-height: 834px;
+            flex-shrink: 0;
+            background: var(--color-bg);
+            border-radius: 38px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+        }
+
+        /* Status Bar — iPad has NO Dynamic Island. 24px height, time on
+           left, system icons on right. Pinned via position:absolute. */
+        .status-bar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 4px 24px 0;
+            font-size: var(--text-footnote);
+            font-weight: 600;
+            z-index: 50;
+            pointer-events: none;
+        }
+
+        .status-bar-time {
+            font-size: var(--text-footnote);
+            font-weight: 600;
+            letter-spacing: 0.02em;
+        }
+
+        .status-bar-icons {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+        }
+
+        /* Scrollable content — scrolls behind status bar and home indicator.
+           Any floating overlay placed over .device-content (custom tab bar, FAB,
+           banner, sheet handle) MUST set `pointer-events: none` on its wrapper
+           and `pointer-events: auto` on its interactive children, otherwise the
+           overlay swallows wheel/touch and the screen stops scrolling under it.
+
+           NOTE: padding-top is intentionally 0 — the 24px status-bar safe area
+           is the responsibility of the FIRST element inside .device-content,
+           NOT this container. This is so navigation bars (.nav-header, glass
+           top bars, hero images) can render their background behind the status
+           bar to the very top edge of the screen, which is the correct iOS
+           behavior. See components/ios/13-tablet-layouts.md §31a for the pattern. */
+        .device-content {
+            position: absolute;
+            inset: 0;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            padding-top: 0;       /* status-bar offset belongs on first child */
+            padding-bottom: 34px; /* space for home indicator */
+        }
+        /* Block layout, NOT flex — flex-direction:column with overflow:auto
+           lets browsers shrink children below their content size and the
+           container then reports scrollHeight == clientHeight (no scroll). */
+
+        .device-content::-webkit-scrollbar { display: none; }
+        .device-content { scrollbar-width: none; }
+
+        /* Home Indicator — overlays content, stays fixed during scroll */
+        .home-indicator-area {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 34px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            padding-bottom: 8px;
+            pointer-events: none;
+            z-index: 50;
+        }
+
+        .home-indicator {
+            width: 134px;
+            height: 5px;
+            background: var(--color-text);
+            border-radius: 3px;
+            opacity: 0.9;
+        }
+
+        /* Figma export chrome — host page only, not part of the design payload */
+        .figma-export-toolbar {
+            position: fixed;
+            top: 16px;
+            right: 16px;
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            z-index: 1000;
+            font-family: var(--font-system);
+        }
+        .figma-export-btn {
+            appearance: none;
+            border: 1px solid rgba(255,255,255,0.18);
+            background: rgba(28,28,30,0.72);
+            backdrop-filter: blur(20px) saturate(160%);
+            -webkit-backdrop-filter: blur(20px) saturate(160%);
+            color: #fff;
+            font: 600 13px var(--font-system);
+            padding: 8px 14px;
+            border-radius: 999px;
+            cursor: pointer;
+        }
+        .figma-export-btn:hover { background: rgba(44,44,46,0.85); }
+        .figma-export-btn:active { transform: scale(0.98); }
+        .figma-export-toast {
+            color: #fff;
+            font-size: 12px;
+            opacity: 0.9;
+            background: rgba(28,28,30,0.72);
+            padding: 6px 10px;
+            border-radius: 999px;
+            backdrop-filter: blur(20px) saturate(160%);
+            -webkit-backdrop-filter: blur(20px) saturate(160%);
+        }
+        .figma-export-toast[hidden] { display: none; }
+
+        :root {
+            --gray-50:  #F9FAFB;
+            --gray-100: #F2F2F7;
+            --gray-200: #E5E7EB;
+            --gray-300: #D1D5DB;
+            --gray-400: #9CA3AF;
+            --gray-500: #6B7280;
+            --gray-600: #4B5563;
+            --gray-700: #374151;
+            --gray-800: #1F2937;
+            --gray-900: #111827;
+            --color-primary: #007AFF;
+            --color-primary-light: #E5F1FF;
+            --space-1: 4px; --space-2: 8px; --space-3: 12px;
+            --space-4: 16px; --space-5: 24px; --space-6: 32px;
+            --radius-sm: 8px; --radius-md: 12px;
+        }
+
+        .split-view { display: flex; height: 100%; min-height: 100%; }
+        .sidebar-ipad {
+            width: 320px; flex-shrink: 0;
+            border-right: 1px solid var(--gray-200);
+            background: var(--gray-50);
+            overflow-y: auto;
+        }
+        .sidebar-ipad__top { padding: calc(24px + var(--space-3)) var(--space-4) var(--space-3); }
+        .sidebar-ipad__title { font-size: var(--text-largetitle); font-weight: 700; letter-spacing: -0.02em; color: var(--gray-900); }
+        .sidebar-ipad__subtitle { font-size: var(--text-footnote); color: var(--gray-500); margin-top: 2px; }
+
+        .sidebar-search {
+            margin: 0 var(--space-4) var(--space-3);
+            background: var(--gray-200);
+            border-radius: var(--radius-sm);
+            padding: 8px 12px;
+            display: flex; gap: 8px; align-items: center;
+            color: var(--gray-500);
+            font-size: var(--text-subheadline);
+        }
+
+        .sidebar-section {
+            font-size: var(--text-footnote);
+            color: var(--gray-500);
+            padding: var(--space-3) var(--space-5) var(--space-2);
+            text-transform: none;
+            font-weight: 600;
+        }
+
+        .sidebar-row {
+            display: flex; align-items: center; gap: 12px;
+            width: 100%;
+            padding: 10px 24px; min-height: 44px;
+            cursor: pointer; color: var(--gray-800);
+            font-size: var(--text-body);
+            font-family: inherit;
+            text-align: left;
+            background: transparent;
+            border: none;
+            appearance: none;
+            -webkit-appearance: none;
+        }
+        .sidebar-row:hover { background: rgba(0,0,0,0.04); }
+        .sidebar-row.is-active { background: var(--color-primary-light); color: var(--color-primary); font-weight: 500; }
+        .sidebar-row svg { width: 20px; height: 20px; flex-shrink: 0; }
+        .sidebar-row__count { margin-left: auto; font-size: var(--text-footnote); color: var(--gray-500); }
+        .sidebar-row.is-active .sidebar-row__count { color: var(--color-primary); }
+
+        .supplemental-pane {
+            width: 360px; flex-shrink: 0;
+            border-right: 1px solid var(--gray-200);
+            background: var(--color-bg);
+            overflow-y: auto;
+        }
+
+        .detail-pane {
+            flex: 1; min-width: 0;
+            overflow-y: auto;
+            background: var(--color-bg);
+        }
+        .detail-pane::-webkit-scrollbar,
+        .supplemental-pane::-webkit-scrollbar,
+        .sidebar-ipad::-webkit-scrollbar { display: none; }
+        .detail-pane, .supplemental-pane, .sidebar-ipad { scrollbar-width: none; }
+
+        .detail-nav {
+            position: sticky; top: 0; z-index: 10;
+            background: var(--color-bg);
+            padding: calc(24px + var(--space-2)) var(--space-5) var(--space-3);
+            border-bottom: 1px solid var(--gray-200);
+            display: flex; align-items: center; gap: var(--space-3);
+        }
+        .detail-nav__title { font-size: var(--text-title3); font-weight: 600; letter-spacing: -0.01em; }
+        .detail-nav__spacer { flex: 1; }
+        .detail-nav__btn {
+            width: 32px; height: 32px;
+            display: flex; align-items: center; justify-content: center;
+            border-radius: 50%; border: none; background: transparent;
+            color: var(--color-primary); cursor: pointer;
+        }
+        .detail-nav__btn svg { width: 22px; height: 22px; }
+
+        .thread-list { padding: 0; }
+        .thread-item {
+            padding: var(--space-4) var(--space-5);
+            border-bottom: 1px solid var(--gray-200);
+            cursor: pointer;
+            display: grid;
+            grid-template-columns: 8px 1fr auto;
+            column-gap: 12px;
+        }
+        .thread-item:hover { background: var(--gray-50); }
+        .thread-item.is-selected { background: var(--color-primary-light); }
+        .thread-item__dot {
+            width: 8px; height: 8px; border-radius: 50%;
+            background: var(--color-primary);
+            margin-top: 8px;
+            opacity: 1;
+        }
+        .thread-item.is-read .thread-item__dot { opacity: 0; }
+        .thread-item__body { min-width: 0; }
+        .thread-item__from { font-size: var(--text-body); font-weight: 600; color: var(--gray-900); }
+        .thread-item__subject { font-size: var(--text-subheadline); color: var(--gray-700); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .thread-item__preview { font-size: var(--text-footnote); color: var(--gray-500); margin-top: 4px; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .thread-item__time { font-size: var(--text-footnote); color: var(--gray-500); white-space: nowrap; }
+        .thread-item.is-selected .thread-item__from,
+        .thread-item.is-selected .thread-item__subject { color: var(--gray-900); }
+
+        .message {
+            padding: var(--space-5) 40px var(--space-6);
+            max-width: 760px;
+        }
+        .message__header { padding-bottom: var(--space-4); border-bottom: 1px solid var(--gray-200); }
+        .message__subject { font-size: var(--text-title2); font-weight: 700; letter-spacing: -0.01em; color: var(--gray-900); }
+        .message__meta { margin-top: var(--space-3); display: flex; gap: var(--space-3); align-items: center; }
+        .message__avatar { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #FFB347, #FF7043); display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 600; }
+        .message__sender { font-size: var(--text-body); font-weight: 600; color: var(--gray-900); }
+        .message__addr { font-size: var(--text-footnote); color: var(--gray-500); }
+        .message__time { margin-left: auto; font-size: var(--text-footnote); color: var(--gray-500); }
+        .message__body { padding-top: var(--space-5); font-size: var(--text-body); line-height: 1.6; color: var(--gray-800); }
+        .message__body p { margin-bottom: var(--space-4); }
+        .message__signature { color: var(--gray-500); }
+    </style>
+</head>
+<body>
+    <div class="device" data-platform="ios" data-form-factor="tablet">
+        <!-- Status Bar (iPad: no Dynamic Island, 24px) -->
+        <div class="status-bar">
+            <span class="status-bar-time">9:41</span>
+            <div class="status-bar-icons">
+                <svg width="20" height="13" viewBox="0 0 20 13" fill="currentColor"><path fill-rule="evenodd" clip-rule="evenodd" d="M19.3466 1.625C19.3466 1.00368 18.8654 0.5 18.2718 0.5H17.1969C16.6033 0.5 16.1221 1.00368 16.1221 1.625V11.375C16.1221 11.9963 16.6033 12.5 17.1969 12.5H18.2718C18.8654 12.5 19.3466 11.9963 19.3466 11.375V1.625ZM11.8565 2.9H12.9313C13.5249 2.9 14.0061 3.41577 14.0061 4.052V11.348C14.0061 11.9842 13.5249 12.5 12.9313 12.5H11.8565C11.2629 12.5 10.7817 11.9842 10.7817 11.348V4.052C10.7817 3.41577 11.2629 2.9 11.8565 2.9ZM7.49008 5.5H6.41527C5.82167 5.5 5.34046 6.02233 5.34046 6.66667V11.3333C5.34046 11.9777 5.82167 12.5 6.41527 12.5H7.49008C8.08368 12.5 8.56489 11.9777 8.56489 11.3333V6.66667C8.56489 6.02233 8.08368 5.5 7.49008 5.5ZM2.14962 7.9H1.07481C0.481208 7.9 0 8.41487 0 9.05V11.35C0 11.9851 0.481208 12.5 1.07481 12.5H2.14962C2.74322 12.5 3.22443 11.9851 3.22443 11.35V9.05C3.22443 8.41487 2.74322 7.9 2.14962 7.9Z"/></svg>
+                <svg width="18" height="13" viewBox="26.9 0 17.3 13" fill="currentColor"><path fill-rule="evenodd" clip-rule="evenodd" d="M35.5408 3.02062C38.0469 3.02072 40.4571 3.92573 42.2734 5.54859C42.4102 5.67388 42.6288 5.6723 42.7635 5.54504L44.0709 4.30497C44.1391 4.24043 44.1771 4.153 44.1766 4.06204C44.176 3.97107 44.1369 3.88407 44.0679 3.82028C39.3008 -0.47342 31.7801 -0.47342 27.0129 3.82028C26.9439 3.88402 26.9047 3.971 26.9041 4.06197C26.9034 4.15293 26.9414 4.24038 27.0095 4.30497L28.3173 5.54504C28.4519 5.67249 28.6707 5.67407 28.8074 5.54859C30.6239 3.92562 33.0344 3.02061 35.5408 3.02062ZM35.539 7.16274C36.9067 7.16265 38.2255 7.66492 39.2393 8.57193C39.3765 8.70066 39.5925 8.69787 39.7261 8.56564L41.0232 7.27077C41.0915 7.20285 41.1294 7.11071 41.1285 7.01496C41.1275 6.91922 41.0877 6.82786 41.018 6.76132C37.9308 3.92401 33.1498 3.92401 30.0626 6.76132C29.9929 6.82786 29.9531 6.91926 29.9522 7.01504C29.9512 7.11081 29.9893 7.20294 30.0577 7.27077L31.3545 8.56564C31.4881 8.69787 31.7041 8.70066 31.8413 8.57193C32.8544 7.66552 34.1722 7.1633 35.539 7.16274ZM38.0803 9.90455C38.0823 10.008 38.0449 10.1076 37.9771 10.1801L35.7838 12.5894C35.7195 12.6602 35.6319 12.7 35.5404 12.7C35.4489 12.7 35.3613 12.6602 35.297 12.5894L33.1033 10.1801C33.0356 10.1076 32.9983 10.0079 33.0003 9.90447C33.0023 9.80107 33.0434 9.70315 33.114 9.63384C34.5147 8.34428 36.5661 8.34428 37.9669 9.63384C38.0373 9.70321 38.0784 9.80115 38.0803 9.90455Z"/></svg>
+                <svg width="27" height="13" viewBox="52.5 0 27 13" fill="none"><rect opacity="0.35" x="52.5474" y="0.5" width="24" height="12" rx="3.8" stroke="currentColor"/><path opacity="0.4" d="M77.9473 4.66666V8.66666C78.752 8.32788 79.2753 7.53979 79.2753 6.66666C79.2753 5.79352 78.752 5.00543 77.9473 4.66666Z" fill="currentColor"/><rect x="53.8474" y="2" width="21" height="9" rx="2.5" fill="currentColor"/></svg>
+            </div>
+        </div>
+
+        <main class="device-content">
+            <div class="split-view">
+                <aside class="sidebar-ipad" aria-label="Mailboxes">
+                    <div class="sidebar-ipad__top">
+                        <h1 class="sidebar-ipad__title">Mailboxes</h1>
+                        <p class="sidebar-ipad__subtitle">anna@nova.studio</p>
+                    </div>
+                    <div class="sidebar-section">Inboxes</div>
+                    <button class="sidebar-row">
+                        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3 7l9 6 9-6V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v1zm18 2.236-8.445 5.63a1 1 0 0 1-1.11 0L3 9.236V18a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V9.236z"/></svg>
+                        <span>All Inboxes</span>
+                        <span class="sidebar-row__count">132</span>
+                    </button>
+                    <button class="sidebar-row">
+                        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="12" r="6"/></svg>
+                        <span>Nova Studio</span>
+                        <span class="sidebar-row__count">42</span>
+                    </button>
+                    <button class="sidebar-row">
+                        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="12" r="6" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+                        <span>Personal</span>
+                        <span class="sidebar-row__count">90</span>
+                    </button>
+                    <div class="sidebar-section">Folders</div>
+                    <button class="sidebar-row is-active">
+                        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M4 8a2 2 0 0 1 2-2h3l2 2h7a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8z"/></svg>
+                        <span>Inbox</span>
+                        <span class="sidebar-row__count">8</span>
+                    </button>
+                    <button class="sidebar-row">
+                        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2 4 6v6c0 5 3.5 9.74 8 10 4.5-.26 8-5 8-10V6l-8-4z"/></svg>
+                        <span>Flagged</span>
+                        <span class="sidebar-row__count">3</span>
+                    </button>
+                    <button class="sidebar-row">
+                        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M4 4h16v3H4zm0 6h16v3H4zm0 6h10v3H4z"/></svg>
+                        <span>Drafts</span>
+                    </button>
+                    <button class="sidebar-row">
+                        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="m2 22 20-10L2 2v8l14 2-14 2z"/></svg>
+                        <span>Sent</span>
+                    </button>
+                    <button class="sidebar-row">
+                        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19 13H5v-2h14v2z"/></svg>
+                        <span>Junk</span>
+                    </button>
+                    <button class="sidebar-row">
+                        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6 7h12v13a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V7zM9 4h6l1 2H8l1-2z"/></svg>
+                        <span>Trash</span>
+                    </button>
+                </aside>
+
+                <section class="supplemental-pane" aria-label="Inbox">
+                    <div class="sidebar-ipad__top" style="padding-bottom: 12px;">
+                        <h1 class="sidebar-ipad__title" style="font-size: var(--text-title1);">Inbox</h1>
+                        <p class="sidebar-ipad__subtitle">8 unread</p>
+                    </div>
+                    <div class="sidebar-search">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M21 21l-4.35-4.35M17 11a6 6 0 1 1-12 0 6 6 0 0 1 12 0z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                        <span>Search</span>
+                    </div>
+                    <div class="thread-list">
+                        <div class="thread-item is-selected">
+                            <span class="thread-item__dot"></span>
+                            <div class="thread-item__body">
+                                <div class="thread-item__from">Priya Raman</div>
+                                <div class="thread-item__subject">Q4 retrospective notes — please review by Friday</div>
+                                <div class="thread-item__preview">Hi Anna — wrapped up the retro doc this morning. The big themes are velocity drag in the API team and the launch handoff with marketing. Could you take a pass before Friday's leadership sync?</div>
+                            </div>
+                            <span class="thread-item__time">9:24</span>
+                        </div>
+                        <div class="thread-item">
+                            <span class="thread-item__dot"></span>
+                            <div class="thread-item__body">
+                                <div class="thread-item__from">Linear</div>
+                                <div class="thread-item__subject">Weekly digest — 12 issues resolved</div>
+                                <div class="thread-item__preview">Your team shipped 12 issues this week including the long-running ENG-412 migration. Cycle time was down 14% vs the previous sprint.</div>
+                            </div>
+                            <span class="thread-item__time">8:02</span>
+                        </div>
+                        <div class="thread-item is-read">
+                            <span class="thread-item__dot"></span>
+                            <div class="thread-item__body">
+                                <div class="thread-item__from">Marcus Lee, Yuki Tanaka</div>
+                                <div class="thread-item__subject">Re: Design review — Pricing v3</div>
+                                <div class="thread-item__preview">Marcus: Yuki's mock for the comparison table reads better than the stacked variant. I'd ship v3.2 next week if QA stays clean.</div>
+                            </div>
+                            <span class="thread-item__time">Yesterday</span>
+                        </div>
+                        <div class="thread-item">
+                            <span class="thread-item__dot"></span>
+                            <div class="thread-item__body">
+                                <div class="thread-item__from">Stripe</div>
+                                <div class="thread-item__subject">Your October invoice is ready</div>
+                                <div class="thread-item__preview">Invoice #INV-2049-87 for $1,284.10 is available in your Stripe dashboard. Payment is scheduled for Oct 5.</div>
+                            </div>
+                            <span class="thread-item__time">Yesterday</span>
+                        </div>
+                        <div class="thread-item is-read">
+                            <span class="thread-item__dot"></span>
+                            <div class="thread-item__body">
+                                <div class="thread-item__from">Sara Okonkwo</div>
+                                <div class="thread-item__subject">Coffee Thursday?</div>
+                                <div class="thread-item__preview">Free anytime after 2pm at the Mission Street spot. Bring the book you mentioned!</div>
+                            </div>
+                            <span class="thread-item__time">Mon</span>
+                        </div>
+                        <div class="thread-item is-read">
+                            <span class="thread-item__dot"></span>
+                            <div class="thread-item__body">
+                                <div class="thread-item__from">GitHub</div>
+                                <div class="thread-item__subject">[nova/api] PR #2487 ready for review</div>
+                                <div class="thread-item__preview">@diego opened "Refactor billing webhooks to use idempotent processor". 4 files changed, 312 additions.</div>
+                            </div>
+                            <span class="thread-item__time">Sun</span>
+                        </div>
+                    </div>
+                </section>
+
+                <main class="detail-pane" aria-label="Message">
+                    <div class="detail-nav">
+                        <button class="detail-nav__btn" aria-label="Reply">
+                            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 9V5l-7 7 7 7v-4.1c5 0 8.5 1.6 11 5.1-1-5-4-10-11-11z"/></svg>
+                        </button>
+                        <button class="detail-nav__btn" aria-label="Reply All">
+                            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 8V5l-7 7 7 7v-3l-4-4 4-4zm6 1V5l-7 7 7 7v-4.1c5 0 8.5 1.6 11 5.1-1-5-4-10-11-11z"/></svg>
+                        </button>
+                        <button class="detail-nav__btn" aria-label="Forward">
+                            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M14 9V5l7 7-7 7v-4.1c-5 0-8.5 1.6-11 5.1 1-5 4-10 11-11z"/></svg>
+                        </button>
+                        <button class="detail-nav__btn" aria-label="Archive">
+                            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 6h18v3H3zm2 5h14v9H5zM9 13h6v2H9z"/></svg>
+                        </button>
+                        <div class="detail-nav__spacer"></div>
+                        <button class="detail-nav__btn" aria-label="More">
+                            <svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>
+                        </button>
+                    </div>
+
+                    <article class="message">
+                        <div class="message__header">
+                            <h2 class="message__subject">Q4 retrospective notes — please review by Friday</h2>
+                            <div class="message__meta">
+                                <div class="message__avatar">PR</div>
+                                <div>
+                                    <div class="message__sender">Priya Raman</div>
+                                    <div class="message__addr">priya@nova.studio  →  Anna Chen</div>
+                                </div>
+                                <span class="message__time">Today at 9:24 AM</span>
+                            </div>
+                        </div>
+
+                        <div class="message__body">
+                            <p>Hi Anna,</p>
+                            <p>I wrapped up the retro doc this morning after pulling the cycle-time numbers and the survey responses. The big themes were the velocity drag in the API team while ENG-412 was in flight, and the handoff slippage with marketing during the v3 launch window.</p>
+                            <p>The doc walks through what we'd change for Q1 — mostly around clearer go/no-go criteria and a tighter cross-functional standup cadence during launches. None of it is controversial, but I'd love your read before Friday's leadership sync so we can land it as a unanimous recommendation.</p>
+                            <p>Link: <span style="color: var(--color-primary);">notion.so/nova/q4-retro</span></p>
+                            <p class="message__signature">— Priya</p>
+                        </div>
+                    </article>
+                </main>
+            </div>
+        </main>
+
+        <!-- Home Indicator -->
+        <div class="home-indicator-area">
+            <div class="home-indicator"></div>
+        </div>
+    </div>
+
+    <!-- Figma export chrome (host page only; not serialized into the payload) -->
+    <div class="figma-export-toolbar" data-figma-export-ignore>
+        <span class="figma-export-toast" hidden></span>
+        <button type="button" class="figma-export-btn" onclick="window.__copyDesignToFigma()">
+            Copy to Figma
+        </button>
+    </div>
+
+    <script>
+    /*
+     * Figma-ready SVG export
+     *
+     * Walks .device and emits real SVG primitives (rect, text, image, nested
+     * <svg>, linearGradient, clipPath). Result is copied to the clipboard as
+     * plain text — Figma's onPaste handler detects an SVG string and converts
+     * it to editable vector layers (text stays text, shapes stay shapes).
+     *
+     * Coverage:
+     *   - solid fills, linear gradients, borders, border-radius, opacity
+     *   - text (multi-line via Range.getClientRects per line)
+     *   - inline <svg> icons (embedded as nested <svg>, color inherited)
+     *   - <img> (emitted as <image href="..."> — Figma may refuse remote URLs)
+     *   - overflow clipping via <clipPath>
+     * Not exported:
+     *   - box-shadow, backdrop-filter (glass), CSS filters, transforms
+     *   - background-image (non-gradient), pseudo-elements (::before/::after)
+     */
+    (function () {
+      var SVG_NS = 'http://www.w3.org/2000/svg';
+      var defs = [];
+      var defCounter = 0;
+
+      function esc(s) {
+        return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+      }
+
+      function parseRgb(str) {
+        if (!str || str === 'transparent' || str === 'rgba(0, 0, 0, 0)') return null;
+        var m = str.match(/rgba?\(([^)]+)\)/);
+        if (!m) return null;
+        var p = m[1].split(',').map(function (s) { return parseFloat(s.trim()); });
+        return { r: p[0], g: p[1], b: p[2], a: p.length > 3 ? p[3] : 1 };
+      }
+
+      function colorAttr(c) {
+        return c ? 'rgb(' + Math.round(c.r) + ',' + Math.round(c.g) + ',' + Math.round(c.b) + ')' : 'none';
+      }
+
+      function num(v) { return Math.round(v * 100) / 100; }
+
+      function gradientDef(bgImage) {
+        if (!bgImage || bgImage === 'none') return null;
+        var m = bgImage.match(/linear-gradient\(([\s\S]+)\)\s*$/);
+        if (!m) return null;
+        var inner = m[1];
+        var parts = [], depth = 0, start = 0;
+        for (var i = 0; i <= inner.length; i++) {
+          var ch = inner[i];
+          if (ch === '(') depth++;
+          else if (ch === ')') depth--;
+          else if ((ch === ',' && depth === 0) || i === inner.length) {
+            parts.push(inner.slice(start, i).trim());
+            start = i + 1;
+          }
+        }
+        var angle = 180;
+        var stopParts = parts;
+        var degMatch = parts[0] && parts[0].match(/^(-?\d+(?:\.\d+)?)deg$/);
+        if (degMatch) { angle = parseFloat(degMatch[1]); stopParts = parts.slice(1); }
+        else if (parts[0] && /^to\s+/.test(parts[0])) {
+          var dirs = { top: 0, right: 90, bottom: 180, left: 270,
+                       'top right': 45, 'bottom right': 135, 'bottom left': 225, 'top left': 315 };
+          var key = parts[0].replace(/^to\s+/, '').trim();
+          angle = dirs[key] !== undefined ? dirs[key] : 180;
+          stopParts = parts.slice(1);
+        }
+        var stops = stopParts.map(function (s, idx, arr) {
+          var cm = s.match(/rgba?\([^)]+\)|#[0-9a-f]+|[a-z]+/i);
+          var pm = s.match(/(\d+(?:\.\d+)?)%/);
+          return {
+            color: parseRgb(cm ? cm[0] : '#000') || { r: 0, g: 0, b: 0, a: 1 },
+            pos: pm ? parseFloat(pm[1]) / 100 : (arr.length > 1 ? idx / (arr.length - 1) : 0)
+          };
+        });
+        // CSS gradient angle: 0deg points up. SVG x1/y1 -> x2/y2 in objectBoundingBox.
+        var rad = (angle - 90) * Math.PI / 180;
+        var dx = Math.cos(rad) * 0.5, dy = Math.sin(rad) * 0.5;
+        var id = 'fgmg' + (++defCounter);
+        var stopXml = stops.map(function (s) {
+          return '<stop offset="' + num(s.pos) + '" stop-color="' + colorAttr(s.color) + '" stop-opacity="' + s.color.a + '"/>';
+        }).join('');
+        defs.push('<linearGradient id="' + id + '" x1="' + num(0.5 - dx) + '" y1="' + num(0.5 - dy) +
+                  '" x2="' + num(0.5 + dx) + '" y2="' + num(0.5 + dy) + '">' + stopXml + '</linearGradient>');
+        return 'url(#' + id + ')';
+      }
+
+      function clipDef(x, y, w, h, rx) {
+        var id = 'fgmc' + (++defCounter);
+        defs.push('<clipPath id="' + id + '"><rect x="' + num(x) + '" y="' + num(y) +
+                  '" width="' + num(w) + '" height="' + num(h) +
+                  '" rx="' + num(rx) + '" ry="' + num(rx) + '"/></clipPath>');
+        return id;
+      }
+
+      function lineRectsForText(textNode) {
+        var text = textNode.textContent;
+        if (!text.trim()) return [];
+        var range = document.createRange();
+        range.selectNodeContents(textNode);
+        var rects = Array.prototype.slice.call(range.getClientRects());
+        if (rects.length === 0) return [];
+        if (rects.length === 1) return [{ text: text, rect: rects[0] }];
+        // Multi-line: binary-search per line to find character span
+        var lines = [];
+        var len = text.length;
+        var offset = 0;
+        for (var li = 0; li < rects.length; li++) {
+          var targetTop = rects[li].top;
+          while (offset < len && /\s/.test(text[offset])) offset++;
+          var lo = offset, hi = len;
+          while (lo < hi) {
+            var mid = (lo + hi + 1) >> 1;
+            range.setStart(textNode, offset);
+            range.setEnd(textNode, mid);
+            var rs = range.getClientRects();
+            var lastTop = rs.length ? rs[rs.length - 1].top : targetTop;
+            if (Math.abs(lastTop - targetTop) < 1) lo = mid;
+            else hi = mid - 1;
+          }
+          var lineEnd = lo > offset ? lo : Math.min(offset + 1, len);
+          var lineText = text.slice(offset, lineEnd);
+          if (lineText.trim().length) lines.push({ text: lineText, rect: rects[li] });
+          offset = lineEnd;
+        }
+        return lines;
+      }
+
+      function emitTextNode(textNode, ox, oy, out) {
+        var parent = textNode.parentElement;
+        if (!parent) return;
+        var cs = getComputedStyle(parent);
+        var color = parseRgb(cs.color);
+        var family = (cs.fontFamily || '').replace(/"/g, "'");
+        var size = parseFloat(cs.fontSize);
+        var weight = cs.fontWeight;
+        var align = cs.textAlign;
+        var lines = lineRectsForText(textNode);
+        for (var i = 0; i < lines.length; i++) {
+          var ln = lines[i];
+          var lx = ln.rect.left - ox;
+          var ly = ln.rect.top - oy;
+          // Baseline ≈ font cap-height. Center font within line box, then drop to baseline.
+          var ty = ly + (ln.rect.height - size) / 2 + size * 0.82;
+          var tx = lx;
+          var anchor = 'start';
+          if (align === 'center') { anchor = 'middle'; tx = lx + ln.rect.width / 2; }
+          else if (align === 'right' || align === 'end') { anchor = 'end'; tx = lx + ln.rect.width; }
+          out.push('<text x="' + num(tx) + '" y="' + num(ty) +
+                   '" font-family="' + esc(family) +
+                   '" font-size="' + num(size) +
+                   '" font-weight="' + weight +
+                   '" fill="' + colorAttr(color) +
+                   (color && color.a < 1 ? '" fill-opacity="' + color.a : '') +
+                   '" text-anchor="' + anchor +
+                   '" xml:space="preserve">' + esc(ln.text) + '</text>');
+        }
+      }
+
+      function emit(node, ox, oy, out) {
+        if (node.nodeType === 3) { emitTextNode(node, ox, oy, out); return; }
+        if (node.nodeType !== 1) return;
+        if (node.dataset && 'figmaExportIgnore' in node.dataset) return;
+        var cs = getComputedStyle(node);
+        if (cs.display === 'none' || cs.visibility === 'hidden') return;
+        var op = parseFloat(cs.opacity);
+        if (op === 0) return;
+        var tag = node.tagName.toLowerCase();
+        var r = node.getBoundingClientRect();
+        var x = r.left - ox, y = r.top - oy, w = r.width, h = r.height;
+        if (w <= 0 || h <= 0) return;
+
+        // Inline <svg> — embed the element verbatim so its own fill/stroke/
+        // viewBox attributes survive. Wrap in a <g transform="translate(...)">
+        // for positioning (don't mutate the inner svg's attributes — duplicate
+        // width/height would produce invalid XML that Figma rejects).
+        // Resolve `currentColor` to the actual text color at export time:
+        // Figma's SVG paste parser doesn't reliably propagate color context,
+        // so unresolved `currentColor` falls back to black.
+        // CSS mask icon (Iconify SVG used as `mask` with a `background-color`
+        // tint — used by the iOS floating tab bar and any other masked icon).
+        // Figma's SVG paste can't read CSS `mask`, so without this the icon
+        // appears as a solid filled rectangle. Pre-fetched SVG markup is
+        // recolored with the element's background-color and inlined.
+        var maskImg = (cs.maskImage && cs.maskImage !== 'none') ? cs.maskImage : cs.webkitMaskImage;
+        var maskMatch = maskImg && maskImg.match(/url\((['"]?)([^'")]+)\1\)/);
+        if (maskMatch && window.__figmaMaskCache && window.__figmaMaskCache[maskMatch[2]]) {
+          var maskSvg = window.__figmaMaskCache[maskMatch[2]];
+          var maskColor = parseRgb(cs.backgroundColor) || parseRgb(cs.color) || { r: 0, g: 0, b: 0, a: 1 };
+          var maskColorVal = colorAttr(maskColor);
+          var vbm = maskSvg.match(/viewBox\s*=\s*"([^"]+)"/i);
+          var vb = vbm ? vbm[1].split(/\s+/).map(parseFloat) : [0, 0, 24, 24];
+          var inner = maskSvg.replace(/^[\s\S]*?<svg[^>]*>/i, '').replace(/<\/svg>\s*$/i, '');
+          inner = inner.replace(/currentColor/g, maskColorVal);
+          var msx = w / (vb[2] || 24), msy = h / (vb[3] || 24);
+          if (op < 1) out.push('<g opacity="' + op + '">');
+          out.push('<g transform="translate(' + num(x - vb[0] * msx) + ',' + num(y - vb[1] * msy) +
+                   ') scale(' + num(msx) + ',' + num(msy) + ')" fill="' + maskColorVal +
+                   '" fill-opacity="' + maskColor.a + '">' + inner + '</g>');
+          if (op < 1) out.push('</g>');
+          return;
+        }
+
+        if (tag === 'svg') {
+          var color = parseRgb(cs.color);
+          var colorVal = color ? colorAttr(color) : 'black';
+          // Strip any existing width/height (may come from CSS, not attrs) and
+          // inject the computed render size, otherwise a nested <svg> without
+          // width/height defaults to 100% of the root viewport in Figma.
+          // Also resolve currentColor so strokes/fills don't fall back to black.
+          // Only strip width/height on the OUTER <svg ...> opening tag — a
+          // global replace also wipes width/height from inner <rect>/<image>
+          // elements (e.g. status-bar cellular/battery rects), erasing them.
+          var markup = node.outerHTML.replace(
+            /^<svg\b([^>]*)>/i,
+            function (_m, attrs) {
+              var stripped = attrs.replace(/\s(?:width|height)\s*=\s*"[^"]*"/gi, '');
+              return '<svg width="' + num(w) + '" height="' + num(h) + '"' + stripped + '>';
+            }
+          ).replace(/currentColor/g, colorVal);
+          if (op < 1) out.push('<g opacity="' + op + '">');
+          out.push('<g transform="translate(' + num(x) + ',' + num(y) + ')">' + markup + '</g>');
+          if (op < 1) out.push('</g>');
+          return;
+        }
+
+        // <img> — emit as <image>; Figma may or may not fetch the href on paste
+        if (tag === 'img') {
+          var src = node.currentSrc || node.src;
+          out.push('<image x="' + num(x) + '" y="' + num(y) +
+                   '" width="' + num(w) + '" height="' + num(h) +
+                   '" href="' + esc(src) + '" preserveAspectRatio="xMidYMid slice"/>');
+          return;
+        }
+
+        if (op < 1) out.push('<g opacity="' + op + '">');
+
+        // Background / border rect
+        var bg = parseRgb(cs.backgroundColor);
+        var grad = gradientDef(cs.backgroundImage);
+        var borderW = parseFloat(cs.borderTopWidth) || 0;
+        var borderC = borderW > 0 ? parseRgb(cs.borderTopColor) : null;
+        var rx = parseFloat(cs.borderTopLeftRadius) || 0;
+        // Clamp rx to min(w,h)/2 — CSS border-radius: 9999px renders as a
+        // pill, but SVG clamps rx and ry independently, producing an ellipse.
+        rx = Math.min(rx, Math.min(w, h) / 2);
+        if (grad || bg || (borderW && borderC)) {
+          var fillVal = grad || (bg ? colorAttr(bg) : 'none');
+          var fillOp = (!grad && bg) ? bg.a : 1;
+          var strokeAttr = (borderW && borderC)
+            ? ' stroke="' + colorAttr(borderC) + '" stroke-opacity="' + borderC.a + '" stroke-width="' + num(borderW) + '"'
+            : '';
+          out.push('<rect x="' + num(x) + '" y="' + num(y) +
+                   '" width="' + num(w) + '" height="' + num(h) +
+                   '" rx="' + num(rx) + '" ry="' + num(rx) +
+                   '" fill="' + fillVal + '" fill-opacity="' + fillOp + '"' + strokeAttr + '/>');
+        }
+
+        // Children, possibly clipped by overflow.
+        // SVG paint order is strict DOM order — CSS z-index is ignored.
+        // Stable-sort element children by computed z-index so stacked
+        // positioned layers (e.g. status-bar over .ambient) paint correctly.
+        var kids = Array.prototype.slice.call(node.childNodes);
+        var ordered = kids.map(function (c, idx) {
+          var z = 0;
+          if (c.nodeType === 1) {
+            var zs = getComputedStyle(c).zIndex;
+            if (zs && zs !== 'auto') { var zn = parseInt(zs, 10); if (!isNaN(zn)) z = zn; }
+          }
+          return { node: c, idx: idx, z: z };
+        });
+        ordered.sort(function (a, b) { return (a.z - b.z) || (a.idx - b.idx); });
+        var childOut = [];
+        for (var i = 0; i < ordered.length; i++) {
+          emit(ordered[i].node, ox, oy, childOut);
+        }
+        var needsClip = (cs.overflow === 'hidden' || cs.overflow === 'auto' || cs.overflow === 'scroll' || cs.overflowX === 'hidden' || cs.overflowY === 'hidden');
+        if (needsClip && childOut.length) {
+          var cid = clipDef(x, y, w, h, rx);
+          out.push('<g clip-path="url(#' + cid + ')">');
+          out.push(childOut.join(''));
+          out.push('</g>');
+        } else {
+          out.push(childOut.join(''));
+        }
+
+        if (op < 1) out.push('</g>');
+      }
+
+      function showToast(msg, isError) {
+        var t = document.querySelector('.figma-export-toast');
+        if (!t) return;
+        t.textContent = msg;
+        t.hidden = false;
+        t.style.color = isError ? '#ff9f9f' : '#fff';
+        clearTimeout(showToast._timer);
+        showToast._timer = setTimeout(function () { t.hidden = true; }, 2500);
+      }
+
+      window.__copyDesignToFigma = async function () {
+        try {
+          defs = [];
+          defCounter = 0;
+          var root = document.querySelector('.device');
+          if (!root) { showToast('No .device frame found', true); return; }
+          // Pre-fetch CSS mask SVG icons so emit() can inline them
+          // synchronously. Each cached entry maps mask url -> raw SVG text.
+          var maskUrls = {};
+          root.querySelectorAll('*').forEach(function (n) {
+            var s = getComputedStyle(n);
+            var mi = (s.maskImage && s.maskImage !== 'none') ? s.maskImage : s.webkitMaskImage;
+            var m = mi && mi.match(/url\((['"]?)([^'")]+)\1\)/);
+            if (m) maskUrls[m[2]] = true;
+          });
+          var maskCache = {};
+          await Promise.all(Object.keys(maskUrls).map(function (u) {
+            return fetch(u).then(function (r) { if (!r.ok) throw new Error(r.status); return r.text(); })
+              .then(function (t) { maskCache[u] = t; })
+              .catch(function () { maskCache[u] = null; });
+          }));
+          window.__figmaMaskCache = maskCache;
+          var r = root.getBoundingClientRect();
+          var out = [];
+          emit(root, r.left, r.top, out);
+          var svg = '<svg xmlns="' + SVG_NS + '" width="' + num(r.width) + '" height="' + num(r.height) +
+                    '" viewBox="0 0 ' + num(r.width) + ' ' + num(r.height) + '">' +
+                    (defs.length ? '<defs>' + defs.join('') + '</defs>' : '') +
+                    out.join('') +
+                    '</svg>';
+          await navigator.clipboard.writeText(svg);
+          showToast('Copied — paste into Figma (Cmd+V)');
+        } catch (err) {
+          console.error('[figma-export]', err);
+          showToast('Clipboard blocked — serve over http(s) or grant permission', true);
+        }
+      };
+    })();
+    </script>
+</body>
+</html>

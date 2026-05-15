@@ -29,6 +29,22 @@ Native Material 3 / MD3 Expressive — Pixel 8 frame (412×915), Roboto Flex, MD
 - **Mail (Inbox)** — [`android-mail.html`](examples/android-mail.html) · MD3 search bar with leading menu + trailing avatar, filter chips, two-line mail rows with star toggle, Compose FAB, badge on bottom-nav
 - **Music (Now Playing)** — [`android-music.html`](examples/android-music.html) · Center-aligned top app bar with overline, gradient album art, MD3 slider, transport row with prominent play button, up-next list
 
+## Showcase — Tablet
+
+Same skill, same components — bigger canvas. Tablet templates scaffold a landscape device frame (iPad Pro 11" 1194×834 / Pixel Tablet 1280×800 dp) and add layout wrappers (`.split-view`, `.sidebar-ipad`, `.list-detail`, `.nav-rail`) on top of the existing component library. Set `--orientation portrait` to flip.
+
+### iPad (Apple HIG)
+
+![iPad showcase strip](examples/screenshots/ipad-showcase-strip.png)
+
+- **Mail (Inbox)** — [`ipad-mail-landscape.html`](examples/ipad-mail-landscape.html) · Three-column split view: mailboxes sidebar → inbox list → message detail. Built with [`components/ios/13-tablet-layouts.md`](skills/make-mobile-design/components/ios/13-tablet-layouts.md) wrappers and existing iOS list/nav components.
+
+### Android tablet (Material 3 Expanded)
+
+![Android tablet showcase strip](examples/screenshots/android-tablet-showcase-strip.png)
+
+- **Settings (Display)** — [`android-tablet-settings-landscape.html`](examples/android-tablet-settings-landscape.html) · MD3 expanded-class layout: navigation rail (80dp), top app bar, list-detail panes (360dp list / flex detail) with two-tone `surface-container` surfaces. Built with [`components/android/10-tablet-layouts.md`](skills/make-mobile-design/components/android/10-tablet-layouts.md) wrappers.
+
 Open the HTML files directly to feel the scroll/hover behavior. Each example also includes a floating **Copy to Figma** action — see below.
 
 ## Copy to Figma
@@ -64,13 +80,15 @@ mobile-design-kit/
     │   ├── components.md        ← index across both platforms
     │   ├── iconify-icons.md
     │   ├── components/
-    │   │   ├── ios/             ← iOS component docs (00..12)
-    │   │   ├── android/         ← Android component docs (01..09)
+    │   │   ├── ios/             ← iOS component docs (00..13; 13 = tablet layouts)
+    │   │   ├── android/         ← Android component docs (01..10; 10 = tablet layouts)
     │   │   └── 11-icons.md      ← cross-platform icon reference
     │   └── scripts/
-    │       ├── create_ios_template.py
+    │       ├── create_ios_template.py             ← iPhone 14 Pro (430×932)
+    │       ├── create_ipad_template.py            ← iPad Pro 11" (1194×834 landscape, --orientation portrait flips)
     │       ├── add_ios_tabbar.py
-    │       ├── create_android_template.py
+    │       ├── create_android_template.py          ← Pixel 8 (412×915)
+    │       ├── create_android_tablet_template.py   ← Pixel Tablet (1280×800 landscape, --orientation portrait flips)
     │       ├── add_android_navbar.py
     │       └── fetch_design_style.py
     └── ios-icon-gen/

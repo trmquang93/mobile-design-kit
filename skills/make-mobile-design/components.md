@@ -20,6 +20,7 @@ Components are split by platform. **Load only the files for the platform you're 
 | [ios/09-cards-banners.md](components/ios/09-cards-banners.md) | 20. Stats Carousel, 21. Promo Banner, 22. Paywall | When iOS screen has promotional content |
 | [ios/10-media-states.md](components/ios/10-media-states.md) | 23. Audio Player, 24. Empty State | When iOS screen has media playback or empty states |
 | [ios/12-toolbars.md](components/ios/12-toolbars.md) | 27. Bottom Toolbar (Icon Only), 28. Bottom Toolbar (Icon+Label), 29. Bottom Toolbar with Overflow Menu, 30. Header Toolbar | When iOS screen has a contextual action bar, an overflow menu, or multiple header trailing actions |
+| [ios/13-tablet-layouts.md](components/ios/13-tablet-layouts.md) | 31. Tablet Layout Wrappers (split-view, sidebar, supplemental pane, detail pane, three-column, sidebar rows) | **Load when form-factor = tablet** and the iPad screen has a sidebar, split view, or three-column layout |
 
 ## Android Component Files (`components/android/`)
 
@@ -34,6 +35,7 @@ Components are split by platform. **Load only the files for the platform you're 
 | [android/07-interactive.md](components/android/07-interactive.md) | A15. Switch / Checkbox / Radio, A16. Slider, A17. Progress, A18. FAB (regular / small / large / extended) | When Android screen has interactive controls |
 | [android/08-overlays.md](components/android/08-overlays.md) | A19. Bottom Sheet (modal + standard), A20. Dialog, A21. Menu | When Android screen has modal overlays |
 | [android/09-navigation-drawer.md](components/android/09-navigation-drawer.md) | A22. Navigation Drawer (modal + standard), A23. Navigation Rail | When Android screen has a side drawer or rail |
+| [android/10-tablet-layouts.md](components/android/10-tablet-layouts.md) | A24. Tablet Layout Wrappers (`.tablet-shell`, `.list-detail`, `.list-pane`, `.detail-pane-md`, `.three-column-md`) | **Load when form-factor = tablet** and the Android screen uses nav rail / list-detail / three-column |
 
 ## Cross-Platform Files
 
