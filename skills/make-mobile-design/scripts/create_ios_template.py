@@ -3,7 +3,7 @@
 and home indicator, ready to be filled with screen content.
 
 Usage:
-    python create_device_template.py <output.html> [--title "Screen Name"]
+    python create_ios_template.py <output.html> [--title "Screen Name"]
 """
 
 import argparse
@@ -25,7 +25,7 @@ TEMPLATE = Template(r"""<!DOCTYPE html>
             --color-island: #000000;
             --font-system: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 
-            /* iOS HIG type ramp — keep in sync with components/01-base-tokens.md */
+            /* iOS HIG type ramp — keep in sync with components/ios/01-base-tokens.md */
             --text-caption2:    11px;
             --text-caption1:    12px;
             --text-footnote:    13px;
@@ -87,7 +87,7 @@ TEMPLATE = Template(r"""<!DOCTYPE html>
             pointer-events: none;
         }
 
-        /* Status Bar (matches components/02-status-bar.md) — overlays content, stays fixed during scroll */
+        /* Status Bar (matches components/ios/02-status-bar.md) — overlays content, stays fixed during scroll */
         .status-bar {
             position: absolute;
             top: 0;
@@ -124,7 +124,7 @@ TEMPLATE = Template(r"""<!DOCTYPE html>
            NOT this container. This is so navigation bars (.nav-header, glass
            top bars, hero images) can render their background behind the status
            bar to the very top edge of the screen, which is the correct iOS
-           behavior. See components/03-navigation.md §3a for the pattern. */
+           behavior. See components/ios/03-navigation.md §3a for the pattern. */
         .device-content {
             position: absolute;
             inset: 0;

@@ -64,7 +64,7 @@
             padding: 20px 0;
         }
 
-        /* === Device chrome (matches create_device_template.py) === */
+        /* === Device chrome (matches create_ios_template.py) === */
         .device {
             position: relative;
             width: 430px; height: 932px;
@@ -330,7 +330,7 @@
     </style>
 </head>
 <body>
-    <!-- Liquid Glass distortion filter (see components/00-liquid-glass.md) -->
+    <!-- Liquid Glass distortion filter (see components/ios/00-liquid-glass.md) -->
     <svg width="0" height="0" style="position:absolute" aria-hidden="true">
       <filter id="glass-distortion" x="0%" y="0%" width="100%" height="100%">
         <feImage preserveAspectRatio="none" result="map"
@@ -352,7 +352,7 @@
         <feDisplacementMap in="SourceGraphic" in2="smoothed" scale="40" xChannelSelector="R" yChannelSelector="G"/>
       </filter>
       <!-- Frosted variant: refraction + post-displacement blur. See
-           components/00-liquid-glass.md for when to use this vs the
+           components/ios/00-liquid-glass.md for when to use this vs the
            default rim-only displacement. -->
       <filter id="glass-distortion-frosted" x="0%" y="0%" width="100%" height="100%">
         <feImage preserveAspectRatio="none" result="map"

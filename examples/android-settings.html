@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Android Settings — Material 3</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wght@8..144,300..900&family=Roboto+Mono:wght@400;500&display=swap">
+    <style>
+        :root {
+            /* Material 3 — baseline LIGHT scheme.
+               Keep in sync with components/android/01-base-tokens.md. */
+            --md-sys-color-primary:                #6750A4;
+            --md-sys-color-on-primary:             #FFFFFF;
+            --md-sys-color-primary-container:      #EADDFF;
+            --md-sys-color-on-primary-container:   #4F378B;
+            --md-sys-color-secondary:              #625B71;
+            --md-sys-color-on-secondary:           #FFFFFF;
+            --md-sys-color-secondary-container:    #E8DEF8;
+            --md-sys-color-on-secondary-container: #1D192B;
+            --md-sys-color-tertiary:               #7D5260;
+            --md-sys-color-on-tertiary:            #FFFFFF;
+            --md-sys-color-tertiary-container:     #FFD8E4;
+            --md-sys-color-on-tertiary-container:  #31111D;
+            --md-sys-color-error:                  #B3261E;
+            --md-sys-color-on-error:               #FFFFFF;
+            --md-sys-color-error-container:        #F9DEDC;
+            --md-sys-color-on-error-container:     #410E0B;
+            --md-sys-color-background:             #FEF7FF;
+            --md-sys-color-on-background:          #1D1B20;
+            --md-sys-color-surface:                #FEF7FF;
+            --md-sys-color-on-surface:             #1D1B20;
+            --md-sys-color-surface-variant:        #E7E0EC;
+            --md-sys-color-on-surface-variant:     #49454F;
+            --md-sys-color-outline:                #79747E;
+            --md-sys-color-outline-variant:        #CAC4D0;
+            --md-sys-color-surface-container-lowest:  #FFFFFF;
+            --md-sys-color-surface-container-low:     #F7F2FA;
+            --md-sys-color-surface-container:         #F3EDF7;
+            --md-sys-color-surface-container-high:    #ECE6F0;
+            --md-sys-color-surface-container-highest: #E6E0E9;
+            --md-sys-color-surface-tint:           var(--md-sys-color-primary);
+            --md-sys-color-inverse-surface:        #322F35;
+            --md-sys-color-inverse-on-surface:     #F5EFF7;
+            --md-sys-color-scrim:                  #000000;
+
+            /* MD3 type scale (size / line-height in px). Use Roboto Flex. */
+            --md-sys-typescale-display-large:    57px;
+            --md-sys-typescale-display-medium:   45px;
+            --md-sys-typescale-display-small:    36px;
+            --md-sys-typescale-headline-large:   32px;
+            --md-sys-typescale-headline-medium:  28px;
+            --md-sys-typescale-headline-small:   24px;
+            --md-sys-typescale-title-large:      22px;
+            --md-sys-typescale-title-medium:     16px;
+            --md-sys-typescale-title-small:      14px;
+            --md-sys-typescale-body-large:       16px;
+            --md-sys-typescale-body-medium:      14px;
+            --md-sys-typescale-body-small:       12px;
+            --md-sys-typescale-label-large:      14px;
+            --md-sys-typescale-label-medium:     12px;
+            --md-sys-typescale-label-small:      11px;
+
+            /* MD3 corner shape tokens */
+            --md-sys-shape-corner-none:        0px;
+            --md-sys-shape-corner-extra-small: 4px;
+            --md-sys-shape-corner-small:       8px;
+            --md-sys-shape-corner-medium:      12px;
+            --md-sys-shape-corner-large:       16px;
+            --md-sys-shape-corner-extra-large: 28px;
+            --md-sys-shape-corner-full:        9999px;
+
+            /* MD3 tonal elevation — combine box-shadow with surface-tint
+               overlay for full effect (see android.md "Elevation"). */
+            --md-sys-elevation-level0: none;
+            --md-sys-elevation-level1: 0 1px 2px rgba(0,0,0,0.30), 0 1px 3px 1px rgba(0,0,0,0.15);
+            --md-sys-elevation-level2: 0 1px 2px rgba(0,0,0,0.30), 0 2px 6px 2px rgba(0,0,0,0.15);
+            --md-sys-elevation-level3: 0 4px 8px 3px rgba(0,0,0,0.15), 0 1px 3px rgba(0,0,0,0.30);
+            --md-sys-elevation-level4: 0 6px 10px 4px rgba(0,0,0,0.15), 0 2px 3px rgba(0,0,0,0.30);
+            --md-sys-elevation-level5: 0 8px 12px 6px rgba(0,0,0,0.15), 0 4px 4px rgba(0,0,0,0.30);
+
+            /* MD3 motion easing */
+            --md-sys-motion-easing-standard:               cubic-bezier(0.2, 0.0, 0, 1.0);
+            --md-sys-motion-easing-emphasized:             cubic-bezier(0.2, 0.0, 0, 1.0);
+            --md-sys-motion-easing-emphasized-decelerate:  cubic-bezier(0.05, 0.7, 0.1, 1.0);
+            --md-sys-motion-easing-emphasized-accelerate:  cubic-bezier(0.3, 0.0, 0.8, 0.15);
+            --md-sys-motion-easing-linear:                 linear;
+
+            /* MD3 motion durations */
+            --md-sys-motion-duration-short1:  50ms;
+            --md-sys-motion-duration-short2: 100ms;
+            --md-sys-motion-duration-short3: 150ms;
+            --md-sys-motion-duration-short4: 200ms;
+            --md-sys-motion-duration-medium1: 250ms;
+            --md-sys-motion-duration-medium2: 300ms;
+            --md-sys-motion-duration-medium3: 350ms;
+            --md-sys-motion-duration-medium4: 400ms;
+            --md-sys-motion-duration-long1:  450ms;
+            --md-sys-motion-duration-long2:  500ms;
+
+            --font-roboto: "Roboto Flex", "Roboto", "Google Sans", system-ui, -apple-system, sans-serif;
+            --font-mono:   "Roboto Mono", ui-monospace, "SF Mono", Menlo, monospace;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --md-sys-color-primary:                #D0BCFF;
+                --md-sys-color-on-primary:             #381E72;
+                --md-sys-color-primary-container:      #4F378B;
+                --md-sys-color-on-primary-container:   #EADDFF;
+                --md-sys-color-secondary:              #CCC2DC;
+                --md-sys-color-on-secondary:           #332D41;
+                --md-sys-color-secondary-container:    #4A4458;
+                --md-sys-color-on-secondary-container: #E8DEF8;
+                --md-sys-color-tertiary:               #EFB8C8;
+                --md-sys-color-on-tertiary:            #492532;
+                --md-sys-color-tertiary-container:     #633B48;
+                --md-sys-color-on-tertiary-container:  #FFD8E4;
+                --md-sys-color-error:                  #F2B8B5;
+                --md-sys-color-on-error:               #601410;
+                --md-sys-color-error-container:        #8C1D18;
+                --md-sys-color-on-error-container:     #F9DEDC;
+                --md-sys-color-background:             #141218;
+                --md-sys-color-on-background:          #E6E0E9;
+                --md-sys-color-surface:                #141218;
+                --md-sys-color-on-surface:             #E6E0E9;
+                --md-sys-color-surface-variant:        #49454F;
+                --md-sys-color-on-surface-variant:     #CAC4D0;
+                --md-sys-color-outline:                #938F99;
+                --md-sys-color-outline-variant:        #49454F;
+                --md-sys-color-surface-container-lowest:  #0F0D13;
+                --md-sys-color-surface-container-low:     #1D1B20;
+                --md-sys-color-surface-container:         #211F26;
+                --md-sys-color-surface-container-high:    #2B2930;
+                --md-sys-color-surface-container-highest: #36343B;
+                --md-sys-color-inverse-surface:        #E6E0E9;
+                --md-sys-color-inverse-on-surface:     #322F35;
+            }
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        html, body {
+            background: #1a1a1a;
+            font-family: var(--font-roboto);
+            font-size: var(--md-sys-typescale-body-large);
+            line-height: 1.5;
+            color: var(--md-sys-color-on-surface);
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            min-height: 100vh;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px 0;
+        }
+
+        /* Pixel 8 frame: 412 x 915 logical px, ~36px corner radius */
+        .device {
+            position: relative;
+            width: 412px;
+            height: 915px;
+            min-width: 412px;
+            min-height: 915px;
+            flex-shrink: 0;
+            background: var(--md-sys-color-background);
+            border-radius: 44px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+        }
+
+        /* Hole-punch camera — centered, top */
+        .hole-punch {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 14px;
+            height: 14px;
+            background: #000;
+            border-radius: 50%;
+            z-index: 100;
+            pointer-events: none;
+        }
+
+        /* Status bar (matches components/android/02-status-bar.md) — 24px,
+           pinned via position:absolute; top:0; z-index:50.
+           pointer-events: none so taps fall through to scrolling content. */
+        .status-bar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 4px 20px 0;
+            font-size: var(--md-sys-typescale-label-medium);
+            font-weight: 500;
+            color: var(--md-sys-color-on-surface);
+            z-index: 50;
+            pointer-events: none;
+        }
+
+        .status-bar-time { letter-spacing: 0.02em; }
+        .status-bar-icons { display: flex; gap: 4px; align-items: center; }
+
+        /* Scrollable content. Same convention as the iOS scaffold:
+           padding-top is 0 — the FIRST CHILD inside .device-content owns the
+           24px status-bar safe area via its own padding-top:
+              .top-app-bar  → padding-top: calc(24px + 8px)
+              .page-content → padding-top: 24px
+              full-bleed    → 0 (image/hero bleeds behind status bar)
+
+           Any floating overlay over .device-content (custom bottom nav, FAB,
+           snackbar) MUST set `pointer-events: none` on its wrapper and
+           `pointer-events: auto` on its interactive children, otherwise the
+           overlay swallows scroll over its footprint. */
+        .device-content {
+            position: absolute;
+            inset: 0;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            padding-top: 0;          /* status-bar offset belongs on first child */
+            padding-bottom: 24px;    /* clearance above gesture-nav pill */
+            background: var(--md-sys-color-background);
+        }
+        .device-content::-webkit-scrollbar { display: none; }
+        .device-content { scrollbar-width: none; }
+
+        /* Gesture-nav pill — overlay, never scrolls */
+        .gesture-nav-area {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 24px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            padding-bottom: 10px;
+            pointer-events: none;
+            z-index: 50;
+        }
+        .gesture-nav-pill {
+            width: 108px;
+            height: 4px;
+            background: var(--md-sys-color-on-surface);
+            border-radius: 2px;
+            opacity: 0.85;
+        }
+    </style>
+</head>
+<body>
+    <div class="device" data-platform="android">
+        <!-- Hole-punch camera (always on top) -->
+        <div class="hole-punch"></div>
+
+        <!-- Status bar -->
+        <div class="status-bar">
+            <span class="status-bar-time">9:41</span>
+            <div class="status-bar-icons">
+                <!-- Signal -->
+                <svg width="14" height="10" viewBox="0 0 14 10" fill="currentColor" aria-hidden="true"><rect x="0" y="7" width="2" height="3" rx="0.5"/><rect x="3" y="5" width="2" height="5" rx="0.5"/><rect x="6" y="3" width="2" height="7" rx="0.5"/><rect x="9" y="0" width="2" height="10" rx="0.5"/></svg>
+                <!-- Wi-Fi -->
+                <svg width="14" height="10" viewBox="0 0 14 10" fill="currentColor" aria-hidden="true"><path d="M7 2.5c1.9 0 3.6.7 4.9 1.9l1.1-1.1C11.4 1.7 9.3 1 7 1S2.6 1.7 1 3.3l1.1 1.1C3.4 3.2 5.1 2.5 7 2.5Z"/><path d="M7 5c1.1 0 2.1.4 2.8 1.1l1.1-1.1C9.9 4 8.5 3.5 7 3.5S4.1 4 3.1 5l1.1 1.1C4.9 5.4 5.9 5 7 5Z"/><circle cx="7" cy="8.5" r="1.3"/></svg>
+                <!-- Battery -->
+                <svg width="22" height="10" viewBox="0 0 22 10" fill="none" aria-hidden="true"><rect x="0.5" y="0.5" width="19" height="9" rx="1.5" stroke="currentColor" stroke-width="1"/><rect x="20" y="3" width="1.5" height="4" rx="0.5" fill="currentColor"/><rect x="2" y="2" width="14" height="6" rx="0.5" fill="currentColor"/></svg>
+            </div>
+        </div>
+
+        <!-- Screen content -->
+        <main class="device-content">
+            <header class="top-app-bar top-app-bar--center">
+                <button class="icon-btn" aria-label="Back">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+                </button>
+                <h1 class="top-app-bar__title">Settings</h1>
+                <button class="icon-btn" aria-label="More">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>
+                </button>
+            </header>
+
+            <article class="profile-card">
+                <span class="avatar" aria-hidden="true">AB</span>
+                <div class="profile-card__text">
+                    <h2>Anna Becker</h2>
+                    <p>anna.becker@example.com</p>
+                </div>
+                <button class="icon-btn" aria-label="Edit profile">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+                </button>
+            </article>
+
+            <h2 class="section-header">Notifications</h2>
+            <ul class="list">
+                <li class="list-item">
+                    <span class="list-item__leading">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12 22a2 2 0 0 0 2-2H10a2 2 0 0 0 2 2zm6-6V11c0-3.07-1.63-5.64-4.5-6.32V4a1.5 1.5 0 0 0-3 0v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg>
+                    </span>
+                    <span class="list-item__text">
+                        <span class="list-item__primary">Push notifications</span>
+                    </span>
+                    <label class="switch list-item__trailing" aria-label="Push notifications">
+                        <input type="checkbox" class="switch__input" checked>
+                        <span class="switch__track"><span class="switch__thumb"></span></span>
+                    </label>
+                </li>
+                <li class="list-item">
+                    <span class="list-item__leading">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4-8 5-8-5V6l8 5 8-5v2z"/></svg>
+                    </span>
+                    <span class="list-item__text">
+                        <span class="list-item__primary">Email digests</span>
+                    </span>
+                    <label class="switch list-item__trailing" aria-label="Email digests">
+                        <input type="checkbox" class="switch__input">
+                        <span class="switch__track"><span class="switch__thumb"></span></span>
+                    </label>
+                </li>
+                <li class="list-item">
+                    <span class="list-item__leading">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 0 1 0-5 2.5 2.5 0 0 1 0 5z"/></svg>
+                    </span>
+                    <span class="list-item__text">
+                        <span class="list-item__primary">Quiet hours</span>
+                        <span class="list-item__secondary">10:00 PM – 7:00 AM</span>
+                    </span>
+                    <span class="list-item__trailing">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M9 6 7.6 7.4 12.2 12l-4.6 4.6L9 18l6-6z"/></svg>
+                    </span>
+                </li>
+            </ul>
+
+            <h2 class="section-header">Privacy</h2>
+            <ul class="list">
+                <li class="list-item">
+                    <span class="list-item__leading">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M18 8h-1V6A5 5 0 0 0 7 6v2H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V10a2 2 0 0 0-2-2zM9 6a3 3 0 1 1 6 0v2H9V6zm9 14H6V10h12v10z"/></svg>
+                    </span>
+                    <span class="list-item__text">
+                        <span class="list-item__primary">Lock app with biometrics</span>
+                    </span>
+                    <label class="switch list-item__trailing" aria-label="Lock with biometrics">
+                        <input type="checkbox" class="switch__input" checked>
+                        <span class="switch__track"><span class="switch__thumb"></span></span>
+                    </label>
+                </li>
+                <li class="list-item">
+                    <span class="list-item__leading">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12 4.5C7 4.5 2.7 7.6 1 12c1.7 4.4 6 7.5 11 7.5s9.3-3.1 11-7.5c-1.7-4.4-6-7.5-11-7.5zM12 17a5 5 0 1 1 0-10 5 5 0 0 1 0 10zm0-8a3 3 0 1 0 0 6 3 3 0 0 0 0-6z"/></svg>
+                    </span>
+                    <span class="list-item__text">
+                        <span class="list-item__primary">Activity status</span>
+                        <span class="list-item__secondary">Visible to friends</span>
+                    </span>
+                    <span class="list-item__trailing">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M9 6 7.6 7.4 12.2 12l-4.6 4.6L9 18l6-6z"/></svg>
+                    </span>
+                </li>
+                <li class="list-item">
+                    <span class="list-item__leading">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12 1 3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg>
+                    </span>
+                    <span class="list-item__text">
+                        <span class="list-item__primary">Two-factor authentication</span>
+                        <span class="list-item__secondary">Enabled · Authenticator app</span>
+                    </span>
+                    <span class="list-item__trailing">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M9 6 7.6 7.4 12.2 12l-4.6 4.6L9 18l6-6z"/></svg>
+                    </span>
+                </li>
+            </ul>
+
+            <h2 class="section-header">About</h2>
+            <ul class="list">
+                <li class="list-item">
+                    <span class="list-item__leading">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm1 17h-2v-6h2v6zm0-8h-2V7h2v4z"/></svg>
+                    </span>
+                    <span class="list-item__text">
+                        <span class="list-item__primary">Version</span>
+                        <span class="list-item__secondary">8.4.1 (build 24061)</span>
+                    </span>
+                </li>
+            </ul>
+
+            <div class="settings-actions">
+                <button class="btn btn--tonal">Sign out</button>
+            </div>
+
+            <div style="height: 32px"></div>
+
+            <style>
+                .top-app-bar {
+                    position: sticky; top: 0; z-index: 10;
+                    display: flex; align-items: center; gap: 4px;
+                    padding: calc(24px + 8px) 4px 8px 4px;
+                    background: var(--md-sys-color-surface);
+                    color: var(--md-sys-color-on-surface);
+                }
+                .top-app-bar--center .top-app-bar__title {
+                    flex: 1; text-align: center;
+                    font: 400 var(--md-sys-typescale-title-large) / 1.27 var(--font-roboto);
+                    margin: 0;
+                }
+                .icon-btn {
+                    width: 48px; height: 48px; border: none; background: transparent;
+                    color: inherit; border-radius: var(--md-sys-shape-corner-full);
+                    display: inline-flex; align-items: center; justify-content: center;
+                    cursor: pointer;
+                }
+                .icon-btn:hover { background: color-mix(in srgb, currentColor 8%, transparent); }
+
+                .profile-card {
+                    display: flex; align-items: center; gap: 16px;
+                    margin: 8px 16px 16px;
+                    padding: 16px;
+                    background: var(--md-sys-color-surface-container-low);
+                    border-radius: var(--md-sys-shape-corner-extra-large);
+                }
+                .profile-card .avatar {
+                    width: 56px; height: 56px;
+                    border-radius: 50%;
+                    background: var(--md-sys-color-primary-container);
+                    color: var(--md-sys-color-on-primary-container);
+                    display: inline-flex; align-items: center; justify-content: center;
+                    font: 500 var(--md-sys-typescale-title-large) / 1 var(--font-roboto);
+                    flex-shrink: 0;
+                }
+                .profile-card__text { flex: 1; min-width: 0; }
+                .profile-card__text h2 {
+                    font: 500 var(--md-sys-typescale-title-medium) / 1.5 var(--font-roboto);
+                }
+                .profile-card__text p {
+                    font: 400 var(--md-sys-typescale-body-medium) / 1.43 var(--font-roboto);
+                    color: var(--md-sys-color-on-surface-variant);
+                }
+
+                .section-header {
+                    margin: 24px 16px 8px;
+                    font: 500 var(--md-sys-typescale-title-small) / 1.43 var(--font-roboto);
+                    color: var(--md-sys-color-primary);
+                    letter-spacing: 0.1px;
+                }
+
+                .list { list-style: none; padding: 0; margin: 0; }
+                .list-item { display: flex; align-items: center; gap: 16px; min-height: 64px; padding: 8px 16px; color: var(--md-sys-color-on-surface); }
+                .list-item__leading { width: 24px; height: 24px; display: inline-flex; align-items: center; justify-content: center; color: var(--md-sys-color-on-surface-variant); flex-shrink: 0; }
+                .list-item__text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+                .list-item__primary { font: 400 var(--md-sys-typescale-body-large) / 1.5 var(--font-roboto); }
+                .list-item__secondary { font: 400 var(--md-sys-typescale-body-medium) / 1.43 var(--font-roboto); color: var(--md-sys-color-on-surface-variant); }
+                .list-item__trailing { color: var(--md-sys-color-on-surface-variant); flex-shrink: 0; }
+
+                .switch { display: inline-block; cursor: pointer; position: relative; }
+                .switch__input { position: absolute; opacity: 0; pointer-events: none; }
+                .switch__track {
+                    display: block; width: 52px; height: 32px;
+                    border-radius: var(--md-sys-shape-corner-full);
+                    background: var(--md-sys-color-surface-container-highest);
+                    border: 2px solid var(--md-sys-color-outline);
+                    position: relative;
+                    transition: background-color 150ms var(--md-sys-motion-easing-standard),
+                                border-color 150ms var(--md-sys-motion-easing-standard);
+                }
+                .switch__thumb {
+                    position: absolute; top: 50%; left: 6px;
+                    transform: translateY(-50%);
+                    width: 16px; height: 16px;
+                    border-radius: 50%;
+                    background: var(--md-sys-color-outline);
+                    transition: transform 200ms var(--md-sys-motion-easing-emphasized),
+                                background-color 200ms var(--md-sys-motion-easing-emphasized),
+                                width 200ms var(--md-sys-motion-easing-emphasized),
+                                height 200ms var(--md-sys-motion-easing-emphasized),
+                                left 200ms var(--md-sys-motion-easing-emphasized);
+                }
+                .switch__input:checked + .switch__track {
+                    background: var(--md-sys-color-primary);
+                    border-color: var(--md-sys-color-primary);
+                }
+                .switch__input:checked + .switch__track .switch__thumb {
+                    width: 24px; height: 24px; left: 24px;
+                    background: var(--md-sys-color-on-primary);
+                }
+
+                .settings-actions { padding: 16px; display: flex; justify-content: center; }
+                .btn {
+                    height: 40px; padding: 0 24px; border: none;
+                    border-radius: var(--md-sys-shape-corner-full);
+                    font: 500 var(--md-sys-typescale-label-large) / 1 var(--font-roboto);
+                    cursor: pointer;
+                    display: inline-flex; align-items: center; gap: 8px;
+                }
+                .btn--tonal {
+                    background: var(--md-sys-color-secondary-container);
+                    color: var(--md-sys-color-on-secondary-container);
+                }
+            </style>
+        </main>
+
+        <!-- Gesture-navigation pill -->
+        <div class="gesture-nav-area">
+            <div class="gesture-nav-pill"></div>
+        </div>
+    </div>
+</body>
+</html>

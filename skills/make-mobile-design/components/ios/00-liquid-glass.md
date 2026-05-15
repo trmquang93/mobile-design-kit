@@ -167,7 +167,7 @@ promotion and the glass element stays in the parent compositor.
 ## Variants
 
 - **Tinted glass** (active state): add `background: rgba(<accent>, 0.18)`.
-  The tab-bar emitter in `scripts/add_tabbar.py` does this for the
+  The tab-bar emitter in `scripts/add_ios_tabbar.py` does this for the
   active item.
 - **Clear glass** (over photography): drop the white fill, keep only
   the filter and border.

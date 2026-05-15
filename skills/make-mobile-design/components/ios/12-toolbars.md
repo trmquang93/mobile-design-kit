@@ -2,9 +2,9 @@
 
 Ephemeral, task-scoped action bar pinned to the bottom of the screen. Use for selection / edit / detail modes (Mail's archive/move/delete, Safari's back/forward/share, Photos' edit toolbar). **Distinct from a tab bar** — a tab bar is structural primary navigation that's always visible; a toolbar appears only while a contextual mode is active.
 
-DO NOT use this on a screen that already has a bottom tab bar from `add_tabbar.py` or `03-navigation.md`. Pick one bottom layer.
+DO NOT use this on a screen that already has a bottom tab bar from `add_ios_tabbar.py` or `03-navigation.md`. Pick one bottom layer.
 
-Two layouts share the same Liquid Glass recipe used by `scripts/add_tabbar.py` (`glass` / `glass-split`) so contextual toolbars match the look of glass tab bars in the same app:
+Two layouts share the same Liquid Glass recipe used by `scripts/add_ios_tabbar.py` (`glass` / `glass-split`) so contextual toolbars match the look of glass tab bars in the same app:
 
 - **Single pill** — one floating capsule containing every action.
 - **Split** — primary capsule on the left + a separate glass circle on the right for a destructive or trailing action (Mail/Photos pattern). Default below.
@@ -59,7 +59,7 @@ For a single-pill layout, drop `.toolbar__group--trailing` and put every button 
 .toolbar__group {
     /* Liquid Glass — apply the shared `.glass` class alongside this one
        in markup: <div class="toolbar__group glass">. The recipe lives
-       in components/00-liquid-glass.md (always load it).
+       in components/ios/00-liquid-glass.md (always load it).
        This rule only sets toolbar-specific layout. */
     display: inline-flex;
     align-items: center;
@@ -125,7 +125,7 @@ For a single-pill layout, drop `.toolbar__group--trailing` and put every button 
    `backdrop-filter: url(#glass-distortion)` with `feDisplacementMap`
    silently fails to identity output across compositor layers. The pill
    still renders with its sheen + rim highlight, but the backdrop passes
-   through unwarped. See components/00-liquid-glass.md for details.
+   through unwarped. See components/ios/00-liquid-glass.md for details.
 
    If you need an entrance animation, animate a non-glass WRAPPER around
    the toolbar (the wrapper takes the layer promotion; the glass pills
@@ -337,5 +337,5 @@ These class names map 1:1 onto the iOS-native and Expo Router APIs the user is l
 - Bottom variants pad with `env(safe-area-inset-bottom, 0px)`.
 - Buttons hit 44×44 minimum even when the glyph is 22px.
 - Tint uses `--color-primary` (blue/green/orange/teal/indigo only — NEVER purple).
-- Reuse the shared `.glass` recipe from [components/00-liquid-glass.md](00-liquid-glass.md) (SVG-displacement refractive glass with flat-blur fallback). Do not invent a different glass formula.
+- Reuse the shared `.glass` recipe from [components/ios/00-liquid-glass.md](00-liquid-glass.md) (SVG-displacement refractive glass with flat-blur fallback). Do not invent a different glass formula.
 - All entry/exit animations live inside `@media (prefers-reduced-motion: no-preference)`; the bar must render in its final state when motion is reduced.

@@ -38,7 +38,7 @@
 }
 
 /* Glass variant — translucent nav over content. The shared `.glass`
-   recipe in components/00-liquid-glass.md provides background, filter,
+   recipe in components/ios/00-liquid-glass.md provides background, filter,
    border, and dark/reduced-transparency fallbacks; this rule only
    overrides the radius (a nav header isn't a capsule) and ensures the
    backdrop fills behind the status bar.
