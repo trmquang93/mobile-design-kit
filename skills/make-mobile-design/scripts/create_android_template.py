@@ -277,6 +277,43 @@ TEMPLATE = Template(r"""<!DOCTYPE html>
             border-radius: 2px;
             opacity: 0.85;
         }
+
+        /* Figma export chrome — host page only, not part of the design payload */
+        .figma-export-toolbar {
+            position: fixed;
+            top: 16px;
+            right: 16px;
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            z-index: 1000;
+            font-family: var(--font-roboto);
+        }
+        .figma-export-btn {
+            appearance: none;
+            border: 1px solid rgba(255,255,255,0.18);
+            background: rgba(28,28,30,0.72);
+            backdrop-filter: blur(20px) saturate(160%);
+            -webkit-backdrop-filter: blur(20px) saturate(160%);
+            color: #fff;
+            font: 500 13px var(--font-roboto);
+            padding: 8px 14px;
+            border-radius: 999px;
+            cursor: pointer;
+        }
+        .figma-export-btn:hover { background: rgba(44,44,46,0.85); }
+        .figma-export-btn:active { transform: scale(0.98); }
+        .figma-export-toast {
+            color: #fff;
+            font-size: 12px;
+            opacity: 0.9;
+            background: rgba(28,28,30,0.72);
+            padding: 6px 10px;
+            border-radius: 999px;
+            backdrop-filter: blur(20px) saturate(160%);
+            -webkit-backdrop-filter: blur(20px) saturate(160%);
+        }
+        .figma-export-toast[hidden] { display: none; }
     </style>
 </head>
 <body>
@@ -289,11 +326,11 @@ TEMPLATE = Template(r"""<!DOCTYPE html>
             <span class="status-bar-time">9:41</span>
             <div class="status-bar-icons">
                 <!-- Signal -->
-                <svg width="14" height="10" viewBox="0 0 14 10" fill="currentColor" aria-hidden="true"><rect x="0" y="7" width="2" height="3" rx="0.5"/><rect x="3" y="5" width="2" height="5" rx="0.5"/><rect x="6" y="3" width="2" height="7" rx="0.5"/><rect x="9" y="0" width="2" height="10" rx="0.5"/></svg>
+                <svg width="13" height="13" viewBox="73.6 9.47 36.1 36.06" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M109.695 12.2225C109.695 10.7038 108.464 9.47253 106.945 9.47253C105.426 9.47253 104.195 10.7038 104.195 12.2225V42.7781C104.195 44.2969 105.426 45.5281 106.945 45.5281C108.464 45.5281 109.695 44.2969 109.695 42.7781V12.2225ZM89.2219 28.4164C89.2219 26.8976 87.9907 25.6664 86.4719 25.6664C84.9532 25.6664 83.7219 26.8976 83.7219 28.4164V42.7775C83.7219 44.2963 84.9532 45.5275 86.4719 45.5275C87.9907 45.5275 89.2219 44.2963 89.2219 42.7775V28.4164ZM76.3892 33.917C77.908 33.917 79.1392 35.1482 79.1392 36.667V42.7781C79.1392 44.2969 77.908 45.5281 76.3892 45.5281C74.8704 45.5281 73.6392 44.2969 73.6392 42.7781V36.667C73.6392 35.1482 74.8704 33.917 76.3892 33.917ZM99.6113 20.4724C99.6113 18.9536 98.3801 17.7224 96.8613 17.7224C95.3425 17.7224 94.1113 18.9536 94.1113 20.4724V42.7779C94.1113 44.2967 95.3425 45.5279 96.8613 45.5279C98.3801 45.5279 99.6113 44.2967 99.6113 42.7779V20.4724Z"/></svg>
                 <!-- Wi-Fi -->
-                <svg width="14" height="10" viewBox="0 0 14 10" fill="currentColor" aria-hidden="true"><path d="M7 2.5c1.9 0 3.6.7 4.9 1.9l1.1-1.1C11.4 1.7 9.3 1 7 1S2.6 1.7 1 3.3l1.1 1.1C3.4 3.2 5.1 2.5 7 2.5Z"/><path d="M7 5c1.1 0 2.1.4 2.8 1.1l1.1-1.1C9.9 4 8.5 3.5 7 3.5S4.1 4 3.1 5l1.1 1.1C4.9 5.4 5.9 5 7 5Z"/><circle cx="7" cy="8.5" r="1.3"/></svg>
+                <svg width="18" height="13" viewBox="3.4 9 46.7 34.4" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M16.7266 15.9883C20.0518 14.6069 23.6178 13.898 27.2186 13.9027L27.2218 13.9027C34.7956 13.9027 41.6459 16.9777 46.6005 21.9533C47.5531 22.9099 49.1008 22.9132 50.0574 21.9606C51.0141 21.008 51.0174 19.4603 50.0648 18.5037C44.2305 12.6446 36.1489 9.01425 27.2234 9.01382C22.9773 9.0085 18.7722 9.84448 14.851 11.4735C10.9293 13.1027 7.36927 15.4929 4.37663 18.5059C3.42526 19.4637 3.4305 21.0114 4.38835 21.9628C5.34619 22.9142 6.89392 22.9089 7.8453 21.9511C10.3828 19.3963 13.4013 17.3697 16.7266 15.9883ZM27.2234 9.01382L27.2218 9.01382V11.4583L27.225 9.01382L27.2234 9.01382ZM20.0813 24.5246C22.3374 23.5614 24.7656 23.0663 27.2188 23.0694H27.2248C29.678 23.0663 32.1062 23.5614 34.3623 24.5246C36.6185 25.4878 38.6556 26.8991 40.3501 28.6729C41.2827 29.649 42.83 29.6844 43.8062 28.7518C44.7824 27.8192 44.8177 26.2719 43.8851 25.2957C41.7334 23.0434 39.1467 21.2514 36.2819 20.0283C33.418 18.8057 30.3357 18.177 27.2218 18.1805C24.1078 18.177 21.0256 18.8057 18.1617 20.0283C15.2969 21.2514 12.7102 23.0434 10.5585 25.2957C9.62589 26.2719 9.66124 27.8192 10.6374 28.7518C11.6136 29.6844 13.1609 29.649 14.0935 28.6729C15.788 26.8991 17.8251 25.4878 20.0813 24.5246ZM27.2218 18.1805L27.2188 18.1805L27.2218 20.6249L27.2248 18.1805L27.2218 18.1805ZM23.4996 33.0373C24.668 32.5078 25.9362 32.2346 27.2191 32.236H27.2218C29.9236 32.236 32.346 33.4225 34.001 35.3088C34.8914 36.3236 36.4358 36.4244 37.4506 35.534C38.4654 34.6437 38.5663 33.0992 37.6759 32.0844C35.1328 29.186 31.3912 27.3476 27.2232 27.3471L27.2245 27.3472L27.2218 29.7916V27.3471H27.2232C25.2429 27.3451 23.2852 27.767 21.4815 28.5844C19.6774 29.402 18.0693 30.5964 16.7652 32.0872C15.8764 33.1034 15.9796 34.6477 16.9958 35.5365C18.0119 36.4253 19.5562 36.3221 20.445 35.306C21.2896 34.3404 22.3311 33.5669 23.4996 33.0373ZM30.5556 40.3332C30.5556 42.0208 29.1875 43.3888 27.5 43.3888C25.8125 43.3888 24.4444 42.0208 24.4444 40.3332C24.4444 38.6457 25.8125 37.2777 27.5 37.2777C29.1875 37.2777 30.5556 38.6457 30.5556 40.3332Z"/></svg>
                 <!-- Battery -->
-                <svg width="22" height="10" viewBox="0 0 22 10" fill="none" aria-hidden="true"><rect x="0.5" y="0.5" width="19" height="9" rx="1.5" stroke="currentColor" stroke-width="1"/><rect x="20" y="3" width="1.5" height="4" rx="0.5" fill="currentColor"/><rect x="2" y="2" width="14" height="6" rx="0.5" fill="currentColor"/></svg>
+                <svg width="19" height="13" viewBox="132.9 11.4 45.85 32.1" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M134.93 13.472C136.22 12.1827 137.968 11.4584 139.792 11.4584H167.292C169.115 11.4584 170.864 12.1827 172.153 13.472C173.442 14.7613 174.167 16.51 174.167 18.3334V18.7266C175.124 19.0652 176.004 19.615 176.736 20.347C178.026 21.6363 178.75 23.385 178.75 25.2084V29.7917C178.75 31.6151 178.026 33.3638 176.736 34.6531C176.004 35.385 175.124 35.9349 174.167 36.2735V36.6667C174.167 38.4901 173.442 40.2388 172.153 41.5281C170.864 42.8174 169.115 43.5417 167.292 43.5417H139.792C137.968 43.5417 136.22 42.8174 134.93 41.5281C133.641 40.2388 132.917 38.4901 132.917 36.6667V18.3334C132.917 16.51 133.641 14.7613 134.93 13.472ZM139.792 16.0417C139.184 16.0417 138.601 16.2832 138.171 16.7129C137.741 17.1427 137.5 17.7256 137.5 18.3334V36.6667C137.5 37.2745 137.741 37.8574 138.171 38.2872C138.601 38.7169 139.184 38.9584 139.792 38.9584H167.292C167.899 38.9584 168.482 38.7169 168.912 38.2872C169.342 37.8574 169.583 37.2745 169.583 36.6667V34.375C169.583 33.1094 170.609 32.0834 171.875 32.0834C172.483 32.0834 173.066 31.8419 173.495 31.4122C173.925 30.9824 174.167 30.3995 174.167 29.7917V25.2084C174.167 24.6006 173.925 24.0177 173.495 23.5879C173.066 23.1582 172.483 22.9167 171.875 22.9167C170.609 22.9167 169.583 21.8907 169.583 20.625V18.3334C169.583 17.7256 169.342 17.1427 168.912 16.7129C168.482 16.2832 167.899 16.0417 167.292 16.0417H139.792ZM144.375 20.625C145.641 20.625 146.667 21.6511 146.667 22.9167V32.0834C146.667 33.349 145.641 34.375 144.375 34.375C143.109 34.375 142.083 33.349 142.083 32.0834V22.9167C142.083 21.6511 143.109 20.625 144.375 20.625ZM153.542 20.625C154.807 20.625 155.833 21.6511 155.833 22.9167V32.0834C155.833 33.349 154.807 34.375 153.542 34.375C152.276 34.375 151.25 33.349 151.25 32.0834V22.9167C151.25 21.6511 152.276 20.625 153.542 20.625ZM162.708 20.625C163.974 20.625 165 21.6511 165 22.9167V32.0834C165 33.349 163.974 34.375 162.708 34.375C161.443 34.375 160.417 33.349 160.417 32.0834V22.9167C160.417 21.6511 161.443 20.625 162.708 20.625Z"/></svg>
             </div>
         </div>
 
@@ -307,6 +344,329 @@ TEMPLATE = Template(r"""<!DOCTYPE html>
             <div class="gesture-nav-pill"></div>
         </div>
     </div>
+
+    <!-- Figma export chrome (host page only; not serialized into the payload) -->
+    <div class="figma-export-toolbar" data-figma-export-ignore>
+        <span class="figma-export-toast" hidden></span>
+        <button type="button" class="figma-export-btn" onclick="window.__copyDesignToFigma()">
+            Copy to Figma
+        </button>
+    </div>
+
+    <script>
+    /*
+     * Figma-ready SVG export
+     *
+     * Walks .device and emits real SVG primitives (rect, text, image, nested
+     * <svg>, linearGradient, clipPath). Result is copied to the clipboard as
+     * plain text — Figma's onPaste handler detects an SVG string and converts
+     * it to editable vector layers (text stays text, shapes stay shapes).
+     *
+     * Coverage:
+     *   - solid fills, linear gradients, borders, border-radius, opacity
+     *   - text (multi-line via Range.getClientRects per line)
+     *   - inline <svg> icons (embedded as nested <svg>, color inherited)
+     *   - <img> (emitted as <image href="..."> — Figma may refuse remote URLs)
+     *   - overflow clipping via <clipPath>
+     * Not exported:
+     *   - box-shadow, backdrop-filter, CSS filters, transforms
+     *   - background-image (non-gradient), pseudo-elements (::before/::after)
+     */
+    (function () {
+      var SVG_NS = 'http://www.w3.org/2000/svg';
+      var defs = [];
+      var defCounter = 0;
+
+      function esc(s) {
+        return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+      }
+
+      function parseRgb(str) {
+        if (!str || str === 'transparent' || str === 'rgba(0, 0, 0, 0)') return null;
+        var m = str.match(/rgba?\(([^)]+)\)/);
+        if (!m) return null;
+        var p = m[1].split(',').map(function (s) { return parseFloat(s.trim()); });
+        return { r: p[0], g: p[1], b: p[2], a: p.length > 3 ? p[3] : 1 };
+      }
+
+      function colorAttr(c) {
+        return c ? 'rgb(' + Math.round(c.r) + ',' + Math.round(c.g) + ',' + Math.round(c.b) + ')' : 'none';
+      }
+
+      function num(v) { return Math.round(v * 100) / 100; }
+
+      function gradientDef(bgImage) {
+        if (!bgImage || bgImage === 'none') return null;
+        var m = bgImage.match(/linear-gradient\(([\s\S]+)\)\s*$$/);
+        if (!m) return null;
+        var inner = m[1];
+        var parts = [], depth = 0, start = 0;
+        for (var i = 0; i <= inner.length; i++) {
+          var ch = inner[i];
+          if (ch === '(') depth++;
+          else if (ch === ')') depth--;
+          else if ((ch === ',' && depth === 0) || i === inner.length) {
+            parts.push(inner.slice(start, i).trim());
+            start = i + 1;
+          }
+        }
+        var angle = 180;
+        var stopParts = parts;
+        var degMatch = parts[0] && parts[0].match(/^(-?\d+(?:\.\d+)?)deg$$/);
+        if (degMatch) { angle = parseFloat(degMatch[1]); stopParts = parts.slice(1); }
+        else if (parts[0] && /^to\s+/.test(parts[0])) {
+          var dirs = { top: 0, right: 90, bottom: 180, left: 270,
+                       'top right': 45, 'bottom right': 135, 'bottom left': 225, 'top left': 315 };
+          var key = parts[0].replace(/^to\s+/, '').trim();
+          angle = dirs[key] !== undefined ? dirs[key] : 180;
+          stopParts = parts.slice(1);
+        }
+        var stops = stopParts.map(function (s, idx, arr) {
+          var cm = s.match(/rgba?\([^)]+\)|#[0-9a-f]+|[a-z]+/i);
+          var pm = s.match(/(\d+(?:\.\d+)?)%/);
+          return {
+            color: parseRgb(cm ? cm[0] : '#000') || { r: 0, g: 0, b: 0, a: 1 },
+            pos: pm ? parseFloat(pm[1]) / 100 : (arr.length > 1 ? idx / (arr.length - 1) : 0)
+          };
+        });
+        var rad = (angle - 90) * Math.PI / 180;
+        var dx = Math.cos(rad) * 0.5, dy = Math.sin(rad) * 0.5;
+        var id = 'fgmg' + (++defCounter);
+        var stopXml = stops.map(function (s) {
+          return '<stop offset="' + num(s.pos) + '" stop-color="' + colorAttr(s.color) + '" stop-opacity="' + s.color.a + '"/>';
+        }).join('');
+        defs.push('<linearGradient id="' + id + '" x1="' + num(0.5 - dx) + '" y1="' + num(0.5 - dy) +
+                  '" x2="' + num(0.5 + dx) + '" y2="' + num(0.5 + dy) + '">' + stopXml + '</linearGradient>');
+        return 'url(#' + id + ')';
+      }
+
+      function clipDef(x, y, w, h, rx) {
+        var id = 'fgmc' + (++defCounter);
+        defs.push('<clipPath id="' + id + '"><rect x="' + num(x) + '" y="' + num(y) +
+                  '" width="' + num(w) + '" height="' + num(h) +
+                  '" rx="' + num(rx) + '" ry="' + num(rx) + '"/></clipPath>');
+        return id;
+      }
+
+      function lineRectsForText(textNode) {
+        var text = textNode.textContent;
+        if (!text.trim()) return [];
+        var range = document.createRange();
+        range.selectNodeContents(textNode);
+        var rects = Array.prototype.slice.call(range.getClientRects());
+        if (rects.length === 0) return [];
+        if (rects.length === 1) return [{ text: text, rect: rects[0] }];
+        var lines = [];
+        var len = text.length;
+        var offset = 0;
+        for (var li = 0; li < rects.length; li++) {
+          var targetTop = rects[li].top;
+          while (offset < len && /\s/.test(text[offset])) offset++;
+          var lo = offset, hi = len;
+          while (lo < hi) {
+            var mid = (lo + hi + 1) >> 1;
+            range.setStart(textNode, offset);
+            range.setEnd(textNode, mid);
+            var rs = range.getClientRects();
+            var lastTop = rs.length ? rs[rs.length - 1].top : targetTop;
+            if (Math.abs(lastTop - targetTop) < 1) lo = mid;
+            else hi = mid - 1;
+          }
+          var lineEnd = lo > offset ? lo : Math.min(offset + 1, len);
+          var lineText = text.slice(offset, lineEnd);
+          if (lineText.trim().length) lines.push({ text: lineText, rect: rects[li] });
+          offset = lineEnd;
+        }
+        return lines;
+      }
+
+      function emitTextNode(textNode, ox, oy, out) {
+        var parent = textNode.parentElement;
+        if (!parent) return;
+        var cs = getComputedStyle(parent);
+        var color = parseRgb(cs.color);
+        var family = (cs.fontFamily || '').replace(/"/g, "'");
+        var size = parseFloat(cs.fontSize);
+        var weight = cs.fontWeight;
+        var align = cs.textAlign;
+        var lines = lineRectsForText(textNode);
+        for (var i = 0; i < lines.length; i++) {
+          var ln = lines[i];
+          var lx = ln.rect.left - ox;
+          var ly = ln.rect.top - oy;
+          var ty = ly + (ln.rect.height - size) / 2 + size * 0.82;
+          var tx = lx;
+          var anchor = 'start';
+          if (align === 'center') { anchor = 'middle'; tx = lx + ln.rect.width / 2; }
+          else if (align === 'right' || align === 'end') { anchor = 'end'; tx = lx + ln.rect.width; }
+          out.push('<text x="' + num(tx) + '" y="' + num(ty) +
+                   '" font-family="' + esc(family) +
+                   '" font-size="' + num(size) +
+                   '" font-weight="' + weight +
+                   '" fill="' + colorAttr(color) +
+                   (color && color.a < 1 ? '" fill-opacity="' + color.a : '') +
+                   '" text-anchor="' + anchor +
+                   '" xml:space="preserve">' + esc(ln.text) + '</text>');
+        }
+      }
+
+      function emit(node, ox, oy, out) {
+        if (node.nodeType === 3) { emitTextNode(node, ox, oy, out); return; }
+        if (node.nodeType !== 1) return;
+        if (node.dataset && 'figmaExportIgnore' in node.dataset) return;
+        var cs = getComputedStyle(node);
+        if (cs.display === 'none' || cs.visibility === 'hidden') return;
+        var op = parseFloat(cs.opacity);
+        if (op === 0) return;
+        var tag = node.tagName.toLowerCase();
+        var r = node.getBoundingClientRect();
+        var x = r.left - ox, y = r.top - oy, w = r.width, h = r.height;
+        if (w <= 0 || h <= 0) return;
+
+        // CSS mask icon (e.g. Iconify SVG used as `mask` with a
+        // `background-color` tint — the Android bottom nav uses this).
+        // Figma's SVG paste can't read CSS `mask`, so without this the icon
+        // appears as a solid filled rectangle. Pre-fetched SVG markup is
+        // recolored with the element's background-color and inlined.
+        var maskImg = (cs.maskImage && cs.maskImage !== 'none') ? cs.maskImage : cs.webkitMaskImage;
+        var maskMatch = maskImg && maskImg.match(/url\((['"]?)([^'")]+)\1\)/);
+        if (maskMatch && window.__figmaMaskCache && window.__figmaMaskCache[maskMatch[2]]) {
+          var maskSvg = window.__figmaMaskCache[maskMatch[2]];
+          var maskColor = parseRgb(cs.backgroundColor) || parseRgb(cs.color) || { r: 0, g: 0, b: 0, a: 1 };
+          var maskColorVal = colorAttr(maskColor);
+          var vbm = maskSvg.match(/viewBox\s*=\s*"([^"]+)"/i);
+          var vb = vbm ? vbm[1].split(/\s+/).map(parseFloat) : [0, 0, 24, 24];
+          var inner = maskSvg.replace(/^[\s\S]*?<svg[^>]*>/i, '').replace(/<\/svg>\s*$$/i, '');
+          inner = inner.replace(/currentColor/g, maskColorVal);
+          var msx = w / (vb[2] || 24), msy = h / (vb[3] || 24);
+          if (op < 1) out.push('<g opacity="' + op + '">');
+          out.push('<g transform="translate(' + num(x - vb[0] * msx) + ',' + num(y - vb[1] * msy) +
+                   ') scale(' + num(msx) + ',' + num(msy) + ')" fill="' + maskColorVal +
+                   '" fill-opacity="' + maskColor.a + '">' + inner + '</g>');
+          if (op < 1) out.push('</g>');
+          return;
+        }
+
+        if (tag === 'svg') {
+          var color = parseRgb(cs.color);
+          var colorVal = color ? colorAttr(color) : 'black';
+          var markup = node.outerHTML.replace(
+            /^<svg\b([^>]*)>/i,
+            function (_m, attrs) {
+              var stripped = attrs.replace(/\s(?:width|height)\s*=\s*"[^"]*"/gi, '');
+              return '<svg width="' + num(w) + '" height="' + num(h) + '"' + stripped + '>';
+            }
+          ).replace(/currentColor/g, colorVal);
+          if (op < 1) out.push('<g opacity="' + op + '">');
+          out.push('<g transform="translate(' + num(x) + ',' + num(y) + ')">' + markup + '</g>');
+          if (op < 1) out.push('</g>');
+          return;
+        }
+
+        if (tag === 'img') {
+          var src = node.currentSrc || node.src;
+          out.push('<image x="' + num(x) + '" y="' + num(y) +
+                   '" width="' + num(w) + '" height="' + num(h) +
+                   '" href="' + esc(src) + '" preserveAspectRatio="xMidYMid slice"/>');
+          return;
+        }
+
+        if (op < 1) out.push('<g opacity="' + op + '">');
+
+        var bg = parseRgb(cs.backgroundColor);
+        var grad = gradientDef(cs.backgroundImage);
+        var borderW = parseFloat(cs.borderTopWidth) || 0;
+        var borderC = borderW > 0 ? parseRgb(cs.borderTopColor) : null;
+        var rx = parseFloat(cs.borderTopLeftRadius) || 0;
+        rx = Math.min(rx, Math.min(w, h) / 2);
+        if (grad || bg || (borderW && borderC)) {
+          var fillVal = grad || (bg ? colorAttr(bg) : 'none');
+          var fillOp = (!grad && bg) ? bg.a : 1;
+          var strokeAttr = (borderW && borderC)
+            ? ' stroke="' + colorAttr(borderC) + '" stroke-opacity="' + borderC.a + '" stroke-width="' + num(borderW) + '"'
+            : '';
+          out.push('<rect x="' + num(x) + '" y="' + num(y) +
+                   '" width="' + num(w) + '" height="' + num(h) +
+                   '" rx="' + num(rx) + '" ry="' + num(rx) +
+                   '" fill="' + fillVal + '" fill-opacity="' + fillOp + '"' + strokeAttr + '/>');
+        }
+
+        var kids = Array.prototype.slice.call(node.childNodes);
+        var ordered = kids.map(function (c, idx) {
+          var z = 0;
+          if (c.nodeType === 1) {
+            var zs = getComputedStyle(c).zIndex;
+            if (zs && zs !== 'auto') { var zn = parseInt(zs, 10); if (!isNaN(zn)) z = zn; }
+          }
+          return { node: c, idx: idx, z: z };
+        });
+        ordered.sort(function (a, b) { return (a.z - b.z) || (a.idx - b.idx); });
+        var childOut = [];
+        for (var i = 0; i < ordered.length; i++) {
+          emit(ordered[i].node, ox, oy, childOut);
+        }
+        var needsClip = (cs.overflow === 'hidden' || cs.overflow === 'auto' || cs.overflow === 'scroll' || cs.overflowX === 'hidden' || cs.overflowY === 'hidden');
+        if (needsClip && childOut.length) {
+          var cid = clipDef(x, y, w, h, rx);
+          out.push('<g clip-path="url(#' + cid + ')">');
+          out.push(childOut.join(''));
+          out.push('</g>');
+        } else {
+          out.push(childOut.join(''));
+        }
+
+        if (op < 1) out.push('</g>');
+      }
+
+      function showToast(msg, isError) {
+        var t = document.querySelector('.figma-export-toast');
+        if (!t) return;
+        t.textContent = msg;
+        t.hidden = false;
+        t.style.color = isError ? '#ff9f9f' : '#fff';
+        clearTimeout(showToast._timer);
+        showToast._timer = setTimeout(function () { t.hidden = true; }, 2500);
+      }
+
+      window.__copyDesignToFigma = async function () {
+        try {
+          defs = [];
+          defCounter = 0;
+          var root = document.querySelector('.device');
+          if (!root) { showToast('No .device frame found', true); return; }
+          // Pre-fetch CSS mask SVG icons so emit() can inline them
+          // synchronously. Each cached entry maps mask url -> raw SVG text.
+          var maskUrls = {};
+          root.querySelectorAll('*').forEach(function (n) {
+            var s = getComputedStyle(n);
+            var mi = (s.maskImage && s.maskImage !== 'none') ? s.maskImage : s.webkitMaskImage;
+            var m = mi && mi.match(/url\((['"]?)([^'")]+)\1\)/);
+            if (m) maskUrls[m[2]] = true;
+          });
+          var maskCache = {};
+          await Promise.all(Object.keys(maskUrls).map(function (u) {
+            return fetch(u).then(function (r) { if (!r.ok) throw new Error(r.status); return r.text(); })
+              .then(function (t) { maskCache[u] = t; })
+              .catch(function () { maskCache[u] = null; });
+          }));
+          window.__figmaMaskCache = maskCache;
+          var r = root.getBoundingClientRect();
+          var out = [];
+          emit(root, r.left, r.top, out);
+          var svg = '<svg xmlns="' + SVG_NS + '" width="' + num(r.width) + '" height="' + num(r.height) +
+                    '" viewBox="0 0 ' + num(r.width) + ' ' + num(r.height) + '">' +
+                    (defs.length ? '<defs>' + defs.join('') + '</defs>' : '') +
+                    out.join('') +
+                    '</svg>';
+          await navigator.clipboard.writeText(svg);
+          showToast('Copied — paste into Figma (Cmd+V)');
+        } catch (err) {
+          console.error('[figma-export]', err);
+          showToast('Clipboard blocked — serve over http(s) or grant permission', true);
+        }
+      };
+    })();
+    </script>
 </body>
 </html>
 """)

@@ -271,6 +271,14 @@ Create a single self-contained HTML file following these rules:
 - Smooth transitions on interactive elements (0.15s-0.2s)
 - Hide scrollbars with `-webkit-scrollbar: none` and `scrollbar-width: none`
 
+#### Copy-to-Figma Compatibility (IMPORTANT)
+Generated HTML includes a "Copy to Figma" button that serializes the `.device` frame to SVG for paste into Figma. The serializer has hard limits — author CSS with these in mind, otherwise the pasted result will diverge from the in-browser preview:
+- **Inline `<svg>` and `<img>` round-trip cleanly.** Prefer them for icons and graphic shapes.
+- **CSS `mask` / `-webkit-mask` icons** (the `background-color: currentColor` + `mask-image: url(...)` pattern, including the iOS/Android nav scripts) are supported: the serializer pre-fetches the mask SVG and inlines it tinted with the element's `background-color`. Stick to this exact pattern if you need a tinted iconify icon — do NOT invent ad-hoc variants.
+- **Unsupported (silently dropped or rendered as flat rect):** `filter`, `backdrop-filter`, `box-shadow`, `clip-path`, CSS gradients used as `mask-image`, pseudo-elements (`::before`/`::after`) with content, `transform: rotate/skew` on the bounding rect (translate/scale OK).
+- **Liquid Glass / frosted blur surfaces will paste as opaque rects.** That is expected — Figma has no equivalent of `backdrop-filter`. Don't try to fake it with extra CSS hacks; either accept the flattened result or model the chrome as a static SVG/`<img>` background.
+- **When adding a new visual effect that's not in the existing components**, verify it survives Copy-to-Figma before checking it in. If it doesn't, author it as inline `<svg>` instead of CSS.
+
 #### Component Usage Rules
 - **ALWAYS** copy component HTML and CSS exactly from the platform's component files (`components/ios/*.md` for iOS, `components/android/*.md` for Android) -- do not rewrite or restyle them
 - When a screen needs a navigation header / top app bar, use the Nav Header / Top App Bar component from `components/ios/03-navigation.md` (iOS §3) or `components/android/03-navigation.md` (Android §A3)

@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Linear Settings</title>
+    <title>Spotify Mix</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wght@8..144,300..900&family=Roboto+Mono:wght@400;500&family=Inter:wght@400;500;600;700&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wght@8..144,300..900&family=Roboto+Mono:wght@400;500&family=Manrope:wght@400;500;600;700&display=swap">
     <style>
         :root {
             /* Material 3 — baseline LIGHT scheme.
@@ -291,6 +291,84 @@
             -webkit-backdrop-filter: blur(20px) saturate(160%);
         }
         .figma-export-toast[hidden] { display: none; }
+    
+        /* Material 3 bottom navigation bar (added by add_android_navbar.py) */
+        .bottom-nav {
+            position: absolute;
+            bottom: 0;
+            left: 0; right: 0;
+            height: 104px;
+            display: flex;
+            justify-content: space-around;
+            align-items: flex-start;
+            padding: 12px 8px 40px;
+            background: var(--md-sys-color-surface-container);
+            z-index: 40;
+            pointer-events: none;
+        }
+        .bottom-nav__item {
+            pointer-events: auto;
+            flex: 1;
+            max-width: 80px;
+            min-height: 48px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            border: none;
+            background: transparent;
+            color: var(--md-sys-color-on-surface-variant);
+            cursor: pointer;
+            padding: 0;
+            position: relative;
+        }
+        .bottom-nav__indicator {
+            width: 64px;
+            height: 32px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: var(--md-sys-shape-corner-full);
+            transition: background-color 200ms var(--md-sys-motion-easing-emphasized),
+                        color 200ms var(--md-sys-motion-easing-emphasized);
+            position: relative;
+        }
+        .bottom-nav__indicator .bottom-nav__icon {
+            display: block;
+            width: 24px; height: 24px;
+            background-color: currentColor;
+            -webkit-mask: var(--icon) no-repeat center / contain;
+            mask: var(--icon) no-repeat center / contain;
+        }
+        .bottom-nav__item.is-active .bottom-nav__indicator {
+            background: var(--md-sys-color-secondary-container);
+            color: var(--md-sys-color-on-secondary-container);
+        }
+        .bottom-nav__item.is-active { color: var(--md-sys-color-on-surface); }
+        .bottom-nav__label {
+            font-size: var(--md-sys-typescale-label-medium);
+            font-weight: 500;
+            line-height: 1.33;
+            letter-spacing: 0.5px;
+        }
+        .bottom-nav__item.is-active .bottom-nav__label { font-weight: 700; }
+        .bottom-nav__badge {
+            position: absolute;
+            top: -2px;
+            right: 12px;
+            min-width: 16px;
+            height: 16px;
+            padding: 0 4px;
+            border-radius: 8px;
+            background: var(--md-sys-color-error);
+            color: var(--md-sys-color-on-error);
+            font-size: 10px;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid var(--md-sys-color-surface-container);
+        }
     </style>
 </head>
 <body>
@@ -314,273 +392,287 @@
         <!-- Screen content goes here -->
         <main class="device-content">
             <style>
-                /* Linear-inspired brand override (near-black canvas + lavender accent) */
+                /* Spotify-inspired brand override (near-black + signature green) */
                 :root {
-                    --md-sys-color-primary:                #5e6ad2;
-                    --md-sys-color-on-primary:             #ffffff;
-                    --md-sys-color-secondary:              #828fff;
-                    --md-sys-color-on-secondary:           #1a1d3a;
-                    --md-sys-color-secondary-container:    #2a2f5c;
-                    --md-sys-color-on-secondary-container: #dbdfff;
-                    --md-sys-color-background:             #010102;
-                    --md-sys-color-on-background:          #f7f8f8;
-                    --md-sys-color-surface:                #010102;
-                    --md-sys-color-on-surface:             #f7f8f8;
-                    --md-sys-color-surface-variant:        #0f1011;
-                    --md-sys-color-on-surface-variant:     #8a8f98;
-                    --md-sys-color-outline:                #23252a;
-                    --md-sys-color-outline-variant:        #18191a;
-                    --md-sys-color-surface-container-lowest:  #010102;
-                    --md-sys-color-surface-container-low:      #0a0b0c;
-                    --md-sys-color-surface-container:          #0f1011;
-                    --md-sys-color-surface-container-high:     #141516;
-                    --md-sys-color-surface-container-highest:  #18191a;
-                    --ln-ink:        #f7f8f8;
-                    --ln-ink-muted:  #d0d6e0;
-                    --ln-ink-subtle: #8a8f98;
-                    --ln-hairline:   #23252a;
-                    --ln-hairline-strong: #34343a;
+                    --md-sys-color-primary:                #1ed760;
+                    --md-sys-color-on-primary:             #000000;
+                    --md-sys-color-secondary:              #1ed760;
+                    --md-sys-color-on-secondary:           #000000;
+                    --md-sys-color-secondary-container:    #1f1f1f;
+                    --md-sys-color-on-secondary-container: #ffffff;
+                    --md-sys-color-background:             #121212;
+                    --md-sys-color-on-background:          #ffffff;
+                    --md-sys-color-surface:                #121212;
+                    --md-sys-color-on-surface:             #ffffff;
+                    --md-sys-color-surface-variant:        #1f1f1f;
+                    --md-sys-color-on-surface-variant:     #b3b3b3;
+                    --md-sys-color-outline:                #4d4d4d;
+                    --md-sys-color-outline-variant:        #272727;
+                    --md-sys-color-surface-container-lowest:  #0a0a0a;
+                    --md-sys-color-surface-container-low:      #161616;
+                    --md-sys-color-surface-container:          #181818;
+                    --md-sys-color-surface-container-high:     #1f1f1f;
+                    --md-sys-color-surface-container-highest:  #272727;
+                    --sp-green:    #1ed760;
+                    --sp-silver:   #b3b3b3;
+                    --sp-card:     #181818;
+                    --sp-pill:     #1f1f1f;
                 }
                 body { background: #1a1a1a; }
-                .device { background: #010102; }
+                .device { background: #121212; }
                 .device-content {
-                    background: #010102; color: var(--ln-ink);
-                    font-family: "Inter", var(--font-roboto);
-                    letter-spacing: -0.01em;
+                    background: #121212; color: #ffffff;
+                    font-family: "Manrope", var(--font-roboto);
                 }
-                .status-bar { color: var(--ln-ink); }
+                .status-bar { color: #fff; }
 
-                .ln-topbar {
-                    position: sticky; top: 0; z-index: 10;
-                    background: #010102;
-                    padding: calc(24px + 12px) 16px 12px;
-                    display: flex; align-items: center; gap: 8px;
-                    border-bottom: 1px solid var(--ln-hairline);
+                /* Top gradient header tinted by current playlist */
+                .sp-topbar {
+                    position: relative;
+                    padding: calc(24px + 12px) 16px 8px;
+                    background: linear-gradient(180deg, #2a4f3e 0%, #121212 100%);
+                    z-index: 5;
                 }
-                .ln-icon-btn {
-                    width: 36px; height: 36px; border: none; background: transparent;
-                    color: var(--ln-ink-muted); border-radius: 6px;
+                .sp-topbar__row {
+                    display: flex; align-items: center; justify-content: space-between;
+                    margin-bottom: 14px;
+                }
+                .sp-greeting { font-size: 22px; font-weight: 700; letter-spacing: -0.4px; }
+                .sp-topbar__icons { display: flex; gap: 4px; }
+                .sp-icon-btn {
+                    width: 36px; height: 36px; border-radius: 50%; border: none;
+                    background: transparent; color: #fff;
                     display: inline-flex; align-items: center; justify-content: center;
                     cursor: pointer;
                 }
-                .ln-icon-btn:hover { background: var(--md-sys-color-surface-container); color: var(--ln-ink); }
-                .ln-topbar h1 { flex: 1; font-size: 15px; font-weight: 500; letter-spacing: -0.2px; color: var(--ln-ink); }
-                .ln-kbd {
-                    display: inline-flex; align-items: center; gap: 4px;
-                    font-family: "Roboto Mono", ui-monospace, monospace;
-                    font-size: 11px;
-                    color: var(--ln-ink-subtle);
-                    background: var(--md-sys-color-surface-container);
-                    border: 1px solid var(--ln-hairline);
-                    border-radius: 4px;
-                    padding: 2px 6px;
-                    line-height: 1;
-                }
-
-                .ln-workspace {
-                    margin: 16px 16px 24px;
-                    padding: 16px;
-                    background: var(--md-sys-color-surface-container);
-                    border: 1px solid var(--ln-hairline);
-                    border-radius: 10px;
-                    display: flex; align-items: center; gap: 14px;
-                }
-                .ln-ws-mark {
-                    width: 44px; height: 44px;
-                    border-radius: 8px;
-                    background: linear-gradient(135deg, #5e6ad2, #828fff);
-                    color: #fff;
-                    font-weight: 700; font-size: 18px;
-                    display: inline-flex; align-items: center; justify-content: center;
-                    letter-spacing: -0.5px;
-                }
-                .ln-ws-body { flex: 1; min-width: 0; }
-                .ln-ws-name { font-weight: 600; font-size: 15px; letter-spacing: -0.2px; }
-                .ln-ws-url { color: var(--ln-ink-subtle); font-size: 12px; margin-top: 2px; font-family: "Roboto Mono", ui-monospace, monospace; }
-                .ln-ws-plan {
-                    font-size: 11px; font-weight: 600;
-                    color: #828fff;
-                    background: rgba(94, 106, 210, 0.12);
-                    padding: 3px 8px; border-radius: 4px;
-                    text-transform: uppercase; letter-spacing: 0.4px;
-                }
-
-                .ln-group { margin: 0 0 28px; }
-                .ln-group__label {
-                    padding: 0 16px 8px;
-                    font-size: 11px; font-weight: 600;
-                    color: var(--ln-ink-subtle);
-                    letter-spacing: 0.6px; text-transform: uppercase;
-                }
-                .ln-list {
-                    background: var(--md-sys-color-surface-container);
-                    border-top: 1px solid var(--ln-hairline);
-                    border-bottom: 1px solid var(--ln-hairline);
-                }
-                .ln-row {
-                    display: flex; align-items: center; gap: 12px;
-                    padding: 12px 16px;
-                    min-height: 52px;
-                    border-bottom: 1px solid var(--ln-hairline);
-                    cursor: pointer;
-                }
-                .ln-row:last-child { border-bottom: none; }
-                .ln-row:hover { background: var(--md-sys-color-surface-container-high); }
-                .ln-row__icon {
-                    width: 18px; height: 18px;
-                    color: var(--ln-ink-muted);
-                    display: inline-flex; flex-shrink: 0;
-                }
-                .ln-row__label { flex: 1; font-size: 14px; font-weight: 500; letter-spacing: -0.1px; }
-                .ln-row__value { color: var(--ln-ink-subtle); font-size: 13px; font-weight: 400; }
-                .ln-row__chev { color: var(--ln-ink-subtle); }
-                .ln-pill {
-                    background: #1f6a3a; color: #a8eebf;
-                    font-size: 11px; font-weight: 600;
-                    padding: 3px 8px; border-radius: 4px;
-                }
-
-                .ln-toggle {
-                    width: 32px; height: 18px; border-radius: 9px;
-                    background: var(--ln-hairline);
-                    position: relative; cursor: pointer; transition: background 150ms ease;
+                .sp-filter-row { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 8px; }
+                .sp-filter-row::-webkit-scrollbar { display: none; }
+                .sp-filter {
                     flex-shrink: 0;
+                    height: 32px; padding: 0 14px;
+                    border-radius: 999px;
+                    background: rgba(255,255,255,0.10);
+                    color: #fff;
+                    border: none;
+                    font-size: 14px; font-weight: 500;
+                    cursor: pointer;
                 }
-                .ln-toggle::after {
-                    content: ""; position: absolute; top: 2px; left: 2px;
-                    width: 14px; height: 14px; border-radius: 50%;
-                    background: #fff;
-                    transition: transform 150ms ease;
-                }
-                .ln-toggle.is-on { background: #5e6ad2; }
-                .ln-toggle.is-on::after { transform: translateX(14px); }
+                .sp-filter.is-active { background: var(--sp-green); color: #000; font-weight: 600; }
 
-                .ln-shortcut-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 16px; min-height: 44px; border-bottom: 1px solid var(--ln-hairline); }
-                .ln-shortcut-row:last-child { border-bottom: none; }
-                .ln-shortcut-row span { font-size: 13px; font-weight: 500; color: var(--ln-ink); }
-                .ln-shortcut-row__keys { display: flex; gap: 4px; }
+                /* Pinned 2-col quick-access grid */
+                .sp-pinned {
+                    display: grid; grid-template-columns: 1fr 1fr;
+                    gap: 8px; padding: 16px;
+                }
+                .sp-pin {
+                    display: flex; align-items: center; gap: 12px;
+                    height: 56px; padding: 0 8px 0 0;
+                    background: rgba(255,255,255,0.10);
+                    border-radius: 6px;
+                    overflow: hidden; cursor: pointer;
+                }
+                .sp-pin__art {
+                    width: 56px; height: 56px; flex-shrink: 0;
+                    background-size: cover; background-position: center;
+                }
+                .sp-pin__title { font-size: 14px; font-weight: 700; letter-spacing: -0.1px; }
+
+                .sp-section { padding: 14px 16px 8px; }
+                .sp-section__head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+                .sp-section__title { font-size: 22px; font-weight: 700; letter-spacing: -0.4px; }
+                .sp-section__more { color: var(--sp-silver); font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.2px; text-decoration: none; }
+
+                .sp-carousel {
+                    display: flex; gap: 14px;
+                    overflow-x: auto; scroll-snap-type: x mandatory;
+                    padding: 0 16px 8px;
+                    margin: 0 -16px;
+                }
+                .sp-carousel::-webkit-scrollbar { display: none; }
+                .sp-card {
+                    flex-shrink: 0; width: 160px;
+                    scroll-snap-align: start;
+                }
+                .sp-card__art {
+                    width: 160px; height: 160px;
+                    border-radius: 4px;
+                    background-size: cover; background-position: center;
+                    box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+                    margin-bottom: 12px;
+                    position: relative;
+                }
+                .sp-card__title { font-size: 15px; font-weight: 700; letter-spacing: -0.1px; line-height: 1.25; }
+                .sp-card__sub { font-size: 13px; color: var(--sp-silver); margin-top: 4px; line-height: 1.3; }
+                .sp-card__play {
+                    position: absolute; right: 8px; bottom: 8px;
+                    width: 44px; height: 44px; border-radius: 50%;
+                    background: var(--sp-green); color: #000;
+                    display: inline-flex; align-items: center; justify-content: center;
+                    box-shadow: 0 6px 16px rgba(0,0,0,0.6);
+                }
+
+                /* Now-playing mini bar fixed above bottom nav */
+                .sp-mini {
+                    position: absolute;
+                    left: 8px; right: 8px;
+                    bottom: calc(80px + 24px + 8px);
+                    height: 56px;
+                    background: #2a4f3e;
+                    border-radius: 8px;
+                    display: flex; align-items: center; gap: 10px;
+                    padding: 6px 10px 6px 6px;
+                    z-index: 30;
+                    box-shadow: 0 6px 16px rgba(0,0,0,0.5);
+                }
+                .sp-mini__art {
+                    width: 44px; height: 44px; flex-shrink: 0; border-radius: 4px;
+                    background-size: cover; background-position: center;
+                }
+                .sp-mini__body { flex: 1; min-width: 0; }
+                .sp-mini__title { font-size: 13px; font-weight: 700; line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+                .sp-mini__artist { font-size: 12px; color: rgba(255,255,255,0.7); line-height: 1.3; }
+                .sp-mini__btn {
+                    width: 40px; height: 40px; border: none; background: transparent;
+                    color: #fff; display: inline-flex; align-items: center; justify-content: center;
+                    cursor: pointer;
+                }
+                .sp-mini__progress {
+                    position: absolute; left: 8px; right: 8px; bottom: -2px;
+                    height: 2px; background: rgba(255,255,255,0.18);
+                    border-radius: 1px;
+                }
+                .sp-mini__progress::after {
+                    content: ""; display: block; height: 100%; width: 42%;
+                    background: #fff; border-radius: 1px;
+                }
             </style>
 
-            <header class="ln-topbar">
-                <button class="ln-icon-btn" aria-label="Back">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>
-                </button>
-                <h1>Settings</h1>
-                <span class="ln-kbd">⌘ K</span>
+            <header class="sp-topbar">
+                <div class="sp-topbar__row">
+                    <span class="sp-greeting">Good evening</span>
+                    <div class="sp-topbar__icons">
+                        <button class="sp-icon-btn" aria-label="What's new"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M10 21a2 2 0 0 0 4 0"/></svg></button>
+                        <button class="sp-icon-btn" aria-label="History"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/><path d="M12 7v5l3 2"/></svg></button>
+                        <button class="sp-icon-btn" aria-label="Settings"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 0 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1A2 2 0 1 1 4.3 17l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 0 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1A2 2 0 1 1 7 4.3l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 0 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1A2 2 0 1 1 19.7 7l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 0 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/><circle cx="12" cy="12" r="3"/></svg></button>
+                    </div>
+                </div>
+                <div class="sp-filter-row">
+                    <button class="sp-filter is-active">All</button>
+                    <button class="sp-filter">Music</button>
+                    <button class="sp-filter">Podcasts</button>
+                    <button class="sp-filter">Audiobooks</button>
+                </div>
             </header>
 
-            <div class="ln-workspace">
-                <span class="ln-ws-mark">⌬</span>
-                <div class="ln-ws-body">
-                    <div class="ln-ws-name">Lattice Studio</div>
-                    <div class="ln-ws-url">lattice.linear.app</div>
-                </div>
-                <span class="ln-ws-plan">Plus</span>
-            </div>
+            <section class="sp-pinned">
+                <div class="sp-pin"><span class="sp-pin__art" style="background:linear-gradient(135deg,#4527a0,#7b1fa2)"></span><span class="sp-pin__title">Liked Songs</span></div>
+                <div class="sp-pin"><span class="sp-pin__art" style="background:url('https://picsum.photos/seed/dailymix1/120') center/cover, #333"></span><span class="sp-pin__title">Daily Mix 1</span></div>
+                <div class="sp-pin"><span class="sp-pin__art" style="background:url('https://picsum.photos/seed/discover/120') center/cover, #333"></span><span class="sp-pin__title">Discover Weekly</span></div>
+                <div class="sp-pin"><span class="sp-pin__art" style="background:url('https://picsum.photos/seed/release/120') center/cover, #333"></span><span class="sp-pin__title">Release Radar</span></div>
+                <div class="sp-pin"><span class="sp-pin__art" style="background:url('https://picsum.photos/seed/chill/120') center/cover, #333"></span><span class="sp-pin__title">Lo-fi Beats</span></div>
+                <div class="sp-pin"><span class="sp-pin__art" style="background:url('https://picsum.photos/seed/runwild/120') center/cover, #333"></span><span class="sp-pin__title">Run Wild</span></div>
+            </section>
 
-            <section class="ln-group">
-                <div class="ln-group__label">Account</div>
-                <div class="ln-list">
-                    <div class="ln-row">
-                        <span class="ln-row__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 5-6 8-6s6.5 2 8 6"/></svg></span>
-                        <span class="ln-row__label">Profile</span>
-                        <span class="ln-row__value">@ari.h</span>
-                        <span class="ln-row__chev"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg></span>
+            <section class="sp-section">
+                <div class="sp-section__head">
+                    <h2 class="sp-section__title">Made for Ari</h2>
+                    <a href="#" class="sp-section__more">See all</a>
+                </div>
+                <div class="sp-carousel">
+                    <div class="sp-card">
+                        <div class="sp-card__art" style="background:url('https://picsum.photos/seed/dm1/320') center/cover, #5e6ad2">
+                            <span class="sp-card__play"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></span>
+                        </div>
+                        <div class="sp-card__title">Daily Mix 1</div>
+                        <div class="sp-card__sub">Caribou, Four Tet, Bonobo</div>
                     </div>
-                    <div class="ln-row">
-                        <span class="ln-row__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 9l9 5 9-5"/></svg></span>
-                        <span class="ln-row__label">Email</span>
-                        <span class="ln-row__value">ari@lattice.studio</span>
-                        <span class="ln-row__chev"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg></span>
+                    <div class="sp-card">
+                        <div class="sp-card__art" style="background:url('https://picsum.photos/seed/dm2/320') center/cover, #1db954">
+                            <span class="sp-card__play"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></span>
+                        </div>
+                        <div class="sp-card__title">Daily Mix 2</div>
+                        <div class="sp-card__sub">Pink Floyd, Radiohead, Beach House</div>
                     </div>
-                    <div class="ln-row">
-                        <span class="ln-row__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="4" y="11" width="16" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></span>
-                        <span class="ln-row__label">Two-factor auth</span>
-                        <span class="ln-pill">Enabled</span>
-                        <span class="ln-row__chev"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg></span>
+                    <div class="sp-card">
+                        <div class="sp-card__art" style="background:url('https://picsum.photos/seed/dm3/320') center/cover, #e22134">
+                            <span class="sp-card__play"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></span>
+                        </div>
+                        <div class="sp-card__title">Daily Mix 3</div>
+                        <div class="sp-card__sub">Tycho, Boards of Canada, Floating Points</div>
                     </div>
                 </div>
             </section>
 
-            <section class="ln-group">
-                <div class="ln-group__label">Workspace</div>
-                <div class="ln-list">
-                    <div class="ln-row">
-                        <span class="ln-row__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3"/><circle cx="17" cy="10" r="2.5"/><path d="M3 20c.8-3.2 3.2-5 6-5s5.2 1.8 6 5"/><path d="M14 20c.6-2.2 2.2-3.5 4-3.5"/></svg></span>
-                        <span class="ln-row__label">Members</span>
-                        <span class="ln-row__value">12 active</span>
-                        <span class="ln-row__chev"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg></span>
+            <section class="sp-section">
+                <div class="sp-section__head">
+                    <h2 class="sp-section__title">Recently played</h2>
+                </div>
+                <div class="sp-carousel">
+                    <div class="sp-card">
+                        <div class="sp-card__art" style="background:url('https://picsum.photos/seed/r1/320') center/cover, #333"></div>
+                        <div class="sp-card__title">In Rainbows</div>
+                        <div class="sp-card__sub">Radiohead · Album</div>
                     </div>
-                    <div class="ln-row">
-                        <span class="ln-row__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="7" height="7" rx="1.5"/><rect x="14" y="4" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg></span>
-                        <span class="ln-row__label">Teams</span>
-                        <span class="ln-row__value">CORE · MOB · WEB</span>
-                        <span class="ln-row__chev"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg></span>
+                    <div class="sp-card">
+                        <div class="sp-card__art" style="background:url('https://picsum.photos/seed/r2/320') center/cover, #333"></div>
+                        <div class="sp-card__title">Currents</div>
+                        <div class="sp-card__sub">Tame Impala · Album</div>
                     </div>
-                    <div class="ln-row">
-                        <span class="ln-row__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4l-2 2-2-2"/><rect x="4" y="6" width="16" height="14" rx="2"/><path d="M9 12h6M9 16h4"/></svg></span>
-                        <span class="ln-row__label">Templates</span>
-                        <span class="ln-row__value">8</span>
-                        <span class="ln-row__chev"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg></span>
+                    <div class="sp-card">
+                        <div class="sp-card__art" style="background:url('https://picsum.photos/seed/r3/320') center/cover, #333"></div>
+                        <div class="sp-card__title">Late Night Tales</div>
+                        <div class="sp-card__sub">Bonobo · Compilation</div>
                     </div>
                 </div>
             </section>
 
-            <section class="ln-group">
-                <div class="ln-group__label">Preferences</div>
-                <div class="ln-list">
-                    <div class="ln-row">
-                        <span class="ln-row__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M21 12.79A9 9 0 1 1 11.21 3a7 7 0 0 0 9.79 9.79z"/></svg></span>
-                        <span class="ln-row__label">Theme</span>
-                        <span class="ln-row__value">Dark · System</span>
-                        <span class="ln-row__chev"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg></span>
-                    </div>
-                    <div class="ln-row">
-                        <span class="ln-row__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M10 21a2 2 0 0 0 4 0"/></svg></span>
-                        <span class="ln-row__label">Notifications</span>
-                        <span class="ln-toggle is-on" role="switch" aria-checked="true"></span>
-                    </div>
-                    <div class="ln-row">
-                        <span class="ln-row__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 7h6M9 11h6M9 15h4"/></svg></span>
-                        <span class="ln-row__label">Markdown preview</span>
-                        <span class="ln-toggle is-on" role="switch" aria-checked="true"></span>
-                    </div>
-                    <div class="ln-row">
-                        <span class="ln-row__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span>
-                        <span class="ln-row__label">Time format</span>
-                        <span class="ln-row__value">24-hour</span>
-                        <span class="ln-row__chev"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg></span>
-                    </div>
-                </div>
-            </section>
-
-            <section class="ln-group">
-                <div class="ln-group__label">Keyboard shortcuts</div>
-                <div class="ln-list">
-                    <div class="ln-shortcut-row">
-                        <span>Command menu</span>
-                        <span class="ln-shortcut-row__keys"><span class="ln-kbd">⌘</span><span class="ln-kbd">K</span></span>
-                    </div>
-                    <div class="ln-shortcut-row">
-                        <span>New issue</span>
-                        <span class="ln-shortcut-row__keys"><span class="ln-kbd">C</span></span>
-                    </div>
-                    <div class="ln-shortcut-row">
-                        <span>Toggle sidebar</span>
-                        <span class="ln-shortcut-row__keys"><span class="ln-kbd">⌘</span><span class="ln-kbd">.</span></span>
-                    </div>
-                    <div class="ln-shortcut-row">
-                        <span>Cycle status</span>
-                        <span class="ln-shortcut-row__keys"><span class="ln-kbd">S</span><span class="ln-kbd">then</span><span class="ln-kbd">↵</span></span>
-                    </div>
-                </div>
-            </section>
-
-            <div style="padding: 0 16px 32px; color: var(--ln-ink-subtle); font-size: 11px; font-family: 'Roboto Mono', ui-monospace, monospace;">
-                Build 2026.05.16 · linear-mobile/3.18.2
-            </div>
+            <div style="height: 160px"></div>
         </main>
 
+        <!-- Now-playing mini bar -->
+        <div class="sp-mini">
+            <span class="sp-mini__art" style="background:url('https://picsum.photos/seed/nowplaying/120') center/cover, #5e6ad2"></span>
+            <div class="sp-mini__body">
+                <div class="sp-mini__title">Innerbloom · Edited</div>
+                <div class="sp-mini__artist">RÜFÜS DU SOL · Bluesfest</div>
+            </div>
+            <button class="sp-mini__btn" aria-label="Like"><svg width="22" height="22" viewBox="0 0 24 24" fill="#1ed760"><path d="M12 21s-7-4.5-7-10a4 4 0 0 1 7-2.7A4 4 0 0 1 19 11c0 5.5-7 10-7 10z"/></svg></button>
+            <button class="sp-mini__btn" aria-label="Play"><svg width="26" height="26" viewBox="0 0 24 24" fill="#fff"><path d="M6 19h4V5H6zm8-14v14h4V5z"/></svg></button>
+            <span class="sp-mini__progress"></span>
+        </div>
+
+
+        <!-- Bottom Navigation (standard, added by add_android_navbar.py) -->
+        <nav class="bottom-nav" aria-label="Primary">
+    <button class="bottom-nav__item is-active" aria-current="page" aria-label="Home">
+        <span class="bottom-nav__indicator" style="--icon: url('https://api.iconify.design/mdi/home.svg');">
+            <span class="bottom-nav__icon" aria-hidden="true"></span>
+        </span>
+        <span class="bottom-nav__label">Home</span>
+        
+    </button>
+    <button class="bottom-nav__item" aria-label="Search">
+        <span class="bottom-nav__indicator" style="--icon: url('https://api.iconify.design/material-symbols/search.svg');">
+            <span class="bottom-nav__icon" aria-hidden="true"></span>
+        </span>
+        <span class="bottom-nav__label">Search</span>
+        
+    </button>
+    <button class="bottom-nav__item" aria-label="Library">
+        <span class="bottom-nav__indicator" style="--icon: url('https://api.iconify.design/material-symbols/library-music-outline.svg');">
+            <span class="bottom-nav__icon" aria-hidden="true"></span>
+        </span>
+        <span class="bottom-nav__label">Library</span>
+        
+    </button>
+    <button class="bottom-nav__item" aria-label="Premium">
+        <span class="bottom-nav__indicator" style="--icon: url('https://api.iconify.design/material-symbols/diamond-outline.svg');">
+            <span class="bottom-nav__icon" aria-hidden="true"></span>
+        </span>
+        <span class="bottom-nav__label">Premium</span>
+        
+    </button>
+        </nav>
         <!-- Gesture-navigation pill -->
         <div class="gesture-nav-area">
             <div class="gesture-nav-pill"></div>
