@@ -14,7 +14,18 @@ Five screens, five brand aesthetics — generated with `/make-mobile-design`, ea
 | [<img src="examples/screenshots/productivity-today.png" width="160" alt="Today task list">](examples/productivity-today.html) | [<img src="examples/screenshots/music-now-playing.png" width="160" alt="Now Playing">](examples/music-now-playing.html) | [<img src="examples/screenshots/food-recipe.png" width="160" alt="Recipe detail">](examples/food-recipe.html) | [<img src="examples/screenshots/wellness-breathe.png" width="160" alt="Breathe timer">](examples/wellness-breathe.html) | [<img src="examples/screenshots/mail-edit-mode.png" width="160" alt="Mail multi-select with bottom toolbar">](examples/mail-edit-mode.html) |
 | Linear-style cycle view, near-black canvas, mono accents | Spotify-style now-playing with glass tab bar | Editorial recipe detail with serif display & cream surface | Soft-warm breathing timer with serif italic display | iOS Mail multi-select with the new contextual bottom toolbar (component 27) |
 
-Open the HTML files directly to feel the scroll/hover behavior. To regenerate the PNGs:
+Open the HTML files directly to feel the scroll/hover behavior. Each example also includes a floating **Copy to Figma** action — see below.
+
+## Copy to Figma
+
+Every example screen ships with a one-click **Copy to Figma** button in the corner. Click it, switch to Figma, and paste — the screen lands as fully editable vector layers.
+
+- No screenshots, no re-tracing, no exported asset bundles.
+- Designers pick up a coded mockup and keep iterating in their native tool.
+- Engineers hand off work without annotating static images.
+- Design reviews happen on real, editable artifacts.
+
+To regenerate the PNGs:
 
 ```
 cd examples && npm install && node capture.mjs
