@@ -384,9 +384,20 @@ TEMPLATE = Template(r"""<!DOCTYPE html>
       function parseRgb(str) {
         if (!str || str === 'transparent' || str === 'rgba(0, 0, 0, 0)') return null;
         var m = str.match(/rgba?\(([^)]+)\)/);
-        if (!m) return null;
-        var p = m[1].split(',').map(function (s) { return parseFloat(s.trim()); });
-        return { r: p[0], g: p[1], b: p[2], a: p.length > 3 ? p[3] : 1 };
+        if (m) {
+          var p = m[1].split(',').map(function (s) { return parseFloat(s.trim()); });
+          return { r: p[0], g: p[1], b: p[2], a: p.length > 3 ? p[3] : 1 };
+        }
+        // Modern color() form — Chrome resolves color-mix() to this.
+        // e.g. "color(srgb 1 1 1 / 0.92)" or "color(srgb 0.5 0.5 0.5)".
+        var cm = str.match(/color\(\s*srgb\s+([^)]+)\)/i);
+        if (cm) {
+          var parts = cm[1].split('/');
+          var rgb = parts[0].trim().split(/\s+/).map(parseFloat);
+          var a = parts.length > 1 ? parseFloat(parts[1]) : 1;
+          if (rgb.length >= 3) return { r: rgb[0] * 255, g: rgb[1] * 255, b: rgb[2] * 255, a: a };
+        }
+        return null;
       }
 
       function colorAttr(c) {
@@ -553,10 +564,13 @@ TEMPLATE = Template(r"""<!DOCTYPE html>
           var markup = node.outerHTML.replace(
             /^<svg\b([^>]*)>/i,
             function (_m, attrs) {
-              var stripped = attrs
-                .replace(/\s(?:width|height)\s*=\s*"[^"]*"/gi, '')
-                .replace(/\sfill\s*=\s*"[^"]*"/gi, '');
-              return '<svg width="' + num(w) + '" height="' + num(h) + '" fill="' + colorVal + '"' + stripped + '>';
+              var stripped = attrs.replace(/\s(?:width|height)\s*=\s*"[^"]*"/gi, '');
+              // Preserve existing fill (incl. fill="none" for outline icons).
+              // Only inject computed color when no fill attribute is present.
+              // currentColor in attrs/children is resolved by the global replace below.
+              var hasFill = /\sfill\s*=\s*"/i.test(stripped);
+              var fillAttr = hasFill ? '' : ' fill="' + colorVal + '"';
+              return '<svg width="' + num(w) + '" height="' + num(h) + '"' + fillAttr + stripped + '>';
             }
           ).replace(/currentColor/g, colorVal);
           if (op < 1) out.push('<g opacity="' + op + '">');

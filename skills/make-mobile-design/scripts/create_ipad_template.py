@@ -447,10 +447,13 @@ TEMPLATE = Template(r"""<!DOCTYPE html>
           var markup = node.outerHTML.replace(
             /^<svg\b([^>]*)>/i,
             function (_m, attrs) {
-              var stripped = attrs
-                .replace(/\s(?:width|height)\s*=\s*"[^"]*"/gi, '')
-                .replace(/\sfill\s*=\s*"[^"]*"/gi, '');
-              return '<svg width="' + num(w) + '" height="' + num(h) + '" fill="' + colorVal + '"' + stripped + '>';
+              var stripped = attrs.replace(/\s(?:width|height)\s*=\s*"[^"]*"/gi, '');
+              // Preserve existing fill (incl. fill="none" for outline icons).
+              // Only inject computed color when no fill attribute is present.
+              // currentColor in attrs/children is resolved by the global replace below.
+              var hasFill = /\sfill\s*=\s*"/i.test(stripped);
+              var fillAttr = hasFill ? '' : ' fill="' + colorVal + '"';
+              return '<svg width="' + num(w) + '" height="' + num(h) + '"' + fillAttr + stripped + '>';
             }
           ).replace(/currentColor/g, colorVal);
           if (op < 1) out.push('<g opacity="' + op + '">');
