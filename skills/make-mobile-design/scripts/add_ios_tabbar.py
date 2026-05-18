@@ -236,9 +236,12 @@ def _classic(items, active, dark, light, accent, badges):
         /* Classic iOS tab bar */
         .float-tab-bar {{
             position: absolute;
-            bottom: 34px; left: 0; right: 0;
+            bottom: 0; left: 0; right: 0;
             display: flex; align-items: stretch;
-            padding: 6px 0 4px;
+            /* Bottom padding = 4px item gutter + 34px home-indicator safe area,
+               so the bar's background extends to the device bottom edge while
+               items stay above the home indicator. */
+            padding: 6px 0 38px;
             background: color-mix(in srgb, {light} 92%, transparent);
             backdrop-filter: saturate(180%) blur(20px);
             -webkit-backdrop-filter: saturate(180%) blur(20px);
