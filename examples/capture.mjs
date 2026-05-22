@@ -8,7 +8,7 @@
 //   everything else  → 480×980 viewport (phone scaffolds, 430×932 iPhone / 412×915 Pixel 8)
 // The viewport just has to be larger than the .device frame; puppeteer
 // screenshots the element's bounding box, not the viewport.
-import { readdir } from 'node:fs/promises';
+import { mkdir, readdir, copyFile, access } from 'node:fs/promises';
 import { spawn } from 'node:child_process';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
@@ -16,6 +16,21 @@ import puppeteer from 'puppeteer';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const outDir = join(here, 'screenshots');
+
+// Seed examples/.design/ from the plugin's canonical assets. This folder is
+// gitignored (same convention as user projects), so a fresh clone needs it
+// materialized before the example HTMLs can render their chrome.
+const designDir = join(here, '.design');
+const assetsDir = resolve(here, '..', 'skills', 'make-mobile-design', 'assets');
+await mkdir(designDir, { recursive: true });
+for (const asset of await readdir(assetsDir)) {
+    const target = join(designDir, asset);
+    try {
+        await access(target);
+    } catch {
+        await copyFile(join(assetsDir, asset), target);
+    }
+}
 
 const files = (await readdir(here))
     .filter((f) => f.endsWith('.html'))

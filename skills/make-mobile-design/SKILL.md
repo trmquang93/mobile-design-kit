@@ -174,6 +174,8 @@ If the user provides a screenshot, analyze it and reproduce the layout faithfull
 
 **You MUST run the platform's scaffold script to create every new screen file.** Do not write a screen HTML file by hand. The scaffold provides the pinned status bar, top chrome (Dynamic Island for iOS, hole-punch for Android), bottom indicator, and `.device-content` scroll region — all of which must remain unchanged.
 
+**Shared assets.** Generated mockups link to stylesheets and the Copy-to-Figma serializer at `${CLAUDE_PLUGIN_ROOT}/skills/make-mobile-design/assets/` via absolute `file://` URLs that the scaffold resolves at generation time. The device chrome CSS and tab/nav-bar CSS no longer live inline in each mockup — they're loaded from `device-chrome.css` + `device-{ios,android}.css`, and `figma-export.js`. **One consequence:** a mockup file is bound to the machine that produced it. Emailing the HTML to another machine, or moving the plugin install, breaks the chrome rendering. Keep mockups on the originating machine, or open them where the plugin is installed at the same path.
+
 #### iOS — `create_ios_template.py`
 
 ```bash
@@ -340,7 +342,7 @@ Create a single self-contained HTML file following these rules:
 - Hide scrollbars with `-webkit-scrollbar: none` and `scrollbar-width: none`
 
 #### Copy-to-Figma Compatibility (IMPORTANT)
-Generated HTML includes a "Copy to Figma" button that serializes the `.device` frame to SVG for paste into Figma. The serializer has hard limits — author CSS with these in mind, otherwise the pasted result will diverge from the in-browser preview:
+Generated HTML includes a "Copy to Figma" button that serializes the `.device` frame to SVG for paste into Figma. The serializer lives at `assets/figma-export.js` (loaded via `<script src="file://...">` reference) — edit it there, not in any mockup. The serializer has hard limits — author CSS with these in mind, otherwise the pasted result will diverge from the in-browser preview:
 - **Inline `<svg>` and `<img>` round-trip cleanly.** Prefer them for icons and graphic shapes.
 - **CSS `mask` / `-webkit-mask` icons** (the `background-color: currentColor` + `mask-image: url(...)` pattern, including the iOS/Android nav scripts) are supported: the serializer pre-fetches the mask SVG and inlines it tinted with the element's `background-color`. Stick to this exact pattern if you need a tinted iconify icon — do NOT invent ad-hoc variants.
 - **Unsupported (silently dropped or rendered as flat rect):** `filter`, `backdrop-filter`, `box-shadow`, `clip-path`, CSS gradients used as `mask-image`, pseudo-elements (`::before`/`::after`) with content, `transform: rotate/skew` on the bounding rect (translate/scale OK).
@@ -374,6 +376,22 @@ Generated HTML includes a "Copy to Figma" button that serializes the `.device` f
 After generating, suggest:
 - Opening the file in a browser to preview
 - Any variations or states to consider (empty state, error state, loading state)
+
+#### Sharing a mockup
+
+A scaffolded mockup references the device-chrome CSS and Copy-to-Figma serializer from a gitignored `.design/` folder at the user's project root (created automatically on the first scaffold; subsequent scaffolds copy any missing assets into it but never overwrite an existing copy). Because the assets travel inside the user's project, the mockup is portable to any machine that clones / unzips the whole project tree — no need to have the plugin installed there.
+
+If the user wants a single self-contained HTML (to email or paste into an issue tracker without sending the surrounding project), run the bundler to inline `.design/` assets into the HTML:
+
+```bash
+python3 scripts/bundle_mockup.py <path/to/screen.html>
+# → writes <path/to/screen.standalone.html>
+# Add --no-figma to drop the Copy-to-Figma serializer and toolbar
+```
+
+External resources (Google Fonts, Iconify) stay as remote `<link>` tags either way — the recipient needs internet on first open.
+
+If a plugin update brings new chrome behavior and the user wants their existing project to pick it up, tell them to delete `.design/` and re-run a scaffold; the freshest assets will be copied in. Existing `.design/` files are intentionally never overwritten so a plugin update doesn't silently change every mockup they've already rendered.
 
 ## Design System File Format
 

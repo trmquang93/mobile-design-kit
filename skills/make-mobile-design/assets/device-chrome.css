@@ -1,0 +1,67 @@
+/* Shared device-chrome rules used by every make-mobile-design mockup,
+   regardless of platform or form-factor. Loaded BEFORE the per-platform
+   device-{ios,android}.css and BEFORE the mockup's inline <style>, so
+   inline rules cascade on top. */
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+    background: #1a1a1a;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    min-height: 100vh;
+}
+
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px 0;
+}
+
+/* Hide scrollbars on the scroll region. Block layout (NOT flex) — flex-
+   direction:column with overflow:auto lets browsers shrink children below
+   their content size and the container then reports
+   scrollHeight == clientHeight (no scroll). */
+.device-content::-webkit-scrollbar { display: none; }
+.device-content { scrollbar-width: none; }
+
+/* Figma export chrome — host page only, NOT part of the design payload.
+   The data-figma-export-ignore attribute on the toolbar element keeps the
+   serializer from including this in the copied SVG. */
+.figma-export-toolbar {
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    z-index: 1000;
+}
+
+.figma-export-btn {
+    appearance: none;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    background: rgba(28, 28, 30, 0.72);
+    backdrop-filter: blur(20px) saturate(160%);
+    -webkit-backdrop-filter: blur(20px) saturate(160%);
+    color: #fff;
+    font: 600 13px -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+    padding: 8px 14px;
+    border-radius: 999px;
+    cursor: pointer;
+}
+.figma-export-btn:hover { background: rgba(44, 44, 46, 0.85); }
+.figma-export-btn:active { transform: scale(0.98); }
+
+.figma-export-toast {
+    color: #fff;
+    font-size: 12px;
+    opacity: 0.9;
+    background: rgba(28, 28, 30, 0.72);
+    padding: 6px 10px;
+    border-radius: 999px;
+    backdrop-filter: blur(20px) saturate(160%);
+    -webkit-backdrop-filter: blur(20px) saturate(160%);
+}
+.figma-export-toast[hidden] { display: none; }

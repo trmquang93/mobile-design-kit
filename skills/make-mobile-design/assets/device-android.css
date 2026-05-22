@@ -1,0 +1,197 @@
+/* Android device-frame rules (Pixel 8 phone + Pixel Tablet).
+   Form-factor is selected via data-form-factor on .device:
+       data-form-factor="phone"   (default — Pixel 8 with hole-punch)
+       data-form-factor="tablet"  (Pixel Tablet — bezel camera, no hole-punch)
+   Frame dimensions are passed as inline CSS variables on .device. MD3
+   tokens (--md-sys-color-*, type scale, motion, etc.) live INLINE in
+   each mockup so design-system.html overrides keep working. */
+
+html, body {
+    font-family: var(--font-roboto, "Roboto Flex", "Roboto", "Google Sans", system-ui, -apple-system, sans-serif);
+    font-size: var(--md-sys-typescale-body-large, 16px);
+    line-height: 1.5;
+    color: var(--md-sys-color-on-surface);
+}
+
+.device {
+    position: relative;
+    width: var(--device-w, 412px);
+    height: var(--device-h, 915px);
+    min-width: var(--device-w, 412px);
+    min-height: var(--device-h, 915px);
+    flex-shrink: 0;
+    background: var(--md-sys-color-background);
+    border-radius: var(--device-radius, 44px);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    overflow: hidden;
+}
+.device[data-form-factor="tablet"] {
+    border-radius: var(--device-radius, 28px);
+}
+
+/* Hole-punch camera — Pixel phone only. The Pixel Tablet scaffold doesn't
+   emit the .hole-punch element. */
+.hole-punch {
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 14px;
+    height: 14px;
+    background: #000;
+    border-radius: 50%;
+    z-index: 100;
+    pointer-events: none;
+}
+
+/* Status bar — 24px on both phone and tablet, pinned via
+   position:absolute; top:0; z-index:50. pointer-events:none so taps fall
+   through to scrolling content. */
+.status-bar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 4px 20px 0;
+    font-size: var(--md-sys-typescale-label-medium, 12px);
+    font-weight: 500;
+    color: var(--md-sys-color-on-surface);
+    z-index: 50;
+    pointer-events: none;
+}
+.status-bar-time { letter-spacing: 0.02em; }
+.status-bar-icons { display: flex; gap: 4px; align-items: center; }
+
+/* Scrollable content. padding-top is 0 — the FIRST CHILD inside
+   .device-content owns the 24px status-bar safe area via its own
+   padding-top:
+       .top-app-bar  → padding-top: calc(24px + 8px)
+       .page-content → padding-top: 24px
+       full-bleed    → 0 (image/hero bleeds behind status bar)
+
+   Any floating overlay over .device-content (custom bottom nav, FAB,
+   snackbar) MUST set `pointer-events: none` on its wrapper and
+   `pointer-events: auto` on its interactive children, otherwise the
+   overlay swallows scroll over its footprint. */
+.device-content {
+    position: absolute;
+    inset: 0;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-top: 0;
+    padding-bottom: 24px;
+    background: var(--md-sys-color-background);
+}
+
+/* Gesture-nav pill — overlay, never scrolls */
+.gesture-nav-area {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 24px;
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+    padding-bottom: 10px;
+    pointer-events: none;
+    z-index: 50;
+}
+.gesture-nav-pill {
+    width: 108px;
+    height: 4px;
+    background: var(--md-sys-color-on-surface);
+    border-radius: 2px;
+    opacity: 0.85;
+}
+
+/* ============================================================
+   Material 3 bottom navigation bar.
+   Markup is emitted by add_android_navbar.py. The .bottom-nav--elevated
+   modifier adds a level-2 elevation shadow when the nav sits over
+   rich content / photography.
+   ============================================================ */
+
+.bottom-nav {
+    position: absolute;
+    bottom: 0;
+    left: 0; right: 0;
+    height: 104px;
+    display: flex;
+    justify-content: space-around;
+    align-items: flex-start;
+    padding: 12px 8px 40px;
+    background: var(--md-sys-color-surface-container);
+    z-index: 40;
+    pointer-events: none;
+}
+.bottom-nav--elevated { box-shadow: var(--md-sys-elevation-level2); }
+
+.bottom-nav__item {
+    pointer-events: auto;
+    flex: 1;
+    max-width: 80px;
+    min-height: 48px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    border: none;
+    background: transparent;
+    color: var(--md-sys-color-on-surface-variant);
+    cursor: pointer;
+    padding: 0;
+    position: relative;
+    font-family: inherit;
+}
+.bottom-nav__indicator {
+    width: 64px;
+    height: 32px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--md-sys-shape-corner-full);
+    transition: background-color 200ms var(--md-sys-motion-easing-emphasized),
+                color 200ms var(--md-sys-motion-easing-emphasized);
+    position: relative;
+}
+.bottom-nav__indicator .bottom-nav__icon {
+    display: block;
+    width: 24px; height: 24px;
+    background-color: currentColor;
+    -webkit-mask: var(--icon) no-repeat center / contain;
+    mask: var(--icon) no-repeat center / contain;
+}
+.bottom-nav__item.is-active .bottom-nav__indicator {
+    background: var(--md-sys-color-secondary-container);
+    color: var(--md-sys-color-on-secondary-container);
+}
+.bottom-nav__item.is-active { color: var(--md-sys-color-on-surface); }
+.bottom-nav__label {
+    font-size: var(--md-sys-typescale-label-medium);
+    font-weight: 500;
+    line-height: 1.33;
+    letter-spacing: 0.5px;
+}
+.bottom-nav__item.is-active .bottom-nav__label { font-weight: 700; }
+.bottom-nav__badge {
+    position: absolute;
+    top: -2px;
+    right: 12px;
+    min-width: 16px;
+    height: 16px;
+    padding: 0 4px;
+    border-radius: 8px;
+    background: var(--md-sys-color-error);
+    color: var(--md-sys-color-on-error);
+    font-size: 10px;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid var(--md-sys-color-surface-container);
+}

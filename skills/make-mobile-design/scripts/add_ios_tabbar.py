@@ -24,6 +24,11 @@ Six styles, all driven by --style:
                   liquid-glass circle for the last item (use it for a
                   trailing action like search).
 
+The CSS for every style lives in skills/make-mobile-design/assets/device-ios.css
+(already linked by create_ios_template.py / create_ipad_template.py). This
+script emits markup only, plus the per-screen color overrides as inline
+CSS variables (--tab-dark / --tab-light / --tab-accent) on the <nav>.
+
 Usage:
     python3 add_ios_tabbar.py <screen.html> \\
         --style pill-outline \\
@@ -81,6 +86,9 @@ STYLES = (
     "glass-split",
 )
 
+PILL_STYLES = {"pill-outline", "pill-filled"}
+GLASS_STYLES = {"glass", "glass-split"}
+
 
 def parse_item(raw: str) -> tuple[str, str]:
     if ":" not in raw:
@@ -117,347 +125,73 @@ def icon_url(icon: str) -> str:
     return f"https://api.iconify.design/{icon.replace(':', '/', 1)}.svg"
 
 
-# ---------- styles ----------
-
-def _icon_circle(items, active, dark, light, accent, badges):
-    css = f"""
-        /* Floating icon-circle tab bar */
-        .float-tab-bar {{
-            position: absolute;
-            bottom: 46px; left: 50%;
-            transform: translateX(-50%);
-            width: calc(100% - 40px); max-width: 350px; height: 60px;
-            display: flex; justify-content: space-around; align-items: center;
-            padding: 0 4px;
-            background: {light}; border-radius: 30px;
-            box-shadow: 0 8px 24px rgba(0,0,0,.08), 0 2px 6px rgba(0,0,0,.04);
-            z-index: 50;
-            pointer-events: none; /* let scroll/touch fall through to .device-content */
-        }}
-        .float-tab-item {{
-            pointer-events: auto;
-            flex: 1; height: 52px; border: none; background: none; cursor: pointer;
-            display: flex; align-items: center; justify-content: center;
-            border-radius: 50%; color: {dark};
-            transition: background .2s ease, color .2s ease, transform .2s ease;
-            -webkit-tap-highlight-color: transparent;
-        }}
-        .float-tab-item:active {{ transform: scale(.94); }}
-        .float-tab-item.active {{
-            background: {dark}; color: {light};
-            max-width: 52px; flex: 0 0 52px;
-        }}
-        .float-tab-item .float-tab-icon {{
-            width: 24px; height: 24px; background-color: currentColor;
-            -webkit-mask: var(--icon) no-repeat center / contain;
-            mask: var(--icon) no-repeat center / contain;
-        }}
-"""
-    rows = []
-    for i, (ic, title) in enumerate(items):
-        rows.append(
-            f'            <button class="float-tab-item{" active" if i == active else ""}" '
-            f'aria-label="{title}" style="--icon: url(\'{icon_url(ic)}\');">\n'
-            f'                <span class="float-tab-icon"></span>\n'
-            f'            </button>'
-        )
-    html = (
-        '\n        <!-- Tab Bar (icon-circle, added by add_ios_tabbar.py) -->\n'
-        '        <nav class="float-tab-bar" aria-label="Primary">\n'
-        + "\n".join(rows) + "\n        </nav>\n"
+def _item_html(icon: str, title: str, *, active: bool, with_label: bool, badge: str | None = None) -> str:
+    """Render a single <button> tab item."""
+    active_cls = " active" if active else ""
+    badge_html = ""
+    icon_wrap_open = ""
+    icon_wrap_close = ""
+    if badge is not None:
+        # classic style wraps the icon for badge positioning
+        icon_wrap_open = '<span class="float-tab-icon-wrap">'
+        icon_wrap_close = f'<span class="float-tab-badge">{badge}</span></span>'
+    label_html = f'<span class="float-tab-label">{title}</span>' if with_label else ""
+    return (
+        f'            <button class="float-tab-item{active_cls}" '
+        f'aria-label="{title}" style="--icon: url(\'{icon_url(icon)}\');">\n'
+        f'                {icon_wrap_open}<span class="float-tab-icon"></span>{icon_wrap_close}\n'
+        f'                {label_html}\n'
+        f'            </button>'
     )
-    return css, html
 
 
-def _pill(items, active, dark, light, accent, *, filled: bool):
-    variant = "pill-filled" if filled else "pill-outline"
-    active_decoration = (
-        f"background: color-mix(in srgb, {accent} 18%, transparent); border: 0 solid transparent;"
-        if filled
-        else f"background: transparent; border: 2px solid {accent};"
-    )
-    css = f"""
-        /* Floating {variant} tab bar */
-        .float-tab-bar {{
-            position: absolute;
-            bottom: 46px; left: 50%;
-            transform: translateX(-50%);
-            width: calc(100% - 32px); max-width: 360px; height: 60px;
-            display: flex; align-items: center; gap: 4px;
-            padding: 0 12px;
-            background: {light}; border-radius: 30px;
-            box-shadow: 0 8px 24px rgba(0,0,0,.08), 0 2px 6px rgba(0,0,0,.04);
-            z-index: 50;
-            pointer-events: none; /* let scroll/touch fall through to .device-content */
-        }}
-        .float-tab-item {{
-            pointer-events: auto;
-            flex: 0 0 auto; height: 44px; min-width: 44px;
-            border: none; background: none; cursor: pointer;
-            display: flex; align-items: center; justify-content: center;
-            border-radius: 22px; color: {dark}; padding: 0 10px; gap: 8px;
-            transition: background .2s ease, color .2s ease, flex .25s ease, transform .2s ease;
-            -webkit-tap-highlight-color: transparent;
-        }}
-        .float-tab-item:active {{ transform: scale(.96); }}
-        .float-tab-item .float-tab-icon {{
-            width: 24px; height: 24px; background-color: currentColor; flex: 0 0 24px;
-            -webkit-mask: var(--icon) no-repeat center / contain;
-            mask: var(--icon) no-repeat center / contain;
-        }}
-        .float-tab-item .float-tab-label {{
-            display: none; font-size: 14px; font-weight: 600; white-space: nowrap;
-            font-family: inherit;
-        }}
-        .float-tab-item.active {{
-            flex: 1 1 auto; color: {accent}; {active_decoration}
-        }}
-        .float-tab-item.active .float-tab-label {{ display: inline; }}
-"""
-    rows = []
-    for i, (ic, title) in enumerate(items):
-        rows.append(
-            f'            <button class="float-tab-item{" active" if i == active else ""}" '
-            f'aria-label="{title}" style="--icon: url(\'{icon_url(ic)}\');">\n'
-            f'                <span class="float-tab-icon"></span>\n'
-            f'                <span class="float-tab-label">{title}</span>\n'
-            f'            </button>'
-        )
-    html = (
-        f'\n        <!-- Tab Bar ({variant}, added by add_ios_tabbar.py) -->\n'
-        '        <nav class="float-tab-bar" aria-label="Primary">\n'
-        + "\n".join(rows) + "\n        </nav>\n"
-    )
-    return css, html
+def build(style: str, items, active: int, dark: str, light: str, accent: str, badges: dict[int, str]):
+    """Build the tab-bar HTML markup. No CSS — that lives in the shared
+    stylesheet. The <nav> carries inline CSS variables for per-screen
+    colors."""
 
-
-def _classic(items, active, dark, light, accent, badges):
-    css = f"""
-        /* Classic iOS tab bar */
-        .float-tab-bar {{
-            position: absolute;
-            bottom: 0; left: 0; right: 0;
-            display: flex; align-items: stretch;
-            /* Bottom padding = 4px item gutter + 34px home-indicator safe area,
-               so the bar's background extends to the device bottom edge while
-               items stay above the home indicator. */
-            padding: 6px 0 38px;
-            background: color-mix(in srgb, {light} 92%, transparent);
-            backdrop-filter: saturate(180%) blur(20px);
-            -webkit-backdrop-filter: saturate(180%) blur(20px);
-            border-top: 0.5px solid color-mix(in srgb, {dark} 12%, transparent);
-            z-index: 50;
-            pointer-events: none; /* let scroll/touch fall through to .device-content */
-        }}
-        .float-tab-item {{
-            pointer-events: auto;
-            flex: 1; min-height: 44px;
-            border: none; background: none; cursor: pointer;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            gap: 2px; padding: 4px 2px;
-            color: color-mix(in srgb, {dark} 60%, transparent);
-            font-family: inherit;
-            transition: color .15s ease, transform .15s ease;
-            -webkit-tap-highlight-color: transparent;
-            position: relative;
-        }}
-        .float-tab-item:active {{ transform: scale(.95); }}
-        .float-tab-item.active {{ color: {accent}; }}
-        .float-tab-item .float-tab-icon-wrap {{
-            position: relative; width: 28px; height: 28px;
-            display: flex; align-items: center; justify-content: center;
-        }}
-        .float-tab-item .float-tab-icon {{
-            width: 26px; height: 26px; background-color: currentColor;
-            -webkit-mask: var(--icon) no-repeat center / contain;
-            mask: var(--icon) no-repeat center / contain;
-        }}
-        .float-tab-item .float-tab-label {{
-            font-size: 10px; font-weight: 500; letter-spacing: .1px;
-        }}
-        .float-tab-badge {{
-            position: absolute; top: -2px; right: -8px;
-            min-width: 16px; height: 16px; padding: 0 4px;
-            border-radius: 8px; background: #FF3B30; color: #FFFFFF;
-            font-size: 11px; font-weight: 600; line-height: 16px; text-align: center;
-        }}
-"""
-    rows = []
-    for i, (ic, title) in enumerate(items):
-        badge_html = ""
-        if i in badges:
-            badge_html = f'                    <span class="float-tab-badge">{badges[i]}</span>\n'
-        rows.append(
-            f'            <button class="float-tab-item{" active" if i == active else ""}" '
-            f'aria-label="{title}" style="--icon: url(\'{icon_url(ic)}\');">\n'
-            f'                <span class="float-tab-icon-wrap">\n'
-            f'                    <span class="float-tab-icon"></span>\n'
-            f'{badge_html}'
-            f'                </span>\n'
-            f'                <span class="float-tab-label">{title}</span>\n'
-            f'            </button>'
-        )
-    html = (
-        '\n        <!-- Tab Bar (classic, added by add_ios_tabbar.py) -->\n'
-        '        <nav class="float-tab-bar" aria-label="Primary">\n'
-        + "\n".join(rows) + "\n        </nav>\n"
-    )
-    return css, html
-
-
-def _glass_base_css(dark, light, accent):
-    # Refractive Liquid Glass — see components/ios/00-liquid-glass.md.
-    # Requires the SVG #glass-distortion <defs> block (injected separately).
-    return f"""
-        /* Liquid-glass tab bar (refractive; falls back to flat blur). */
-        .float-tab-glass {{
-            background:
-                linear-gradient(135deg,
-                    color-mix(in srgb, {light} 22%, transparent) 0%,
-                    color-mix(in srgb, {light} 6%, transparent) 28%,
-                    color-mix(in srgb, {light} 4%, transparent) 72%,
-                    color-mix(in srgb, {light} 28%, transparent) 100%);
-            backdrop-filter: url(#glass-distortion) saturate(140%);
-            -webkit-backdrop-filter: saturate(180%) blur(24px);
-            border: 1px solid color-mix(in srgb, {light} 40%, transparent);
-            box-shadow:
-                0 10px 28px rgba(0,0,0,.20),
-                0 2px 6px rgba(0,0,0,.10),
-                0 1px 0 rgba(255,255,255,.85) inset,
-                0 -1px 1px rgba(255,255,255,.30) inset;
-        }}
-        @supports not (backdrop-filter: url(#glass-distortion)) {{
-            .float-tab-glass {{
-                background: color-mix(in srgb, {light} 32%, transparent);
-                backdrop-filter: saturate(180%) blur(24px);
-                -webkit-backdrop-filter: saturate(180%) blur(24px);
-            }}
-        }}
-        @media (prefers-reduced-transparency: reduce) {{
-            .float-tab-glass {{
-                backdrop-filter: none;
-                -webkit-backdrop-filter: none;
-                background: color-mix(in srgb, {light} 92%, transparent);
-            }}
-        }}
-        .float-tab-item {{
-            pointer-events: auto;
-            flex: 1; height: 52px; min-width: 52px;
-            border: none; background: none; cursor: pointer;
-            display: flex; align-items: center; justify-content: center;
-            border-radius: 50%; color: {dark};
-            transition: background .2s ease, color .2s ease, transform .2s ease;
-            -webkit-tap-highlight-color: transparent;
-        }}
-        .float-tab-item:active {{ transform: scale(.94); }}
-        .float-tab-item.active {{
-            background: color-mix(in srgb, {accent} 22%, transparent);
-            color: {accent};
-            max-width: 52px; flex: 0 0 52px;
-        }}
-        .float-tab-item .float-tab-icon {{
-            width: 24px; height: 24px; background-color: currentColor;
-            -webkit-mask: var(--icon) no-repeat center / contain;
-            mask: var(--icon) no-repeat center / contain;
-        }}
-"""
-
-
-def _glass(items, active, dark, light, accent, badges):
-    css = _glass_base_css(dark, light, accent) + f"""
-        .float-tab-bar {{
-            position: absolute;
-            bottom: 46px; left: 50%;
-            transform: translateX(-50%);
-            width: calc(100% - 40px); max-width: 360px; height: 60px;
-            display: flex; justify-content: space-around; align-items: center;
-            padding: 0 6px; border-radius: 30px;
-            z-index: 50;
-            pointer-events: none; /* let scroll/touch fall through to .device-content */
-        }}
-"""
-    rows = []
-    for i, (ic, title) in enumerate(items):
-        rows.append(
-            f'            <button class="float-tab-item{" active" if i == active else ""}" '
-            f'aria-label="{title}" style="--icon: url(\'{icon_url(ic)}\');">\n'
-            f'                <span class="float-tab-icon"></span>\n'
-            f'            </button>'
-        )
-    html = (
-        '\n        <!-- Tab Bar (glass, added by add_ios_tabbar.py) -->\n'
-        '        <nav class="float-tab-bar float-tab-glass" aria-label="Primary">\n'
-        + "\n".join(rows) + "\n        </nav>\n"
-    )
-    return css, html
-
-
-def _glass_split(items, active, dark, light, accent, badges):
-    if len(items) < 2:
+    if style == "glass-split" and len(items) < 2:
         raise ValueError("glass-split requires at least 2 items (one splits off)")
-    main_items = items[:-1]
-    trailing = items[-1]
-    trailing_idx = len(items) - 1
 
-    css = _glass_base_css(dark, light, accent) + f"""
-        .float-tab-bar {{
-            position: absolute;
-            bottom: 46px; left: 16px;
-            right: calc(60px + 24px);
-            height: 60px;
-            display: flex; justify-content: space-around; align-items: center;
-            padding: 0 6px; border-radius: 30px;
-            z-index: 50;
-            pointer-events: none; /* let scroll/touch fall through to .device-content */
-        }}
-        .float-tab-trailing {{
-            position: absolute;
-            bottom: 46px; right: 16px;
-            width: 60px; height: 60px;
-            border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            z-index: 50;
-            pointer-events: none;
-        }}
-        .float-tab-trailing .float-tab-item {{ height: 60px; flex: 1; }}
-"""
-    rows = []
-    for i, (ic, title) in enumerate(main_items):
-        rows.append(
-            f'            <button class="float-tab-item{" active" if i == active else ""}" '
-            f'aria-label="{title}" style="--icon: url(\'{icon_url(ic)}\');">\n'
-            f'                <span class="float-tab-icon"></span>\n'
-            f'            </button>'
+    style_vars = f"--tab-dark: {dark}; --tab-light: {light}; --tab-accent: {accent};"
+    glass_class = " float-tab-glass" if style in GLASS_STYLES else ""
+
+    with_label = style in PILL_STYLES
+
+    if style == "glass-split":
+        main_items = items[:-1]
+        trailing_icon, trailing_title = items[-1]
+        trailing_idx = len(items) - 1
+        rows = [
+            _item_html(ic, t, active=(i == active), with_label=False)
+            for i, (ic, t) in enumerate(main_items)
+        ]
+        trailing_active = active == trailing_idx
+        return (
+            f'\n        <!-- Tab Bar (glass-split, added by add_ios_tabbar.py) -->\n'
+            f'        <nav class="float-tab-bar float-tab-bar--glass-split{glass_class}" '
+            f'aria-label="Primary" style="{style_vars}">\n'
+            + "\n".join(rows) + "\n        </nav>\n"
+            f'        <div class="float-tab-trailing float-tab-glass" style="{style_vars}">\n'
+            + _item_html(trailing_icon, trailing_title, active=trailing_active, with_label=False)
+            + "\n        </div>\n"
         )
-    trailing_active = " active" if active == trailing_idx else ""
-    html = (
-        '\n        <!-- Tab Bar (glass-split, added by add_ios_tabbar.py) -->\n'
-        '        <nav class="float-tab-bar float-tab-glass" aria-label="Primary">\n'
+
+    rows = []
+    for i, (ic, title) in enumerate(items):
+        badge_val = badges.get(i) if style == "classic" else None
+        rows.append(_item_html(
+            ic, title,
+            active=(i == active),
+            with_label=with_label,
+            badge=badge_val,
+        ))
+    return (
+        f'\n        <!-- Tab Bar ({style}, added by add_ios_tabbar.py) -->\n'
+        f'        <nav class="float-tab-bar float-tab-bar--{style}{glass_class}" '
+        f'aria-label="Primary" style="{style_vars}">\n'
         + "\n".join(rows) + "\n        </nav>\n"
-        '        <div class="float-tab-trailing float-tab-glass">\n'
-        f'            <button class="float-tab-item{trailing_active}" '
-        f'aria-label="{trailing[1]}" style="--icon: url(\'{icon_url(trailing[0])}\');">\n'
-        '                <span class="float-tab-icon"></span>\n'
-        '            </button>\n'
-        '        </div>\n'
     )
-    return css, html
-
-
-STYLE_BUILDERS = {
-    "icon-circle": _icon_circle,
-    "classic": _classic,
-    "glass": _glass,
-    "glass-split": _glass_split,
-}
-
-
-def build(style, items, active, dark, light, accent, badges):
-    if style == "pill-outline":
-        return _pill(items, active, dark, light, accent, filled=False)
-    if style == "pill-filled":
-        return _pill(items, active, dark, light, accent, filled=True)
-    return STYLE_BUILDERS[style](items, active, dark, light, accent, badges)
 
 
 # ---------- injection ----------
@@ -488,15 +222,12 @@ GLASS_SVG_DEFS = (
 )
 
 
-def inject(html: str, css_block: str, tabbar_html: str, *, needs_glass_defs: bool) -> str:
+def inject(html: str, tabbar_html: str, *, needs_glass_defs: bool) -> str:
     if 'class="float-tab-bar"' in html or 'class="float-tab-bar ' in html:
         raise RuntimeError(
             "A floating tab bar is already present in this file. "
             "Remove it first or edit the existing markup."
         )
-    if "</style>" not in html:
-        raise RuntimeError("Could not find </style> in the file; not a scaffolded screen?")
-    html = html.replace("</style>", css_block + "    </style>", 1)
 
     if needs_glass_defs and 'id="glass-distortion"' not in html:
         if "<body" in html:
@@ -594,7 +325,7 @@ def main() -> int:
     accent = args.accent_color or ("#007AFF" if args.style == "classic" else "#1194AA")
 
     try:
-        css_block, tabbar_html = build(
+        tabbar_html = build(
             args.style, items, args.active, args.dark_color, args.light_color, accent, badges,
         )
     except ValueError as exc:
@@ -604,8 +335,8 @@ def main() -> int:
     html = target.read_text(encoding="utf-8")
     try:
         new_html = inject(
-            html, css_block, tabbar_html,
-            needs_glass_defs=args.style in ("glass", "glass-split"),
+            html, tabbar_html,
+            needs_glass_defs=args.style in GLASS_STYLES,
         )
     except RuntimeError as exc:
         print(f"Error: {exc}", file=sys.stderr)

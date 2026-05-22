@@ -1,0 +1,336 @@
+/* iOS device-frame rules (iPhone phone + iPad tablet).
+   Form-factor is selected via data-form-factor on .device:
+       data-form-factor="phone"   (default — iPhone 14 Pro frame)
+       data-form-factor="tablet"  (iPad Pro 11")
+   Frame dimensions are passed as inline CSS variables on .device so the
+   scaffolds can flip orientation (--device-w / --device-h) without
+   editing CSS. */
+
+html, body {
+    font-family: var(--font-system, -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif);
+    font-size: var(--text-body, 17px);
+    line-height: 1.29;
+    letter-spacing: -0.022em;
+    color: var(--color-text, #000);
+}
+
+.device {
+    position: relative;
+    width: var(--device-w, 430px);
+    height: var(--device-h, 932px);
+    min-width: var(--device-w, 430px);
+    min-height: var(--device-h, 932px);
+    flex-shrink: 0;
+    background: var(--color-bg, #FFFFFF);
+    border-radius: var(--device-radius, 48px);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    overflow: hidden;
+}
+.device[data-form-factor="tablet"] {
+    border-radius: var(--device-radius, 38px);
+}
+
+/* Dynamic Island — iPhone phone only. The iPad scaffold doesn't emit
+   the .dynamic-island element, so this rule simply doesn't match there. */
+.dynamic-island {
+    position: absolute;
+    top: 11px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 126px;
+    height: 37px;
+    background: var(--color-island, #000);
+    border-radius: 19px;
+    z-index: 100;
+    pointer-events: none;
+}
+
+/* Status bar — phone is 59px (room for Dynamic Island padding), tablet is
+   24px (no island). Pinned via position:absolute; top:0; z-index:50. */
+.status-bar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 59px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 24px 8px;
+    z-index: 50;
+    pointer-events: none;
+}
+.device[data-form-factor="tablet"] .status-bar {
+    height: 24px;
+    padding: 4px 24px 0;
+    font-size: var(--text-footnote, 13px);
+    font-weight: 600;
+}
+
+.status-bar-time {
+    font-size: var(--text-md, 17px);
+    font-weight: 600;
+}
+.device[data-form-factor="tablet"] .status-bar-time {
+    font-size: var(--text-footnote, 13px);
+    font-weight: 600;
+    letter-spacing: 0.02em;
+}
+
+.status-bar-icons {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+}
+
+/* Scrollable content — scrolls behind status bar and home indicator.
+   Any floating overlay placed over .device-content (custom tab bar, FAB,
+   banner, sheet handle) MUST set `pointer-events: none` on its wrapper
+   and `pointer-events: auto` on its interactive children, otherwise the
+   overlay swallows wheel/touch and the screen stops scrolling under it.
+
+   padding-top is intentionally 0 — the 59/24 px status-bar safe area is
+   the responsibility of the FIRST element inside .device-content, NOT
+   this container. This lets navigation bars / hero images render their
+   background behind the status bar to the very top edge of the screen,
+   which is correct iOS behavior. See components/ios/03-navigation.md §3a. */
+.device-content {
+    position: absolute;
+    inset: 0;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-top: 0;
+    padding-bottom: 34px;
+}
+
+/* Home indicator — overlays content, stays fixed during scroll */
+.home-indicator-area {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 34px;
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+    padding-bottom: 8px;
+    pointer-events: none;
+    z-index: 50;
+}
+.home-indicator {
+    width: 134px;
+    height: 5px;
+    background: var(--color-text, #000);
+    border-radius: 3px;
+    opacity: 0.9;
+}
+
+/* ============================================================
+   Floating tab bar — six visual styles, gated by .float-tab-bar--<style>
+   on the <nav> element. Colors are driven by inline CSS vars set by
+   add_ios_tabbar.py:
+       --tab-dark   inactive icon color / active circle fill
+       --tab-light  bar background / active icon color
+       --tab-accent active accent (pills / glass)
+   Defaults match the script's defaults so a missing var still renders.
+   ============================================================ */
+
+.float-tab-bar {
+    position: absolute;
+    z-index: 50;
+    pointer-events: none; /* let scroll/touch fall through to .device-content */
+}
+.float-tab-item {
+    pointer-events: auto;
+    border: none;
+    background: none;
+    cursor: pointer;
+    color: var(--tab-dark, #25282C);
+    transition: background .2s ease, color .2s ease, transform .2s ease;
+    -webkit-tap-highlight-color: transparent;
+    font-family: inherit;
+}
+.float-tab-item:active { transform: scale(.94); }
+.float-tab-item .float-tab-icon {
+    background-color: currentColor;
+    -webkit-mask: var(--icon) no-repeat center / contain;
+    mask: var(--icon) no-repeat center / contain;
+}
+
+/* --- icon-circle (default) -------------------------------------- */
+.float-tab-bar--icon-circle {
+    bottom: 46px; left: 50%;
+    transform: translateX(-50%);
+    width: calc(100% - 40px); max-width: 350px; height: 60px;
+    display: flex; justify-content: space-around; align-items: center;
+    padding: 0 4px;
+    background: var(--tab-light, #FFFFFF); border-radius: 30px;
+    box-shadow: 0 8px 24px rgba(0,0,0,.08), 0 2px 6px rgba(0,0,0,.04);
+}
+.float-tab-bar--icon-circle .float-tab-item {
+    flex: 1; height: 52px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 50%;
+}
+.float-tab-bar--icon-circle .float-tab-item.active {
+    background: var(--tab-dark, #25282C); color: var(--tab-light, #FFFFFF);
+    max-width: 52px; flex: 0 0 52px;
+}
+.float-tab-bar--icon-circle .float-tab-item .float-tab-icon {
+    width: 24px; height: 24px;
+}
+
+/* --- pill-outline / pill-filled (shared base) ------------------- */
+.float-tab-bar--pill-outline,
+.float-tab-bar--pill-filled {
+    bottom: 46px; left: 50%;
+    transform: translateX(-50%);
+    width: calc(100% - 32px); max-width: 360px; height: 60px;
+    display: flex; align-items: center; gap: 4px;
+    padding: 0 12px;
+    background: var(--tab-light, #FFFFFF); border-radius: 30px;
+    box-shadow: 0 8px 24px rgba(0,0,0,.08), 0 2px 6px rgba(0,0,0,.04);
+}
+.float-tab-bar--pill-outline .float-tab-item,
+.float-tab-bar--pill-filled .float-tab-item {
+    flex: 0 0 auto; height: 44px; min-width: 44px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 22px; padding: 0 10px; gap: 8px;
+    transition: background .2s ease, color .2s ease, flex .25s ease, transform .2s ease;
+}
+.float-tab-bar--pill-outline .float-tab-item:active,
+.float-tab-bar--pill-filled .float-tab-item:active { transform: scale(.96); }
+.float-tab-bar--pill-outline .float-tab-item .float-tab-icon,
+.float-tab-bar--pill-filled .float-tab-item .float-tab-icon {
+    width: 24px; height: 24px; flex: 0 0 24px;
+}
+.float-tab-bar--pill-outline .float-tab-label,
+.float-tab-bar--pill-filled .float-tab-label {
+    display: none; font-size: 14px; font-weight: 600; white-space: nowrap;
+    font-family: inherit;
+}
+.float-tab-bar--pill-outline .float-tab-item.active,
+.float-tab-bar--pill-filled .float-tab-item.active {
+    flex: 1 1 auto; color: var(--tab-accent, #1194AA);
+}
+.float-tab-bar--pill-outline .float-tab-item.active {
+    background: transparent;
+    border: 2px solid var(--tab-accent, #1194AA);
+}
+.float-tab-bar--pill-filled .float-tab-item.active {
+    background: color-mix(in srgb, var(--tab-accent, #1194AA) 18%, transparent);
+    border: 0 solid transparent;
+}
+.float-tab-bar--pill-outline .float-tab-item.active .float-tab-label,
+.float-tab-bar--pill-filled .float-tab-item.active .float-tab-label { display: inline; }
+
+/* --- classic ---------------------------------------------------- */
+.float-tab-bar--classic {
+    bottom: 0; left: 0; right: 0;
+    display: flex; align-items: stretch;
+    /* Bottom padding = 4px item gutter + 34px home-indicator safe area,
+       so the bar's background extends to the device bottom edge while
+       items stay above the home indicator. */
+    padding: 6px 0 38px;
+    background: color-mix(in srgb, var(--tab-light, #FFFFFF) 92%, transparent);
+    backdrop-filter: saturate(180%) blur(20px);
+    -webkit-backdrop-filter: saturate(180%) blur(20px);
+    border-top: 0.5px solid color-mix(in srgb, var(--tab-dark, #25282C) 12%, transparent);
+}
+.float-tab-bar--classic .float-tab-item {
+    flex: 1; min-height: 44px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 2px; padding: 4px 2px;
+    color: color-mix(in srgb, var(--tab-dark, #25282C) 60%, transparent);
+    transition: color .15s ease, transform .15s ease;
+    position: relative;
+}
+.float-tab-bar--classic .float-tab-item:active { transform: scale(.95); }
+.float-tab-bar--classic .float-tab-item.active { color: var(--tab-accent, #007AFF); }
+.float-tab-bar--classic .float-tab-icon-wrap {
+    position: relative; width: 28px; height: 28px;
+    display: flex; align-items: center; justify-content: center;
+}
+.float-tab-bar--classic .float-tab-item .float-tab-icon {
+    width: 26px; height: 26px;
+}
+.float-tab-bar--classic .float-tab-label {
+    font-size: 10px; font-weight: 500; letter-spacing: .1px;
+}
+.float-tab-bar--classic .float-tab-badge {
+    position: absolute; top: -2px; right: -8px;
+    min-width: 16px; height: 16px; padding: 0 4px;
+    border-radius: 8px; background: #FF3B30; color: #FFFFFF;
+    font-size: 11px; font-weight: 600; line-height: 16px; text-align: center;
+}
+
+/* --- glass (Liquid Glass; refractive via SVG filter) ----------- */
+.float-tab-glass {
+    background:
+        linear-gradient(135deg,
+            color-mix(in srgb, var(--tab-light, #FFFFFF) 22%, transparent) 0%,
+            color-mix(in srgb, var(--tab-light, #FFFFFF) 6%, transparent) 28%,
+            color-mix(in srgb, var(--tab-light, #FFFFFF) 4%, transparent) 72%,
+            color-mix(in srgb, var(--tab-light, #FFFFFF) 28%, transparent) 100%);
+    backdrop-filter: url(#glass-distortion) saturate(140%);
+    -webkit-backdrop-filter: saturate(180%) blur(24px);
+    border: 1px solid color-mix(in srgb, var(--tab-light, #FFFFFF) 40%, transparent);
+    box-shadow:
+        0 10px 28px rgba(0,0,0,.20),
+        0 2px 6px rgba(0,0,0,.10),
+        0 1px 0 rgba(255,255,255,.85) inset,
+        0 -1px 1px rgba(255,255,255,.30) inset;
+}
+@supports not (backdrop-filter: url(#glass-distortion)) {
+    .float-tab-glass {
+        background: color-mix(in srgb, var(--tab-light, #FFFFFF) 32%, transparent);
+        backdrop-filter: saturate(180%) blur(24px);
+        -webkit-backdrop-filter: saturate(180%) blur(24px);
+    }
+}
+@media (prefers-reduced-transparency: reduce) {
+    .float-tab-glass {
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none;
+        background: color-mix(in srgb, var(--tab-light, #FFFFFF) 92%, transparent);
+    }
+}
+.float-tab-glass .float-tab-item {
+    flex: 1; height: 52px; min-width: 52px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 50%;
+}
+.float-tab-glass .float-tab-item.active {
+    background: color-mix(in srgb, var(--tab-accent, #1194AA) 22%, transparent);
+    color: var(--tab-accent, #1194AA);
+    max-width: 52px; flex: 0 0 52px;
+}
+.float-tab-glass .float-tab-item .float-tab-icon {
+    width: 24px; height: 24px;
+}
+
+.float-tab-bar--glass {
+    bottom: 46px; left: 50%;
+    transform: translateX(-50%);
+    width: calc(100% - 40px); max-width: 360px; height: 60px;
+    display: flex; justify-content: space-around; align-items: center;
+    padding: 0 6px; border-radius: 30px;
+}
+
+.float-tab-bar--glass-split {
+    bottom: 46px; left: 16px;
+    right: calc(60px + 24px);
+    height: 60px;
+    display: flex; justify-content: space-around; align-items: center;
+    padding: 0 6px; border-radius: 30px;
+}
+.float-tab-trailing {
+    position: absolute;
+    bottom: 46px; right: 16px;
+    width: 60px; height: 60px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    z-index: 50;
+    pointer-events: none;
+}
+.float-tab-trailing .float-tab-item { height: 60px; flex: 1; }

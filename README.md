@@ -125,6 +125,24 @@ npx skills add trmquang93/mobile-design-kit -s ios-icon-gen     -a cursor
 
 Skills land in the agent's standard skill directory (e.g. `.claude/skills/`, `.cursor/skills/`, `.agents/skills/`). The bundled scripts under each skill's `scripts/` directory are shipped alongside `SKILL.md` so the workflows work identically across agents.
 
+### Mockup portability
+
+On first scaffold inside your project, the skill copies its shared device-chrome CSS and Copy-to-Figma serializer into a gitignored `.design/` folder at your project root (it's auto-added to your root `.gitignore` if you're in a git repo). Mockups reference those copies via relative paths, so the project tree — mockup + `.design/` — is self-contained and portable to any machine that clones or unzips it. No need for the recipient to have the plugin installed.
+
+To send a single self-contained HTML (email, issue tracker, etc.) without the surrounding project, run the bundler to inline the `.design/` assets into the file:
+
+```bash
+python3 skills/make-mobile-design/scripts/bundle_mockup.py path/to/screen.html
+# → writes path/to/screen.standalone.html
+
+# Strip the Copy-to-Figma serializer (~12 KB) when the recipient won't use it:
+python3 skills/make-mobile-design/scripts/bundle_mockup.py screen.html --no-figma
+```
+
+External resources (Google Fonts, Iconify) stay as remote `<link>` tags either way — the recipient just needs internet on first open.
+
+To pick up a chrome update from a newer plugin version, delete `.design/` and run a scaffold again — existing `.design/` files are intentionally never overwritten so a plugin update can't silently change mockups you've already rendered.
+
 ## Skills
 
 ### `/make-mobile-design [screen-name or description]`

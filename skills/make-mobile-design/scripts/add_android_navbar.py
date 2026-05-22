@@ -13,6 +13,10 @@ Two styles:
     elevated  Adds level-2 elevation shadow plus surface-tint overlay. Use
               when the nav sits over rich content/photography.
 
+The bottom-nav CSS lives in skills/make-mobile-design/assets/device-android.css
+(already linked by create_android_template.py / create_android_tablet_template.py).
+This script emits markup only.
+
 Usage:
     python3 add_android_navbar.py <screen.html> \\
         --item home:Home \\
@@ -20,14 +24,6 @@ Usage:
         --item bookmark:Saved \\
         --item user:Profile \\
         --active 0
-
-Each --item is "<icon>:<title>". <icon> is a built-in alias (see ICON_ALIASES
-below) or any Iconify name like "mdi:home" or "material-symbols:search".
-Title is the visible label.
-
-    --style {standard,elevated}  Visual style (default: standard).
-    --active IDX                 0-based active index (default 0).
-    --badge IDX:COUNT            Notification badge on item IDX. Repeatable.
 """
 
 import argparse
@@ -96,90 +92,12 @@ def icon_url(icon: str) -> str:
     return f"https://api.iconify.design/{icon.replace(':', '/', 1)}.svg"
 
 
-def build(style: str, items, active: int, badges: dict[int, str]) -> tuple[str, str]:
-    css = """
-        /* Material 3 bottom navigation bar (added by add_android_navbar.py) */
-        .bottom-nav {
-            position: absolute;
-            bottom: 0;
-            left: 0; right: 0;
-            height: 104px;
-            display: flex;
-            justify-content: space-around;
-            align-items: flex-start;
-            padding: 12px 8px 40px;
-            background: var(--md-sys-color-surface-container);
-            z-index: 40;
-            pointer-events: none;
-        }
-"""
-    if style == "elevated":
-        css += """        .bottom-nav { box-shadow: var(--md-sys-elevation-level2); }
-"""
-    css += """        .bottom-nav__item {
-            pointer-events: auto;
-            flex: 1;
-            max-width: 80px;
-            min-height: 48px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 4px;
-            border: none;
-            background: transparent;
-            color: var(--md-sys-color-on-surface-variant);
-            cursor: pointer;
-            padding: 0;
-            position: relative;
-        }
-        .bottom-nav__indicator {
-            width: 64px;
-            height: 32px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: var(--md-sys-shape-corner-full);
-            transition: background-color 200ms var(--md-sys-motion-easing-emphasized),
-                        color 200ms var(--md-sys-motion-easing-emphasized);
-            position: relative;
-        }
-        .bottom-nav__indicator .bottom-nav__icon {
-            display: block;
-            width: 24px; height: 24px;
-            background-color: currentColor;
-            -webkit-mask: var(--icon) no-repeat center / contain;
-            mask: var(--icon) no-repeat center / contain;
-        }
-        .bottom-nav__item.is-active .bottom-nav__indicator {
-            background: var(--md-sys-color-secondary-container);
-            color: var(--md-sys-color-on-secondary-container);
-        }
-        .bottom-nav__item.is-active { color: var(--md-sys-color-on-surface); }
-        .bottom-nav__label {
-            font-size: var(--md-sys-typescale-label-medium);
-            font-weight: 500;
-            line-height: 1.33;
-            letter-spacing: 0.5px;
-        }
-        .bottom-nav__item.is-active .bottom-nav__label { font-weight: 700; }
-        .bottom-nav__badge {
-            position: absolute;
-            top: -2px;
-            right: 12px;
-            min-width: 16px;
-            height: 16px;
-            padding: 0 4px;
-            border-radius: 8px;
-            background: var(--md-sys-color-error);
-            color: var(--md-sys-color-on-error);
-            font-size: 10px;
-            font-weight: 500;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            border: 2px solid var(--md-sys-color-surface-container);
-        }
-"""
+def build(style: str, items, active: int, badges: dict[int, str]) -> str:
+    """Build the bottom-nav HTML markup. No CSS — that lives in
+    assets/device-android.css. The .bottom-nav--elevated modifier toggles
+    the level-2 shadow."""
+
+    style_class = " bottom-nav--elevated" if style == "elevated" else ""
 
     nav_items = []
     for idx, (icon, title) in enumerate(items):
@@ -201,27 +119,20 @@ def build(style: str, items, active: int, badges: dict[int, str]) -> tuple[str, 
             f'    </button>'
         )
 
-    nav_html = (
+    return (
         f'\n        <!-- Bottom Navigation ({style}, added by add_android_navbar.py) -->\n'
-        f'        <nav class="bottom-nav" aria-label="Primary">\n'
+        f'        <nav class="bottom-nav{style_class}" aria-label="Primary">\n'
         + "\n".join(nav_items)
         + '\n        </nav>\n'
     )
 
-    return css, nav_html
 
-
-def inject(html: str, css_block: str, nav_html: str) -> str:
-    if 'class="bottom-nav"' in html:
+def inject(html: str, nav_html: str) -> str:
+    if 'class="bottom-nav"' in html or 'class="bottom-nav ' in html:
         raise RuntimeError(
             "A bottom navigation bar is already present in this file. "
             "Remove it first or edit the existing markup."
         )
-    if "</style>" not in html:
-        raise RuntimeError(
-            "Could not find </style> in the file; not a scaffolded Android screen?"
-        )
-    html = html.replace("</style>", css_block + "    </style>", 1)
 
     marker = re.search(r"[ \t]*<!--\s*Gesture-navigation pill\s*-->", html)
     if marker:
@@ -285,11 +196,11 @@ def main() -> int:
             return 1
         badges[idx] = count
 
-    css_block, nav_html = build(args.style, items, args.active, badges)
+    nav_html = build(args.style, items, args.active, badges)
 
     html = target.read_text(encoding="utf-8")
     try:
-        new_html = inject(html, css_block, nav_html)
+        new_html = inject(html, nav_html)
     except RuntimeError as exc:
         print(f"Error: {exc}", file=sys.stderr)
         return 1

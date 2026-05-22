@@ -6,20 +6,16 @@ with Material 3 screen content.
 Usage:
     python3 create_android_template.py <output.html> [--title "Screen Name"]
 
-Notes:
-- 412 x 915 viewport (Pixel 8 logical density).
-- MD3 baseline tokens inlined in :root; keep in sync with
-  components/android/01-base-tokens.md.
-- Roboto Flex loaded from Google Fonts.
-- .device-content uses padding-top: 0 so the FIRST CHILD owns the 24px
-  status-bar safe area, matching the iOS scaffold convention (lets a top
-  app bar's background fill behind the status bar).
+The device chrome and Copy-to-Figma serializer come from shared asset
+files referenced via absolute file:// URLs (see ../assets/).
 """
 
 import argparse
 import sys
 from pathlib import Path
 from string import Template
+
+from _shared_template import asset_link, asset_script
 
 TEMPLATE = Template(r"""<!DOCTYPE html>
 <html lang="en">
@@ -30,6 +26,8 @@ TEMPLATE = Template(r"""<!DOCTYPE html>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wght@8..144,300..900&family=Roboto+Mono:wght@400;500&display=swap">
+    $chrome_css
+    $platform_css
     <style>
         :root {
             /* Material 3 — baseline LIGHT scheme.
@@ -94,8 +92,7 @@ TEMPLATE = Template(r"""<!DOCTYPE html>
             --md-sys-shape-corner-extra-large: 28px;
             --md-sys-shape-corner-full:        9999px;
 
-            /* MD3 tonal elevation — combine box-shadow with surface-tint
-               overlay for full effect (see android.md "Elevation"). */
+            /* MD3 tonal elevation */
             --md-sys-elevation-level0: none;
             --md-sys-elevation-level1: 0 1px 2px rgba(0,0,0,0.30), 0 1px 3px 1px rgba(0,0,0,0.15);
             --md-sys-elevation-level2: 0 1px 2px rgba(0,0,0,0.30), 0 2px 6px 2px rgba(0,0,0,0.15);
@@ -161,163 +158,10 @@ TEMPLATE = Template(r"""<!DOCTYPE html>
                 --md-sys-color-inverse-on-surface:     #322F35;
             }
         }
-
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-
-        html, body {
-            background: #1a1a1a;
-            font-family: var(--font-roboto);
-            font-size: var(--md-sys-typescale-body-large);
-            line-height: 1.5;
-            color: var(--md-sys-color-on-surface);
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
-            min-height: 100vh;
-        }
-
-        body {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px 0;
-        }
-
-        /* Pixel 8 frame: 412 x 915 logical px, ~36px corner radius */
-        .device {
-            position: relative;
-            width: 412px;
-            height: 915px;
-            min-width: 412px;
-            min-height: 915px;
-            flex-shrink: 0;
-            background: var(--md-sys-color-background);
-            border-radius: 44px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-            overflow: hidden;
-        }
-
-        /* Hole-punch camera — centered, top */
-        .hole-punch {
-            position: absolute;
-            top: 10px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 14px;
-            height: 14px;
-            background: #000;
-            border-radius: 50%;
-            z-index: 100;
-            pointer-events: none;
-        }
-
-        /* Status bar (matches components/android/02-status-bar.md) — 24px,
-           pinned via position:absolute; top:0; z-index:50.
-           pointer-events: none so taps fall through to scrolling content. */
-        .status-bar {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 24px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 4px 20px 0;
-            font-size: var(--md-sys-typescale-label-medium);
-            font-weight: 500;
-            color: var(--md-sys-color-on-surface);
-            z-index: 50;
-            pointer-events: none;
-        }
-
-        .status-bar-time { letter-spacing: 0.02em; }
-        .status-bar-icons { display: flex; gap: 4px; align-items: center; }
-
-        /* Scrollable content. Same convention as the iOS scaffold:
-           padding-top is 0 — the FIRST CHILD inside .device-content owns the
-           24px status-bar safe area via its own padding-top:
-              .top-app-bar  → padding-top: calc(24px + 8px)
-              .page-content → padding-top: 24px
-              full-bleed    → 0 (image/hero bleeds behind status bar)
-
-           Any floating overlay over .device-content (custom bottom nav, FAB,
-           snackbar) MUST set `pointer-events: none` on its wrapper and
-           `pointer-events: auto` on its interactive children, otherwise the
-           overlay swallows scroll over its footprint. */
-        .device-content {
-            position: absolute;
-            inset: 0;
-            overflow-y: auto;
-            -webkit-overflow-scrolling: touch;
-            padding-top: 0;          /* status-bar offset belongs on first child */
-            padding-bottom: 24px;    /* clearance above gesture-nav pill */
-            background: var(--md-sys-color-background);
-        }
-        .device-content::-webkit-scrollbar { display: none; }
-        .device-content { scrollbar-width: none; }
-
-        /* Gesture-nav pill — overlay, never scrolls */
-        .gesture-nav-area {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: 24px;
-            display: flex;
-            justify-content: center;
-            align-items: flex-end;
-            padding-bottom: 10px;
-            pointer-events: none;
-            z-index: 50;
-        }
-        .gesture-nav-pill {
-            width: 108px;
-            height: 4px;
-            background: var(--md-sys-color-on-surface);
-            border-radius: 2px;
-            opacity: 0.85;
-        }
-
-        /* Figma export chrome — host page only, not part of the design payload */
-        .figma-export-toolbar {
-            position: fixed;
-            top: 16px;
-            right: 16px;
-            display: flex;
-            gap: 8px;
-            align-items: center;
-            z-index: 1000;
-            font-family: var(--font-roboto);
-        }
-        .figma-export-btn {
-            appearance: none;
-            border: 1px solid rgba(255,255,255,0.18);
-            background: rgba(28,28,30,0.72);
-            backdrop-filter: blur(20px) saturate(160%);
-            -webkit-backdrop-filter: blur(20px) saturate(160%);
-            color: #fff;
-            font: 500 13px var(--font-roboto);
-            padding: 8px 14px;
-            border-radius: 999px;
-            cursor: pointer;
-        }
-        .figma-export-btn:hover { background: rgba(44,44,46,0.85); }
-        .figma-export-btn:active { transform: scale(0.98); }
-        .figma-export-toast {
-            color: #fff;
-            font-size: 12px;
-            opacity: 0.9;
-            background: rgba(28,28,30,0.72);
-            padding: 6px 10px;
-            border-radius: 999px;
-            backdrop-filter: blur(20px) saturate(160%);
-            -webkit-backdrop-filter: blur(20px) saturate(160%);
-        }
-        .figma-export-toast[hidden] { display: none; }
     </style>
 </head>
 <body>
-    <div class="device" data-platform="android">
+    <div class="device" data-platform="android" data-form-factor="phone">
         <!-- Hole-punch camera (always on top) -->
         <div class="hole-punch"></div>
 
@@ -353,336 +197,7 @@ TEMPLATE = Template(r"""<!DOCTYPE html>
         </button>
     </div>
 
-    <script>
-    /*
-     * Figma-ready SVG export
-     *
-     * Walks .device and emits real SVG primitives (rect, text, image, nested
-     * <svg>, linearGradient, clipPath). Result is copied to the clipboard as
-     * plain text — Figma's onPaste handler detects an SVG string and converts
-     * it to editable vector layers (text stays text, shapes stay shapes).
-     *
-     * Coverage:
-     *   - solid fills, linear gradients, borders, border-radius, opacity
-     *   - text (multi-line via Range.getClientRects per line)
-     *   - inline <svg> icons (embedded as nested <svg>, color inherited)
-     *   - <img> (emitted as <image href="..."> — Figma may refuse remote URLs)
-     *   - overflow clipping via <clipPath>
-     * Not exported:
-     *   - box-shadow, backdrop-filter, CSS filters, transforms
-     *   - background-image (non-gradient), pseudo-elements (::before/::after)
-     */
-    (function () {
-      var SVG_NS = 'http://www.w3.org/2000/svg';
-      var defs = [];
-      var defCounter = 0;
-
-      function esc(s) {
-        return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-      }
-
-      function parseRgb(str) {
-        if (!str || str === 'transparent' || str === 'rgba(0, 0, 0, 0)') return null;
-        var m = str.match(/rgba?\(([^)]+)\)/);
-        if (m) {
-          var p = m[1].split(',').map(function (s) { return parseFloat(s.trim()); });
-          return { r: p[0], g: p[1], b: p[2], a: p.length > 3 ? p[3] : 1 };
-        }
-        // Modern color() form — Chrome resolves color-mix() to this.
-        // e.g. "color(srgb 1 1 1 / 0.92)" or "color(srgb 0.5 0.5 0.5)".
-        var cm = str.match(/color\(\s*srgb\s+([^)]+)\)/i);
-        if (cm) {
-          var parts = cm[1].split('/');
-          var rgb = parts[0].trim().split(/\s+/).map(parseFloat);
-          var a = parts.length > 1 ? parseFloat(parts[1]) : 1;
-          if (rgb.length >= 3) return { r: rgb[0] * 255, g: rgb[1] * 255, b: rgb[2] * 255, a: a };
-        }
-        return null;
-      }
-
-      function colorAttr(c) {
-        return c ? 'rgb(' + Math.round(c.r) + ',' + Math.round(c.g) + ',' + Math.round(c.b) + ')' : 'none';
-      }
-
-      function num(v) { return Math.round(v * 100) / 100; }
-
-      function gradientDef(bgImage) {
-        if (!bgImage || bgImage === 'none') return null;
-        var m = bgImage.match(/linear-gradient\(([\s\S]+)\)\s*$$/);
-        if (!m) return null;
-        var inner = m[1];
-        var parts = [], depth = 0, start = 0;
-        for (var i = 0; i <= inner.length; i++) {
-          var ch = inner[i];
-          if (ch === '(') depth++;
-          else if (ch === ')') depth--;
-          else if ((ch === ',' && depth === 0) || i === inner.length) {
-            parts.push(inner.slice(start, i).trim());
-            start = i + 1;
-          }
-        }
-        var angle = 180;
-        var stopParts = parts;
-        var degMatch = parts[0] && parts[0].match(/^(-?\d+(?:\.\d+)?)deg$$/);
-        if (degMatch) { angle = parseFloat(degMatch[1]); stopParts = parts.slice(1); }
-        else if (parts[0] && /^to\s+/.test(parts[0])) {
-          var dirs = { top: 0, right: 90, bottom: 180, left: 270,
-                       'top right': 45, 'bottom right': 135, 'bottom left': 225, 'top left': 315 };
-          var key = parts[0].replace(/^to\s+/, '').trim();
-          angle = dirs[key] !== undefined ? dirs[key] : 180;
-          stopParts = parts.slice(1);
-        }
-        var stops = stopParts.map(function (s, idx, arr) {
-          var cm = s.match(/rgba?\([^)]+\)|#[0-9a-f]+|[a-z]+/i);
-          var pm = s.match(/(\d+(?:\.\d+)?)%/);
-          return {
-            color: parseRgb(cm ? cm[0] : '#000') || { r: 0, g: 0, b: 0, a: 1 },
-            pos: pm ? parseFloat(pm[1]) / 100 : (arr.length > 1 ? idx / (arr.length - 1) : 0)
-          };
-        });
-        var rad = (angle - 90) * Math.PI / 180;
-        var dx = Math.cos(rad) * 0.5, dy = Math.sin(rad) * 0.5;
-        var id = 'fgmg' + (++defCounter);
-        var stopXml = stops.map(function (s) {
-          return '<stop offset="' + num(s.pos) + '" stop-color="' + colorAttr(s.color) + '" stop-opacity="' + s.color.a + '"/>';
-        }).join('');
-        defs.push('<linearGradient id="' + id + '" x1="' + num(0.5 - dx) + '" y1="' + num(0.5 - dy) +
-                  '" x2="' + num(0.5 + dx) + '" y2="' + num(0.5 + dy) + '">' + stopXml + '</linearGradient>');
-        return 'url(#' + id + ')';
-      }
-
-      function clipDef(x, y, w, h, rx) {
-        var id = 'fgmc' + (++defCounter);
-        defs.push('<clipPath id="' + id + '"><rect x="' + num(x) + '" y="' + num(y) +
-                  '" width="' + num(w) + '" height="' + num(h) +
-                  '" rx="' + num(rx) + '" ry="' + num(rx) + '"/></clipPath>');
-        return id;
-      }
-
-      function lineRectsForText(textNode) {
-        var text = textNode.textContent;
-        if (!text.trim()) return [];
-        var range = document.createRange();
-        range.selectNodeContents(textNode);
-        var rects = Array.prototype.slice.call(range.getClientRects());
-        if (rects.length === 0) return [];
-        if (rects.length === 1) return [{ text: text, rect: rects[0] }];
-        var lines = [];
-        var len = text.length;
-        var offset = 0;
-        for (var li = 0; li < rects.length; li++) {
-          var targetTop = rects[li].top;
-          while (offset < len && /\s/.test(text[offset])) offset++;
-          var lo = offset, hi = len;
-          while (lo < hi) {
-            var mid = (lo + hi + 1) >> 1;
-            range.setStart(textNode, offset);
-            range.setEnd(textNode, mid);
-            var rs = range.getClientRects();
-            var lastTop = rs.length ? rs[rs.length - 1].top : targetTop;
-            if (Math.abs(lastTop - targetTop) < 1) lo = mid;
-            else hi = mid - 1;
-          }
-          var lineEnd = lo > offset ? lo : Math.min(offset + 1, len);
-          var lineText = text.slice(offset, lineEnd);
-          if (lineText.trim().length) lines.push({ text: lineText, rect: rects[li] });
-          offset = lineEnd;
-        }
-        return lines;
-      }
-
-      function emitTextNode(textNode, ox, oy, out) {
-        var parent = textNode.parentElement;
-        if (!parent) return;
-        var cs = getComputedStyle(parent);
-        var color = parseRgb(cs.color);
-        var family = (cs.fontFamily || '').replace(/"/g, "'");
-        var size = parseFloat(cs.fontSize);
-        var weight = cs.fontWeight;
-        var align = cs.textAlign;
-        var lines = lineRectsForText(textNode);
-        for (var i = 0; i < lines.length; i++) {
-          var ln = lines[i];
-          var lx = ln.rect.left - ox;
-          var ly = ln.rect.top - oy;
-          var ty = ly + (ln.rect.height - size) / 2 + size * 0.82;
-          var tx = lx;
-          var anchor = 'start';
-          if (align === 'center') { anchor = 'middle'; tx = lx + ln.rect.width / 2; }
-          else if (align === 'right' || align === 'end') { anchor = 'end'; tx = lx + ln.rect.width; }
-          out.push('<text x="' + num(tx) + '" y="' + num(ty) +
-                   '" font-family="' + esc(family) +
-                   '" font-size="' + num(size) +
-                   '" font-weight="' + weight +
-                   '" fill="' + colorAttr(color) +
-                   (color && color.a < 1 ? '" fill-opacity="' + color.a : '') +
-                   '" text-anchor="' + anchor +
-                   '" xml:space="preserve">' + esc(ln.text) + '</text>');
-        }
-      }
-
-      function emit(node, ox, oy, out) {
-        if (node.nodeType === 3) { emitTextNode(node, ox, oy, out); return; }
-        if (node.nodeType !== 1) return;
-        if (node.dataset && 'figmaExportIgnore' in node.dataset) return;
-        var cs = getComputedStyle(node);
-        if (cs.display === 'none' || cs.visibility === 'hidden') return;
-        var op = parseFloat(cs.opacity);
-        if (op === 0) return;
-        var tag = node.tagName.toLowerCase();
-        var r = node.getBoundingClientRect();
-        var x = r.left - ox, y = r.top - oy, w = r.width, h = r.height;
-        if (w <= 0 || h <= 0) return;
-
-        // CSS mask icon (e.g. Iconify SVG used as `mask` with a
-        // `background-color` tint — the Android bottom nav uses this).
-        // Figma's SVG paste can't read CSS `mask`, so without this the icon
-        // appears as a solid filled rectangle. Pre-fetched SVG markup is
-        // recolored with the element's background-color and inlined.
-        var maskImg = (cs.maskImage && cs.maskImage !== 'none') ? cs.maskImage : cs.webkitMaskImage;
-        var maskMatch = maskImg && maskImg.match(/url\((['"]?)([^'")]+)\1\)/);
-        if (maskMatch && window.__figmaMaskCache && window.__figmaMaskCache[maskMatch[2]]) {
-          var maskSvg = window.__figmaMaskCache[maskMatch[2]];
-          var maskColor = parseRgb(cs.backgroundColor) || parseRgb(cs.color) || { r: 0, g: 0, b: 0, a: 1 };
-          var maskColorVal = colorAttr(maskColor);
-          var vbm = maskSvg.match(/viewBox\s*=\s*"([^"]+)"/i);
-          var vb = vbm ? vbm[1].split(/\s+/).map(parseFloat) : [0, 0, 24, 24];
-          var inner = maskSvg.replace(/^[\s\S]*?<svg[^>]*>/i, '').replace(/<\/svg>\s*$$/i, '');
-          inner = inner.replace(/currentColor/g, maskColorVal);
-          var msx = w / (vb[2] || 24), msy = h / (vb[3] || 24);
-          if (op < 1) out.push('<g opacity="' + op + '">');
-          out.push('<g transform="translate(' + num(x - vb[0] * msx) + ',' + num(y - vb[1] * msy) +
-                   ') scale(' + num(msx) + ',' + num(msy) + ')" fill="' + maskColorVal +
-                   '" fill-opacity="' + maskColor.a + '">' + inner + '</g>');
-          if (op < 1) out.push('</g>');
-          return;
-        }
-
-        if (tag === 'svg') {
-          var fillRgb = parseRgb(cs.fill) || parseRgb(cs.color);
-          var colorVal = fillRgb ? colorAttr(fillRgb) : 'black';
-          var markup = node.outerHTML.replace(
-            /^<svg\b([^>]*)>/i,
-            function (_m, attrs) {
-              var stripped = attrs.replace(/\s(?:width|height)\s*=\s*"[^"]*"/gi, '');
-              // Preserve existing fill (incl. fill="none" for outline icons).
-              // Only inject computed color when no fill attribute is present.
-              // currentColor in attrs/children is resolved by the global replace below.
-              var hasFill = /\sfill\s*=\s*"/i.test(stripped);
-              var fillAttr = hasFill ? '' : ' fill="' + colorVal + '"';
-              return '<svg width="' + num(w) + '" height="' + num(h) + '"' + fillAttr + stripped + '>';
-            }
-          ).replace(/currentColor/g, colorVal);
-          if (op < 1) out.push('<g opacity="' + op + '">');
-          out.push('<g transform="translate(' + num(x) + ',' + num(y) + ')">' + markup + '</g>');
-          if (op < 1) out.push('</g>');
-          return;
-        }
-
-        if (tag === 'img') {
-          var src = node.currentSrc || node.src;
-          out.push('<image x="' + num(x) + '" y="' + num(y) +
-                   '" width="' + num(w) + '" height="' + num(h) +
-                   '" href="' + esc(src) + '" preserveAspectRatio="xMidYMid slice"/>');
-          return;
-        }
-
-        if (op < 1) out.push('<g opacity="' + op + '">');
-
-        var bg = parseRgb(cs.backgroundColor);
-        var grad = gradientDef(cs.backgroundImage);
-        var borderW = parseFloat(cs.borderTopWidth) || 0;
-        var borderC = borderW > 0 ? parseRgb(cs.borderTopColor) : null;
-        var rx = parseFloat(cs.borderTopLeftRadius) || 0;
-        rx = Math.min(rx, Math.min(w, h) / 2);
-        if (grad || bg || (borderW && borderC)) {
-          var fillVal = grad || (bg ? colorAttr(bg) : 'none');
-          var fillOp = (!grad && bg) ? bg.a : 1;
-          var strokeAttr = (borderW && borderC)
-            ? ' stroke="' + colorAttr(borderC) + '" stroke-opacity="' + borderC.a + '" stroke-width="' + num(borderW) + '"'
-            : '';
-          out.push('<rect x="' + num(x) + '" y="' + num(y) +
-                   '" width="' + num(w) + '" height="' + num(h) +
-                   '" rx="' + num(rx) + '" ry="' + num(rx) +
-                   '" fill="' + fillVal + '" fill-opacity="' + fillOp + '"' + strokeAttr + '/>');
-        }
-
-        var kids = Array.prototype.slice.call(node.childNodes);
-        var ordered = kids.map(function (c, idx) {
-          var z = 0;
-          if (c.nodeType === 1) {
-            var zs = getComputedStyle(c).zIndex;
-            if (zs && zs !== 'auto') { var zn = parseInt(zs, 10); if (!isNaN(zn)) z = zn; }
-          }
-          return { node: c, idx: idx, z: z };
-        });
-        ordered.sort(function (a, b) { return (a.z - b.z) || (a.idx - b.idx); });
-        var childOut = [];
-        for (var i = 0; i < ordered.length; i++) {
-          emit(ordered[i].node, ox, oy, childOut);
-        }
-        var needsClip = (cs.overflow === 'hidden' || cs.overflow === 'auto' || cs.overflow === 'scroll' || cs.overflowX === 'hidden' || cs.overflowY === 'hidden');
-        if (needsClip && childOut.length) {
-          var cid = clipDef(x, y, w, h, rx);
-          out.push('<g clip-path="url(#' + cid + ')">');
-          out.push(childOut.join(''));
-          out.push('</g>');
-        } else {
-          out.push(childOut.join(''));
-        }
-
-        if (op < 1) out.push('</g>');
-      }
-
-      function showToast(msg, isError) {
-        var t = document.querySelector('.figma-export-toast');
-        if (!t) return;
-        t.textContent = msg;
-        t.hidden = false;
-        t.style.color = isError ? '#ff9f9f' : '#fff';
-        clearTimeout(showToast._timer);
-        showToast._timer = setTimeout(function () { t.hidden = true; }, 2500);
-      }
-
-      window.__copyDesignToFigma = async function () {
-        try {
-          defs = [];
-          defCounter = 0;
-          var root = document.querySelector('.device');
-          if (!root) { showToast('No .device frame found', true); return; }
-          // Pre-fetch CSS mask SVG icons so emit() can inline them
-          // synchronously. Each cached entry maps mask url -> raw SVG text.
-          var maskUrls = {};
-          root.querySelectorAll('*').forEach(function (n) {
-            var s = getComputedStyle(n);
-            var mi = (s.maskImage && s.maskImage !== 'none') ? s.maskImage : s.webkitMaskImage;
-            var m = mi && mi.match(/url\((['"]?)([^'")]+)\1\)/);
-            if (m) maskUrls[m[2]] = true;
-          });
-          var maskCache = {};
-          await Promise.all(Object.keys(maskUrls).map(function (u) {
-            return fetch(u).then(function (r) { if (!r.ok) throw new Error(r.status); return r.text(); })
-              .then(function (t) { maskCache[u] = t; })
-              .catch(function () { maskCache[u] = null; });
-          }));
-          window.__figmaMaskCache = maskCache;
-          var r = root.getBoundingClientRect();
-          var out = [];
-          emit(root, r.left, r.top, out);
-          var svg = '<svg xmlns="' + SVG_NS + '" width="' + num(r.width) + '" height="' + num(r.height) +
-                    '" viewBox="0 0 ' + num(r.width) + ' ' + num(r.height) + '">' +
-                    (defs.length ? '<defs>' + defs.join('') + '</defs>' : '') +
-                    out.join('') +
-                    '</svg>';
-          await navigator.clipboard.writeText(svg);
-          showToast('Copied — paste into Figma (Cmd+V)');
-        } catch (err) {
-          console.error('[figma-export]', err);
-          showToast('Clipboard blocked — serve over http(s) or grant permission', true);
-        }
-      };
-    })();
-    </script>
+    $figma_script
 </body>
 </html>
 """)
@@ -701,7 +216,12 @@ def main() -> int:
         print(f"Error: parent directory does not exist: {out_path.parent}", file=sys.stderr)
         return 1
 
-    html = TEMPLATE.substitute(title=args.title)
+    html = TEMPLATE.substitute(
+        title=args.title,
+        chrome_css=asset_link("device-chrome.css", out_path),
+        platform_css=asset_link("device-android.css", out_path),
+        figma_script=asset_script("figma-export.js", out_path),
+    )
     out_path.write_text(html, encoding="utf-8")
     print(f"Created Android device template: {out_path}")
     return 0
